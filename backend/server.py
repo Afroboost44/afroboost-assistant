@@ -1,5 +1,6 @@
-from fastapi import FastAPI, APIRouter, HTTPException, File, UploadFile, BackgroundTasks, Request
+from fastapi import FastAPI, APIRouter, HTTPException, File, UploadFile, BackgroundTasks, Request, Depends
 from fastapi.responses import Response, RedirectResponse, JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -17,6 +18,8 @@ import resend
 import openpyxl
 import pandas as pd
 import stripe
+import bcrypt
+import jwt
 from whatsapp_service import WhatsAppService
 from ai_memory_service import AIMemoryService
 

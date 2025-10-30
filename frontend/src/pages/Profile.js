@@ -28,6 +28,7 @@ const Profile = () => {
 
   useEffect(() => {
     fetchStats();
+    fetchSettings();
   }, []);
 
   const fetchStats = async () => {
@@ -38,6 +39,34 @@ const Profile = () => {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get(`${API}/settings`);
+      setSettings(response.data);
+      setApiFormData({
+        openai_api_key: response.data.openai_api_key || '',
+        resend_api_key: response.data.resend_api_key || '',
+        whatsapp_access_token: response.data.whatsapp_access_token || '',
+        whatsapp_phone_number_id: response.data.whatsapp_phone_number_id || '',
+        stripe_publishable_key: response.data.stripe_publishable_key || ''
+      });
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  const handleSaveApiKeys = async () => {
+    try {
+      await axios.put(`${API}/settings`, apiFormData);
+      toast.success('Clés API enregistrées avec succès');
+      setShowApiDialog(false);
+      fetchSettings();
+    } catch (error) {
+      console.error('Error saving API keys:', error);
+      toast.error('Erreur lors de l\'enregistrement');
     }
   };
 

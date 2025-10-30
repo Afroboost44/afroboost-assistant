@@ -122,7 +122,7 @@ const Analytics = () => {
         {/* Email Status Pie Chart */}
         <Card className="glass border-primary/20" data-testid="chart-status-pie">
           <CardHeader>
-            <CardTitle>Répartition des ouvertures</CardTitle>
+            <CardTitle>{t('analytics.openDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>

@@ -348,10 +348,46 @@ const Contacts = () => {
         </div>
       </div>
 
+      {/* Stats Cards */}
+      {contactsStats && (
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="glass border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-gradient">{contactsStats.total}</div>
+              <div className="text-sm text-gray-400">Total contacts</div>
+            </CardContent>
+          </Card>
+          <Card className="glass border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-green-500">{contactsStats.subscribers}</div>
+              <div className="text-sm text-gray-400">Abonnés</div>
+            </CardContent>
+          </Card>
+          <Card className="glass border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-gray-500">{contactsStats.non_subscribers}</div>
+              <div className="text-sm text-gray-400">Non abonnés</div>
+            </CardContent>
+          </Card>
+          <Card className="glass border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-blue-500">{contactsStats.trial}</div>
+              <div className="text-sm text-gray-400">Essai</div>
+            </CardContent>
+          </Card>
+          <Card className="glass border-primary/20">
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold text-red-500">{contactsStats.expired}</div>
+              <div className="text-sm text-gray-400">Expirés</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Filters */}
       <Card className="glass border-primary/20">
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -376,7 +412,33 @@ const Contacts = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-full md:w-48" data-testid="filter-status-select">
+                <SelectValue placeholder="Filtrer par statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="active">Abonnés</SelectItem>
+                <SelectItem value="non-subscriber">Non abonnés</SelectItem>
+                <SelectItem value="trial">Essai</SelectItem>
+                <SelectItem value="expired">Expirés</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+          {selectedContacts.length > 0 && (
+            <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg">
+              <span className="text-sm">
+                {selectedContacts.length} contact(s) sélectionné(s)
+              </span>
+              <Button
+                onClick={() => setShowBulkMessageDialog(true)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Envoyer un message
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

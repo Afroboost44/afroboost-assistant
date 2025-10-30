@@ -16,6 +16,15 @@ const Profile = () => {
   const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [settings, setSettings] = useState(null);
+  const [showApiDialog, setShowApiDialog] = useState(false);
+  const [apiFormData, setApiFormData] = useState({
+    openai_api_key: '',
+    resend_api_key: '',
+    whatsapp_access_token: '',
+    whatsapp_phone_number_id: '',
+    stripe_publishable_key: ''
+  });
 
   useEffect(() => {
     fetchStats();

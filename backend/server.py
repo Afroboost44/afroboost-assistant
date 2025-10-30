@@ -42,6 +42,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize AI Memory Service
+ai_memory = AIMemoryService(db)
+
 
 # ========================
 # MODELS

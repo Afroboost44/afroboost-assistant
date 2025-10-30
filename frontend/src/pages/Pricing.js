@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from '@/components/ui/badge';
 
 const Pricing = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const descriptions = {
     fr: ['Pour découvrir la plateforme', 'Pour les coachs et formateurs', 'Pour les entreprises'],

@@ -108,50 +108,6 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
-class WhatsAppConfig(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    phone_id: str
-    access_token: str
-    business_account_id: str
-    phone_number: str
-    display_name: Optional[str] = None
-    is_configured: bool = True
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class WhatsAppCampaign(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    title: str
-    message: str
-    target_contacts: List[str] = []  # List of contact IDs
-    target_tags: List[str] = []  # List of tags
-    target_groups: List[str] = []  # List of groups
-    scheduled_at: Optional[datetime] = None
-    status: str = "draft"  # draft, scheduled, sending, sent, failed
-    sent_count: int = 0
-    delivered_count: int = 0
-    read_count: int = 0
-    failed_count: int = 0
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class WhatsAppMessage(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    campaign_id: str
-    user_id: str
-    recipient_phone: str
-    message_text: str
-    wa_message_id: Optional[str] = None  # WhatsApp message ID
-    status: str = "pending"  # pending, sent, delivered, read, failed
-    error_message: Optional[str] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
 class AdminSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

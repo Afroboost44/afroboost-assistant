@@ -96,7 +96,7 @@ const Analytics = () => {
         {/* Campaign Performance Bar Chart */}
         <Card className="glass border-primary/20" data-testid="chart-performance-bar">
           <CardHeader>
-            <CardTitle>Performance des campagnes</CardTitle>
+            <CardTitle>{t('analytics.campaignPerformance')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>

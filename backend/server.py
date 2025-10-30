@@ -146,22 +146,41 @@ class Contact(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     email: EmailStr
+    phone: Optional[str] = None  # Nouveau : numéro de téléphone
     tags: List[str] = []
     group: str = "general"
     active: bool = True
+    
+    # Nouveaux champs pour la gestion des membres
+    subscription_status: str = "non-subscriber"  # non-subscriber, active, expired, trial
+    subscription_start: Optional[datetime] = None
+    subscription_end: Optional[datetime] = None
+    membership_type: Optional[str] = None  # standard, premium, vip, etc.
+    
+    # Historique simplifié
+    total_courses_attended: int = 0
+    total_payments: float = 0.0
+    last_activity: Optional[datetime] = None
+    
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     stats: Dict = {"emails_received": 0, "emails_opened": 0, "emails_clicked": 0}
+    notes: Optional[str] = None  # Notes du coach
 
 class ContactCreate(BaseModel):
     name: str
     email: EmailStr
+    phone: Optional[str] = None
     tags: List[str] = []
     group: str = "general"
     active: bool = True
+    subscription_status: str = "non-subscriber"
+    membership_type: Optional[str] = None
+    notes: Optional[str] = None
 
 class ContactUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
+    phone: Optional[str] = None
     tags: Optional[List[str]] = None
     group: Optional[str] = None
     active: Optional[bool] = None

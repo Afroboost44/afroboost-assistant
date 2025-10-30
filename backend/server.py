@@ -227,6 +227,61 @@ class AIConversationResponse(BaseModel):
     context_used: str
 
 # Stripe/Payment Models
+class PricingPlan(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    name_en: str
+    name_de: str
+    price: float
+    currency: str = "CHF"
+    interval: str = "month"  # month, year
+    features_fr: List[str] = []
+    features_en: List[str] = []
+    features_de: List[str] = []
+    limits: Dict = {
+        "emails_per_month": 0,
+        "whatsapp_per_month": 0,
+        "contacts_max": 0,
+        "ai_enabled": False,
+        "whatsapp_enabled": False,
+        "multi_user": False
+    }
+    active: bool = True
+    highlighted: bool = False
+    order: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PricingPlanCreate(BaseModel):
+    name: str
+    name_en: str
+    name_de: str
+    price: float
+    currency: str = "CHF"
+    interval: str = "month"
+    features_fr: List[str] = []
+    features_en: List[str] = []
+    features_de: List[str] = []
+    limits: Dict = {}
+    active: bool = True
+    highlighted: bool = False
+    order: int = 0
+
+class PricingPlanUpdate(BaseModel):
+    name: Optional[str] = None
+    name_en: Optional[str] = None
+    name_de: Optional[str] = None
+    price: Optional[float] = None
+    currency: Optional[str] = None
+    interval: Optional[str] = None
+    features_fr: Optional[List[str]] = None
+    features_en: Optional[List[str]] = None
+    features_de: Optional[List[str]] = None
+    limits: Optional[Dict] = None
+    active: Optional[bool] = None
+    highlighted: Optional[bool] = None
+    order: Optional[int] = None
+
 class SubscriptionPlan(BaseModel):
     name: str
     price: float

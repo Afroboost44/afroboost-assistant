@@ -163,9 +163,9 @@ const WhatsAppCampaigns = () => {
         <div>
           <h1 className="text-4xl font-bold mb-2 flex items-center gap-3" data-testid="whatsapp-title">
             <MessageCircle className="h-10 w-10 text-primary" />
-            Campagnes WhatsApp
+            {t('whatsapp.title')}
           </h1>
-          <p className="text-gray-400">{campaigns.length} campagnes</p>
+          <p className="text-gray-400">{t('whatsapp.subtitle', { count: campaigns.length })}</p>
         </div>
         <Button
           onClick={() => setShowCreateDialog(true)}
@@ -173,7 +173,7 @@ const WhatsAppCampaigns = () => {
           data-testid="create-whatsapp-btn"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Créer une campagne
+          {t('whatsapp.createCampaign')}
         </Button>
       </div>
 

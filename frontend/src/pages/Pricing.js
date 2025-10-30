@@ -56,7 +56,9 @@ const Pricing = () => {
           {t('pricing.title')}
         </h1>
         <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-          Des plans adaptés à tous vos besoins d'email marketing, avec IA intégrée
+          {i18n.language === 'fr' && 'Des plans adaptés à tous vos besoins d\'email marketing, avec IA intégrée'}
+          {i18n.language === 'en' && 'Plans adapted to all your email marketing needs, with integrated AI'}
+          {i18n.language === 'de' && 'Pläne für alle Ihre E-Mail-Marketing-Bedürfnisse, mit integrierter KI'}
         </p>
       </div>
 

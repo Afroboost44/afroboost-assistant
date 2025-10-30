@@ -265,37 +265,46 @@ const Profile = () => {
           <div className="grid gap-3 md:grid-cols-2">
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
               <span className="text-white">OpenAI</span>
-              <Badge variant="outline" className="border-green-500 text-green-500">
-                {labels.configured}
+              <Badge variant="outline" className={settings?.openai_api_key ? "border-green-500 text-green-500" : "border-gray-500 text-gray-500"}>
+                {settings?.openai_api_key ? labels.configured : labels.notConfigured}
               </Badge>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
               <span className="text-white">Resend</span>
-              <Badge variant="outline" className="border-green-500 text-green-500">
-                {labels.configured}
+              <Badge variant="outline" className={settings?.resend_api_key ? "border-green-500 text-green-500" : "border-gray-500 text-gray-500"}>
+                {settings?.resend_api_key ? labels.configured : labels.notConfigured}
               </Badge>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
               <span className="text-white">WhatsApp</span>
-              <Badge variant="outline" className="border-gray-500 text-gray-500">
-                {labels.notConfigured}
+              <Badge variant="outline" className={settings?.whatsapp_access_token ? "border-green-500 text-green-500" : "border-gray-500 text-gray-500"}>
+                {settings?.whatsapp_access_token ? labels.configured : labels.notConfigured}
               </Badge>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
               <span className="text-white">Stripe</span>
-              <Badge variant="outline" className="border-gray-500 text-gray-500">
-                {labels.notConfigured}
+              <Badge variant="outline" className={settings?.stripe_publishable_key ? "border-green-500 text-green-500" : "border-gray-500 text-gray-500"}>
+                {settings?.stripe_publishable_key ? labels.configured : labels.notConfigured}
               </Badge>
             </div>
           </div>
-          <Button 
-            variant="link" 
-            className="mt-4 text-primary"
-            onClick={() => window.location.href = '/admin'}
-            data-testid="goto-admin-button"
-          >
-            {labels.settings} →
-          </Button>
+          <div className="flex gap-3 mt-4">
+            <Button 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setShowApiDialog(true)}
+              data-testid="configure-api-keys-button"
+            >
+              <Key className="mr-2 h-4 w-4" />
+              Configurer mes clés API
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/admin'}
+              data-testid="goto-admin-button"
+            >
+              {labels.settings} →
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

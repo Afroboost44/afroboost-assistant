@@ -155,7 +155,7 @@ const Calendar = () => {
             ) : (
               <div className="text-center py-12 text-gray-400" data-testid="no-campaigns-on-date">
                 <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-gray-600" />
-                <p>Aucune campagne prévue ce jour</p>
+                <p>{t('calendar.noCampaigns')}</p>
               </div>
             )}
           </CardContent>

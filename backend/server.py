@@ -397,6 +397,140 @@ async def get_contacts_by_filters(groups: List[str] = None, tags: List[str] = No
 
 
 # ========================
+# AUTH UTILITIES
+# ========================
+
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt"""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+def create_token(user_id: str, email: str, role: str) -> str:
+    """Create a JWT token"""
+    payload = {
+        "user_id": user_id,
+        "email": email,
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def decode_token(token: str) -> Dict:
+    """Decode and verify a JWT token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
+    """Get current user from JWT token"""
+    token = credentials.credentials
+    payload = decode_token(token)
+    
+    # Fetch user from database
+    user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0, "password": 0})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    return user
+
+async def require_admin(current_user: Dict = Depends(get_current_user)) -> Dict:
+    """Require admin role"""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user
+
+
+# ========================
+# ROUTES - AUTHENTICATION
+# ========================
+
+@api_router.post("/auth/register", response_model=AuthResponse)
+async def register(user_data: UserCreate):
+    """Register a new user. First user becomes admin."""
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Check if this is the first user
+    user_count = await db.users.count_documents({})
+    role = "admin" if user_count == 0 else "user"
+    
+    # Create user
+    user = User(
+        email=user_data.email,
+        name=user_data.name,
+        role=role
+    )
+    
+    # Hash password and store separately
+    user_dict = user.model_dump()
+    user_dict["password"] = hash_password(user_data.password)
+    user_dict["created_at"] = user_dict["created_at"].isoformat()
+    
+    await db.users.insert_one(user_dict)
+    
+    # Create token
+    token = create_token(user.id, user.email, user.role)
+    
+    # Return response
+    user_response = UserResponse(**user.model_dump())
+    return AuthResponse(user=user_response, token=token)
+
+@api_router.post("/auth/login", response_model=AuthResponse)
+async def login(credentials: UserLogin):
+    """Login user"""
+    # Find user
+    user = await db.users.find_one({"email": credentials.email})
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Verify password
+    if not verify_password(credentials.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Update last login
+    await db.users.update_one(
+        {"email": credentials.email},
+        {"$set": {"last_login": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Create token
+    token = create_token(user["id"], user["email"], user["role"])
+    
+    # Parse dates
+    if isinstance(user.get('created_at'), str):
+        user['created_at'] = datetime.fromisoformat(user['created_at'])
+    if isinstance(user.get('last_login'), str):
+        user['last_login'] = datetime.fromisoformat(user['last_login'])
+    
+    # Remove password from response
+    user.pop("password", None)
+    user_response = UserResponse(**user)
+    
+    return AuthResponse(user=user_response, token=token)
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_me(current_user: Dict = Depends(get_current_user)):
+    """Get current user info"""
+    # Parse dates
+    if isinstance(current_user.get('created_at'), str):
+        current_user['created_at'] = datetime.fromisoformat(current_user['created_at'])
+    if isinstance(current_user.get('last_login'), str):
+        current_user['last_login'] = datetime.fromisoformat(current_user['last_login'])
+    
+    return UserResponse(**current_user)
+
+
+# ========================
 # ROUTES - SETTINGS
 # ========================
 

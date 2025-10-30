@@ -12,6 +12,7 @@ import Analytics from '@/pages/Analytics';
 import Calendar from '@/pages/Calendar';
 import Admin from '@/pages/Admin';
 import Pricing from '@/pages/Pricing';
+import Profile from '@/pages/Profile';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </Layout>
       </BrowserRouter>

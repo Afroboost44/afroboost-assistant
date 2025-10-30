@@ -878,6 +878,612 @@ async def generate_ai_content(request: AIGenerateRequest):
         raise HTTPException(status_code=500, detail=f"Error generating content: {str(e)}")
 
 
+
+# ========================
+# ROUTES - WHATSAPP CAMPAIGNS
+# ========================
+
+@api_router.get("/whatsapp/campaigns", response_model=List[WhatsAppCampaign])
+async def get_whatsapp_campaigns():
+    """Get all WhatsApp campaigns"""
+    campaigns = await db.whatsapp_campaigns.find({}, {"_id": 0}).to_list(1000)
+    for campaign in campaigns:
+        for date_field in ['created_at', 'scheduled_at', 'sent_at']:
+            if campaign.get(date_field) and isinstance(campaign[date_field], str):
+                campaign[date_field] = datetime.fromisoformat(campaign[date_field])
+    return campaigns
+
+@api_router.post("/whatsapp/campaigns", response_model=WhatsAppCampaign)
+async def create_whatsapp_campaign(campaign_data: WhatsAppCampaignCreate):
+    """Create a new WhatsApp campaign"""
+    campaign = WhatsAppCampaign(**campaign_data.model_dump())
+    if campaign_data.scheduled_at:
+        campaign.status = "scheduled"
+    
+    doc = campaign.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('scheduled_at'):
+        doc['scheduled_at'] = doc['scheduled_at'].isoformat()
+    if doc.get('sent_at'):
+        doc['sent_at'] = doc['sent_at'].isoformat()
+    
+    await db.whatsapp_campaigns.insert_one(doc)
+    return campaign
+
+@api_router.put("/whatsapp/campaigns/{campaign_id}", response_model=WhatsAppCampaign)
+async def update_whatsapp_campaign(campaign_id: str, campaign_update: WhatsAppCampaignUpdate):
+    """Update a WhatsApp campaign"""
+    campaign = await db.whatsapp_campaigns.find_one({"id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    for date_field in ['created_at', 'scheduled_at', 'sent_at']:
+        if campaign.get(date_field) and isinstance(campaign[date_field], str):
+            campaign[date_field] = datetime.fromisoformat(campaign[date_field])
+    
+    campaign_obj = WhatsAppCampaign(**campaign)
+    update_data = campaign_update.model_dump(exclude_unset=True)
+    
+    for key, value in update_data.items():
+        setattr(campaign_obj, key, value)
+    
+    doc = campaign_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('scheduled_at'):
+        doc['scheduled_at'] = doc['scheduled_at'].isoformat()
+    if doc.get('sent_at'):
+        doc['sent_at'] = doc['sent_at'].isoformat()
+    
+    await db.whatsapp_campaigns.update_one({"id": campaign_id}, {"$set": doc})
+    return campaign_obj
+
+@api_router.post("/whatsapp/campaigns/{campaign_id}/send")
+async def send_whatsapp_campaign(campaign_id: str, background_tasks: BackgroundTasks):
+    """Send a WhatsApp campaign immediately"""
+    campaign = await db.whatsapp_campaigns.find_one({"id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    for date_field in ['created_at', 'scheduled_at', 'sent_at']:
+        if campaign.get(date_field) and isinstance(campaign[date_field], str):
+            campaign[date_field] = datetime.fromisoformat(campaign[date_field])
+    
+    campaign_obj = WhatsAppCampaign(**campaign)
+    
+    if campaign_obj.status == "sent":
+        raise HTTPException(status_code=400, detail="Campaign already sent")
+    
+    # Update status to sending
+    await db.whatsapp_campaigns.update_one(
+        {"id": campaign_id},
+        {"$set": {"status": "sending"}}
+    )
+    
+    # Send messages in background
+    background_tasks.add_task(send_whatsapp_campaign_messages, campaign_id)
+    
+    return {"message": "WhatsApp campaign is being sent", "campaign_id": campaign_id}
+
+async def send_whatsapp_campaign_messages(campaign_id: str):
+    """Background task to send WhatsApp campaign messages"""
+    try:
+        campaign = await db.whatsapp_campaigns.find_one({"id": campaign_id}, {"_id": 0})
+        if not campaign:
+            return
+        
+        for date_field in ['created_at', 'scheduled_at', 'sent_at']:
+            if campaign.get(date_field) and isinstance(campaign[date_field], str):
+                campaign[date_field] = datetime.fromisoformat(campaign[date_field])
+        
+        campaign_obj = WhatsAppCampaign(**campaign)
+        settings = await get_settings()
+        
+        # Check WhatsApp credentials
+        if not settings.whatsapp_access_token or not settings.whatsapp_phone_number_id:
+            logger.error("WhatsApp credentials not configured")
+            await db.whatsapp_campaigns.update_one(
+                {"id": campaign_id},
+                {"$set": {"status": "failed"}}
+            )
+            return
+        
+        # Initialize WhatsApp service
+        whatsapp = WhatsAppService(
+            access_token=settings.whatsapp_access_token,
+            phone_number_id=settings.whatsapp_phone_number_id
+        )
+        
+        # Get target contacts
+        contacts = await get_contacts_by_filters(
+            groups=campaign_obj.target_groups if campaign_obj.target_groups else None,
+            tags=campaign_obj.target_tags if campaign_obj.target_tags else None
+        )
+        
+        if not contacts:
+            logger.warning(f"No contacts found for WhatsApp campaign {campaign_id}")
+            await db.whatsapp_campaigns.update_one(
+                {"id": campaign_id},
+                {"$set": {"status": "failed"}}
+            )
+            return
+        
+        sent_count = 0
+        failed_count = 0
+        
+        for contact in contacts:
+            try:
+                # Assume phone stored in tags or add phone field to Contact model
+                phone = getattr(contact, 'phone', None)
+                if not phone:
+                    # Try to extract from tags
+                    phone_tags = [t for t in contact.tags if t.startswith('phone:')]
+                    if phone_tags:
+                        phone = phone_tags[0].replace('phone:', '')
+                
+                if not phone:
+                    logger.warning(f"No phone number for contact {contact.id}")
+                    failed_count += 1
+                    continue
+                
+                # Send WhatsApp message
+                result = whatsapp.send_text_message(
+                    to=phone,
+                    message=campaign_obj.message_content
+                )
+                
+                # Log message
+                whatsapp_msg = WhatsAppMessage(
+                    campaign_id=campaign_id,
+                    contact_id=contact.id,
+                    contact_phone=phone,
+                    direction="outbound",
+                    content=campaign_obj.message_content,
+                    status="sent"
+                )
+                msg_doc = whatsapp_msg.model_dump()
+                msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+                await db.whatsapp_messages.insert_one(msg_doc)
+                
+                sent_count += 1
+                
+            except Exception as e:
+                logger.error(f"Error sending WhatsApp to contact {contact.id}: {e}")
+                failed_count += 1
+                
+                # Log failed message
+                whatsapp_msg = WhatsAppMessage(
+                    campaign_id=campaign_id,
+                    contact_id=contact.id,
+                    contact_phone=phone if phone else "unknown",
+                    direction="outbound",
+                    content=campaign_obj.message_content,
+                    status="failed",
+                    error_message=str(e)
+                )
+                msg_doc = whatsapp_msg.model_dump()
+                msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+                await db.whatsapp_messages.insert_one(msg_doc)
+        
+        # Update campaign
+        await db.whatsapp_campaigns.update_one(
+            {"id": campaign_id},
+            {
+                "$set": {
+                    "status": "sent",
+                    "sent_at": datetime.now(timezone.utc).isoformat(),
+                    "stats.sent": sent_count,
+                    "stats.failed": failed_count
+                }
+            }
+        )
+        
+        logger.info(f"WhatsApp campaign {campaign_id} sent: {sent_count} sent, {failed_count} failed")
+        
+    except Exception as e:
+        logger.error(f"Error sending WhatsApp campaign {campaign_id}: {e}")
+        await db.whatsapp_campaigns.update_one(
+            {"id": campaign_id},
+            {"$set": {"status": "failed"}}
+        )
+
+
+# ========================
+# ROUTES - WHATSAPP WEBHOOK & MESSAGING
+# ========================
+
+@api_router.get("/whatsapp/webhook")
+async def verify_whatsapp_webhook(request: Request):
+    """Verify WhatsApp webhook"""
+    mode = request.query_params.get("hub.mode")
+    token = request.query_params.get("hub.token")
+    challenge = request.query_params.get("hub.challenge")
+    
+    settings = await get_settings()
+    verify_token = settings.whatsapp_verify_token or "afroboost_verify_token"
+    
+    result = WhatsAppService.verify_webhook(mode, token, challenge, verify_token)
+    
+    if result:
+        return JSONResponse(content=int(result))
+    else:
+        raise HTTPException(status_code=403, detail="Verification failed")
+
+@api_router.post("/whatsapp/webhook")
+async def handle_whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
+    """Handle incoming WhatsApp messages"""
+    try:
+        body = await request.json()
+        
+        # Process webhook
+        if body.get("object") == "whatsapp_business_account":
+            for entry in body.get("entry", []):
+                for change in entry.get("changes", []):
+                    value = change.get("value", {})
+                    
+                    # Handle incoming messages
+                    if "messages" in value:
+                        for message in value["messages"]:
+                            background_tasks.add_task(
+                                handle_incoming_whatsapp_message,
+                                message,
+                                value.get("contacts", [{}])[0]
+                            )
+                    
+                    # Handle message status updates
+                    if "statuses" in value:
+                        for status in value["statuses"]:
+                            background_tasks.add_task(
+                                update_whatsapp_message_status,
+                                status
+                            )
+        
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Error processing WhatsApp webhook: {e}")
+        return {"status": "error"}
+
+async def handle_incoming_whatsapp_message(message: Dict, contact_info: Dict):
+    """Handle incoming WhatsApp message with AI response"""
+    try:
+        from_phone = message.get("from")
+        message_content = message.get("text", {}).get("body", "")
+        message_id = message.get("id")
+        
+        if not message_content:
+            return
+        
+        # Find or create contact
+        contact = await db.contacts.find_one({"tags": f"phone:{from_phone}"}, {"_id": 0})
+        
+        if not contact:
+            # Create new contact
+            contact_name = contact_info.get("profile", {}).get("name", "Unknown")
+            new_contact = Contact(
+                name=contact_name,
+                email=f"{from_phone}@whatsapp.temp",
+                tags=[f"phone:{from_phone}", "whatsapp"],
+                group="whatsapp",
+                active=True
+            )
+            contact_doc = new_contact.model_dump()
+            contact_doc['created_at'] = contact_doc['created_at'].isoformat()
+            await db.contacts.insert_one(contact_doc)
+            contact = contact_doc
+        
+        contact_obj = Contact(**contact) if isinstance(contact, dict) else contact
+        
+        # Log incoming message
+        incoming_msg = WhatsAppMessage(
+            contact_id=contact_obj.id,
+            contact_phone=from_phone,
+            direction="inbound",
+            content=message_content,
+            status="received"
+        )
+        msg_doc = incoming_msg.model_dump()
+        msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+        await db.whatsapp_messages.insert_one(msg_doc)
+        
+        # Add to AI memory
+        await ai_memory.add_message(
+            contact_id=contact_obj.id,
+            role="user",
+            content=message_content,
+            channel="whatsapp"
+        )
+        
+        # Generate AI response
+        settings = await get_settings()
+        client = get_openai_client(settings.openai_api_key)
+        
+        # Get conversation context
+        context = await ai_memory.get_context_for_ai(
+            contact_id=contact_obj.id,
+            contact_name=contact_obj.name,
+            campaign_context="Message WhatsApp Afroboost"
+        )
+        
+        system_prompt = f"""Tu es l'assistant IA d'Afroboost, une entreprise de danse et fitness.
+Tu réponds aux messages WhatsApp de manière professionnelle, amicale et énergique.
+Tu peux répondre aux questions sur les cours, les tarifs et l'inscription.
+
+Plans Afroboost:
+- Starter: Gratuit, jusqu'à 100 emails/mois
+- Pro Coach: 49 CHF/mois, jusqu'à 5000 emails/mois, IA intégrée
+- Business: 149 CHF/mois, illimité
+
+{context}"""
+        
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message_content}
+            ],
+            temperature=0.7,
+            max_tokens=300
+        )
+        
+        ai_response = response.choices[0].message.content
+        
+        # Add AI response to memory
+        await ai_memory.add_message(
+            contact_id=contact_obj.id,
+            role="assistant",
+            content=ai_response,
+            channel="whatsapp"
+        )
+        
+        # Send AI response via WhatsApp
+        whatsapp = WhatsAppService(
+            access_token=settings.whatsapp_access_token,
+            phone_number_id=settings.whatsapp_phone_number_id
+        )
+        
+        whatsapp.send_text_message(to=from_phone, message=ai_response)
+        
+        # Log outgoing response
+        outgoing_msg = WhatsAppMessage(
+            contact_id=contact_obj.id,
+            contact_phone=from_phone,
+            direction="outbound",
+            content=ai_response,
+            status="sent"
+        )
+        out_doc = outgoing_msg.model_dump()
+        out_doc['timestamp'] = out_doc['timestamp'].isoformat()
+        await db.whatsapp_messages.insert_one(out_doc)
+        
+        # Mark original message as read
+        whatsapp.mark_message_read(message_id)
+        
+        logger.info(f"AI responded to WhatsApp message from {from_phone}")
+        
+    except Exception as e:
+        logger.error(f"Error handling incoming WhatsApp message: {e}")
+
+async def update_whatsapp_message_status(status: Dict):
+    """Update WhatsApp message status (delivered, read, etc.)"""
+    try:
+        message_id = status.get("id")
+        new_status = status.get("status")
+        
+        # Update in database
+        await db.whatsapp_messages.update_one(
+            {"id": message_id},
+            {"$set": {"status": new_status}}
+        )
+        
+        # Update campaign stats if applicable
+        message = await db.whatsapp_messages.find_one({"id": message_id}, {"_id": 0})
+        if message and message.get("campaign_id"):
+            stat_field = f"stats.{new_status}"
+            await db.whatsapp_campaigns.update_one(
+                {"id": message["campaign_id"]},
+                {"$inc": {stat_field: 1}}
+            )
+        
+    except Exception as e:
+        logger.error(f"Error updating WhatsApp message status: {e}")
+
+
+# ========================
+# ROUTES - AI CONVERSATION
+# ========================
+
+@api_router.post("/ai/conversation", response_model=AIConversationResponse)
+async def ai_conversation(request: AIConversationRequest):
+    """AI conversational response with memory"""
+    try:
+        settings = await get_settings()
+        client = get_openai_client(settings.openai_api_key)
+        
+        # Add user message to memory
+        await ai_memory.add_message(
+            contact_id=request.contact_id,
+            role="user",
+            content=request.message
+        )
+        
+        # Get conversation context
+        context = await ai_memory.get_context_for_ai(
+            contact_id=request.contact_id,
+            contact_name=request.contact_name,
+            campaign_context=request.campaign_context
+        )
+        
+        system_prompt = f"""Tu es l'assistant IA d'Afroboost, une entreprise de danse et fitness.
+Tu réponds aux messages de manière professionnelle, amicale et énergique en {request.language}.
+
+{context}"""
+        
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": request.message}
+            ],
+            temperature=0.7,
+            max_tokens=300
+        )
+        
+        ai_response = response.choices[0].message.content
+        
+        # Add AI response to memory
+        await ai_memory.add_message(
+            contact_id=request.contact_id,
+            role="assistant",
+            content=ai_response
+        )
+        
+        return AIConversationResponse(
+            response=ai_response,
+            context_used=context
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in AI conversation: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating response: {str(e)}")
+
+@api_router.get("/ai/conversation/{contact_id}/history")
+async def get_conversation_history(contact_id: str):
+    """Get conversation history for a contact"""
+    try:
+        history = await ai_memory.get_conversation_history(contact_id)
+        summary = await ai_memory.get_conversation_summary(contact_id)
+        
+        return {
+            "contact_id": contact_id,
+            "history": history,
+            "summary": summary
+        }
+    except Exception as e:
+        logger.error(f"Error getting conversation history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/ai/conversation/{contact_id}")
+async def clear_conversation_history(contact_id: str):
+    """Clear conversation history for a contact"""
+    try:
+        await ai_memory.clear_conversation(contact_id)
+        return {"message": "Conversation history cleared"}
+    except Exception as e:
+        logger.error(f"Error clearing conversation history: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
+# ROUTES - STRIPE PAYMENTS
+# ========================
+
+@api_router.post("/stripe/create-payment-intent")
+async def create_payment_intent(payment_data: PaymentIntent):
+    """Create a Stripe payment intent"""
+    try:
+        settings = await get_settings()
+        if not settings.stripe_secret_key:
+            raise HTTPException(status_code=400, detail="Stripe not configured")
+        
+        stripe.api_key = settings.stripe_secret_key
+        
+        intent = stripe.PaymentIntent.create(
+            amount=payment_data.amount,
+            currency=payment_data.currency,
+            receipt_email=payment_data.customer_email,
+            description=payment_data.description,
+            automatic_payment_methods={"enabled": True}
+        )
+        
+        return {
+            "client_secret": intent.client_secret,
+            "payment_intent_id": intent.id
+        }
+    except Exception as e:
+        logger.error(f"Error creating payment intent: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/stripe/create-subscription")
+async def create_subscription(subscription_data: SubscriptionCreate):
+    """Create a Stripe subscription"""
+    try:
+        settings = await get_settings()
+        if not settings.stripe_secret_key:
+            raise HTTPException(status_code=400, detail="Stripe not configured")
+        
+        stripe.api_key = settings.stripe_secret_key
+        
+        # Create customer
+        customer = stripe.Customer.create(
+            email=subscription_data.customer_email,
+            name=subscription_data.customer_name,
+            payment_method=subscription_data.payment_method_id,
+            invoice_settings={"default_payment_method": subscription_data.payment_method_id}
+        )
+        
+        # Create subscription
+        subscription = stripe.Subscription.create(
+            customer=customer.id,
+            items=[{"price": subscription_data.plan_id}],
+            expand=["latest_invoice.payment_intent"]
+        )
+        
+        return {
+            "subscription_id": subscription.id,
+            "customer_id": customer.id,
+            "status": subscription.status,
+            "client_secret": subscription.latest_invoice.payment_intent.client_secret
+        }
+    except Exception as e:
+        logger.error(f"Error creating subscription: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/stripe/webhook")
+async def handle_stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    try:
+        settings = await get_settings()
+        payload = await request.body()
+        sig_header = request.headers.get("stripe-signature")
+        
+        # Verify webhook signature (configure webhook secret in settings)
+        # event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+        
+        # For now, just parse the payload
+        event = await request.json()
+        
+        event_type = event.get("type")
+        
+        if event_type == "payment_intent.succeeded":
+            payment_intent = event["data"]["object"]
+            logger.info(f"Payment succeeded: {payment_intent['id']}")
+            # Handle successful payment (create user account, send email, etc.)
+        
+        elif event_type == "invoice.payment_succeeded":
+            invoice = event["data"]["object"]
+            subscription_id = invoice.get("subscription")
+            logger.info(f"Subscription payment succeeded: {subscription_id}")
+            # Update subscription status
+        
+        elif event_type == "customer.subscription.deleted":
+            subscription = event["data"]["object"]
+            logger.info(f"Subscription cancelled: {subscription['id']}")
+            # Handle subscription cancellation
+        
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Error processing Stripe webhook: {e}")
+        return {"status": "error"}
+
+@api_router.get("/stripe/config")
+async def get_stripe_config():
+    """Get Stripe publishable key"""
+    settings = await get_settings()
+    if not settings.stripe_publishable_key:
+        raise HTTPException(status_code=400, detail="Stripe not configured")
+    
+    return {"publishable_key": settings.stripe_publishable_key}
+
+
 # ========================
 # BASE ROUTES
 # ========================

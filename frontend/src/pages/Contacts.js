@@ -703,6 +703,49 @@ const Contacts = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Message Dialog */}
+      <Dialog open={showBulkMessageDialog} onOpenChange={setShowBulkMessageDialog}>
+        <DialogContent className="glass">
+          <DialogHeader>
+            <DialogTitle>Envoyer un message à {selectedContacts.length} contact(s)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="bulk-channel">Canal d'envoi</Label>
+              <Select value={bulkChannel} onValueChange={setBulkChannel}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">📧 Email</SelectItem>
+                  <SelectItem value="whatsapp">💬 WhatsApp</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="bulk-message">Message</Label>
+              <textarea
+                id="bulk-message"
+                value={bulkMessage}
+                onChange={(e) => setBulkMessage(e.target.value)}
+                placeholder="Votre message ici..."
+                className="w-full min-h-[150px] p-3 rounded-md bg-background border border-primary/20 text-white"
+                required
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setShowBulkMessageDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSendBulkMessage} className="bg-primary hover:bg-primary/90">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

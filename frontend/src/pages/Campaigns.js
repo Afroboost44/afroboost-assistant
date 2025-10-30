@@ -364,14 +364,17 @@ const Campaigns = () => {
               </div>
               <div>
                 <Label>{t('campaigns.content')}</Label>
-                <div className="border border-primary/20 rounded-lg overflow-hidden" data-testid="create-content-editor">
-                  <ReactQuill
-                    theme="snow"
-                    value={formData.content_html}
-                    onChange={(value) => setFormData({ ...formData, content_html: value })}
-                    modules={quillModules}
-                  />
-                </div>
+                <Textarea
+                  value={formData.content_html}
+                  onChange={(e) => setFormData({ ...formData, content_html: e.target.value })}
+                  placeholder="<p>Bonjour,</p><p>Votre contenu HTML ici...</p>"
+                  rows={10}
+                  className="font-mono text-sm"
+                  data-testid="create-content-editor"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Contenu HTML (utilisez des balises: &lt;p&gt;, &lt;strong&gt;, &lt;br&gt;, &lt;a&gt;)
+                </p>
               </div>
               <div>
                 <Label htmlFor="scheduled">{t('campaigns.schedule')} (optionnel)</Label>

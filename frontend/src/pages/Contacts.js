@@ -449,11 +449,20 @@ const Contacts = () => {
             <table className="w-full" data-testid="contacts-table">
               <thead>
                 <tr className="border-b border-primary/20">
+                  <th className="px-6 py-4 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
+                      onChange={handleSelectAll}
+                      className="rounded border-gray-300"
+                    />
+                  </th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">{t('contacts.name')}</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">{t('contacts.email')}</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Téléphone</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">{t('contacts.group')}</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">Statut</th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">{t('contacts.tags')}</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">{t('contacts.status')}</th>
                   <th className="px-6 py-4 text-right text-sm font-medium text-gray-400">{t('contacts.actions')}</th>
                 </tr>
               </thead>

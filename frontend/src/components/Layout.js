@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Mail, BarChart3, Calendar, Settings, CreditCard, Globe, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Mail, BarChart3, Calendar, Settings, CreditCard, Globe, Menu, X, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -20,6 +20,7 @@ const Layout = ({ children }) => {
     { name: t('nav.dashboard'), href: '/', icon: LayoutDashboard },
     { name: t('nav.contacts'), href: '/contacts', icon: Users },
     { name: t('nav.campaigns'), href: '/campaigns', icon: Mail },
+    { name: 'WhatsApp', href: '/whatsapp', icon: MessageCircle },
     { name: t('nav.analytics'), href: '/analytics', icon: BarChart3 },
     { name: t('nav.calendar'), href: '/calendar', icon: Calendar },
     { name: t('nav.admin'), href: '/admin', icon: Settings },

@@ -473,10 +473,22 @@ const Contacts = () => {
                     className="border-b border-primary/10 hover:bg-muted/30 transition-colors"
                     data-testid={`contact-row-${index}`}
                   >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedContacts.includes(contact.id)}
+                        onChange={() => handleSelectContact(contact.id)}
+                        className="rounded border-gray-300"
+                      />
+                    </td>
                     <td className="px-6 py-4 text-sm font-medium text-white">{contact.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-300">{contact.email}</td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{contact.phone || '-'}</td>
                     <td className="px-6 py-4 text-sm">
                       <Badge variant="outline" className="border-primary/30">{contact.group}</Badge>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {getStatusBadge(contact.subscription_status || 'non-subscriber')}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex flex-wrap gap-1">
@@ -487,11 +499,6 @@ const Contacts = () => {
                           <Badge variant="secondary" className="text-xs">+{contact.tags.length - 2}</Badge>
                         )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <Badge variant={contact.active ? 'default' : 'secondary'}>
-                        {contact.active ? t('contacts.active') : t('contacts.inactive')}
-                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">

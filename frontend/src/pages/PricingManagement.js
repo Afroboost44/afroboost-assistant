@@ -107,8 +107,8 @@ const PricingManagement = () => {
 
   if (loading) {
     return (
-      <div className=\"flex items-center justify-center h-full\" data-testid=\"pricing-mgmt-loading\">
-        <div className=\"text-2xl text-primary animate-pulse\">{t('common.loading')}</div>
+      <div className="flex items-center justify-center h-full" data-testid="pricing-mgmt-loading">
+        <div className="text-2xl text-primary animate-pulse">{t('common.loading')}</div>
       </div>
     );
   }

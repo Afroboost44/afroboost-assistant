@@ -33,15 +33,25 @@ const Contacts = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all'); // Nouveau filtre
+  const [selectedContacts, setSelectedContacts] = useState([]); // Sélection multiple
+  const [showBulkMessageDialog, setShowBulkMessageDialog] = useState(false); // Dialog message groupé
+  const [bulkMessage, setBulkMessage] = useState('');
+  const [bulkChannel, setBulkChannel] = useState('email');
+  const [contactsStats, setContactsStats] = useState(null); // Stats des contacts
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [currentContact, setCurrentContact] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '', // Nouveau champ
     group: 'general',
     tags: '',
-    active: true
+    active: true,
+    subscription_status: 'non-subscriber', // Nouveau champ
+    membership_type: '', // Nouveau champ
+    notes: '' // Nouveau champ
   });
   const fileInputRef = useRef(null);
 

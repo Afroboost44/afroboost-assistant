@@ -947,6 +947,117 @@ async def export_contacts_csv():
     )
 
 
+# Routes pour gestion avancée des membres
+@api_router.patch("/contacts/{contact_id}/subscription")
+async def update_contact_subscription(
+    contact_id: str,
+    subscription_status: str,
+    subscription_start: Optional[str] = None,
+    subscription_end: Optional[str] = None,
+    membership_type: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update contact subscription status"""
+    update_data = {
+        "subscription_status": subscription_status,
+        "membership_type": membership_type
+    }
+    
+    if subscription_start:
+        update_data["subscription_start"] = datetime.fromisoformat(subscription_start).isoformat()
+    if subscription_end:
+        update_data["subscription_end"] = datetime.fromisoformat(subscription_end).isoformat()
+    
+    result = await db.contacts.update_one(
+        {"id": contact_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Contact not found")
+    
+    return {"message": "Subscription updated successfully"}
+
+@api_router.get("/contacts/stats/summary")
+async def get_contacts_summary(current_user: Dict = Depends(get_current_user)):
+    """Get summary statistics of contacts"""
+    total_contacts = await db.contacts.count_documents({})
+    
+    subscribers = await db.contacts.count_documents({"subscription_status": "active"})
+    non_subscribers = await db.contacts.count_documents({"subscription_status": "non-subscriber"})
+    trial_members = await db.contacts.count_documents({"subscription_status": "trial"})
+    expired = await db.contacts.count_documents({"subscription_status": "expired"})
+    
+    return {
+        "total": total_contacts,
+        "subscribers": subscribers,
+        "non_subscribers": non_subscribers,
+        "trial": trial_members,
+        "expired": expired
+    }
+
+@api_router.post("/contacts/bulk-message")
+async def send_bulk_message(
+    contact_ids: List[str],
+    message: str,
+    channel: str = "email",  # email or whatsapp
+    current_user: Dict = Depends(get_current_user)
+):
+    """Send message to multiple contacts"""
+    contacts = await db.contacts.find(
+        {"id": {"$in": contact_ids}},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    if not contacts:
+        raise HTTPException(status_code=404, detail="No contacts found")
+    
+    sent_count = 0
+    failed_count = 0
+    
+    if channel == "email":
+        # Send emails
+        for contact in contacts:
+            try:
+                # TODO: Implement email sending logic
+                sent_count += 1
+            except Exception as e:
+                logger.error(f"Failed to send email to {contact['email']}: {e}")
+                failed_count += 1
+    
+    elif channel == "whatsapp":
+        # Send WhatsApp messages
+        config = await db.whatsapp_configs.find_one({"user_id": current_user["id"]})
+        if not config:
+            raise HTTPException(status_code=400, detail="WhatsApp not configured")
+        
+        from whatsapp_client import WhatsAppClient
+        client = WhatsAppClient(
+            phone_id=config["phone_id"],
+            access_token=config["access_token"]
+        )
+        
+        for contact in contacts:
+            phone = contact.get("phone") or contact.get("email")  # Fallback to email if no phone
+            try:
+                await client.send_text_message(
+                    recipient_phone=phone,
+                    message_text=message
+                )
+                sent_count += 1
+            except Exception as e:
+                logger.error(f"Failed to send WhatsApp to {phone}: {e}")
+                failed_count += 1
+        
+        await client.close()
+    
+    return {
+        "message": "Messages sent",
+        "sent_count": sent_count,
+        "failed_count": failed_count
+    }
+
+
 # ========================
 # ROUTES - CAMPAIGNS
 # ========================

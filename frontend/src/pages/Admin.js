@@ -88,9 +88,19 @@ const Admin = () => {
 
   return (
     <div className="space-y-6" data-testid="admin-page">
-      <div>
-        <h1 className="text-4xl font-bold mb-2" data-testid="admin-title">{t('admin.title')}</h1>
-        <p className="text-gray-400">Configuration complète de la plateforme</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-bold mb-2" data-testid="admin-title">{t('admin.title')}</h1>
+          <p className="text-gray-400">Configuration complète de la plateforme</p>
+        </div>
+        <Button
+          onClick={() => window.location.href = '/admin/pricing-plans'}
+          className="bg-primary hover:bg-primary/90"
+          data-testid="manage-pricing-button"
+        >
+          <CreditCard className="mr-2 h-4 w-4" />
+          Gérer les plans tarifaires
+        </Button>
       </div>
 
       <Tabs defaultValue="api" className="space-y-6">

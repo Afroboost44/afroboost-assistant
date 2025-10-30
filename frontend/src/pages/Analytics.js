@@ -51,15 +51,15 @@ const Analytics = () => {
     <div className="space-y-6" data-testid="analytics-page">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold mb-2" data-testid="analytics-title">{t('nav.analytics')}</h1>
-        <p className="text-gray-400">Analyse détaillée de vos performances</p>
+        <h1 className="text-4xl font-bold mb-2" data-testid="analytics-title">{t('analytics.title')}</h1>
+        <p className="text-gray-400">{t('analytics.subtitle')}</p>
       </div>
 
       {/* Overview Stats */}
       <div className="grid gap-6 md:grid-cols-4">
         <Card className="glass border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Total Envoyés</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">{t('analytics.totalSent')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gradient">{stats?.total_emails_sent || 0}</div>
@@ -67,7 +67,7 @@ const Analytics = () => {
         </Card>
         <Card className="glass border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Taux d'ouverture</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">{t('analytics.openRate')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-500">{stats?.open_rate || 0}%</div>
@@ -75,7 +75,7 @@ const Analytics = () => {
         </Card>
         <Card className="glass border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Taux de clic</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">{t('analytics.clickRate')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-500">{stats?.click_rate || 0}%</div>
@@ -83,7 +83,7 @@ const Analytics = () => {
         </Card>
         <Card className="glass border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Campagnes envoyées</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">{t('analytics.campaignsSent')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">{stats?.sent_campaigns || 0}</div>

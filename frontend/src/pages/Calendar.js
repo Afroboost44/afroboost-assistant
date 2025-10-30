@@ -71,8 +71,8 @@ const Calendar = () => {
     <div className="space-y-6" data-testid="calendar-page">
       {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold mb-2" data-testid="calendar-title">{t('nav.calendar')}</h1>
-        <p className="text-gray-400">Planifiez et visualisez vos campagnes</p>
+        <h1 className="text-4xl font-bold mb-2" data-testid="calendar-title">{t('calendar.title')}</h1>
+        <p className="text-gray-400">{t('calendar.subtitle')}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

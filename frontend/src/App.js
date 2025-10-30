@@ -13,6 +13,7 @@ import Calendar from '@/pages/Calendar';
 import Admin from '@/pages/Admin';
 import Pricing from '@/pages/Pricing';
 import Profile from '@/pages/Profile';
+import PricingManagement from '@/pages/PricingManagement';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/pricing-plans" element={<PricingManagement />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>

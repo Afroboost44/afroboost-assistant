@@ -81,7 +81,7 @@ const Calendar = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CalendarIcon className="h-5 w-5 text-primary" />
-              Calendrier des campagnes
+              {t('calendar.campaignCalendar')}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">

@@ -27,14 +27,14 @@ const Login = () => {
 
     if (result.success) {
       toast({
-        title: "✅ Connexion réussie",
-        description: `Bienvenue ${result.user.name} !`,
+        title: `✅ ${t('auth.login.success')}`,
+        description: `${t('auth.login.welcome')} ${result.user.name} !`,
       });
       navigate('/dashboard');
     } else {
       toast({
-        title: "❌ Erreur de connexion",
-        description: result.error || "Email ou mot de passe incorrect",
+        title: `❌ ${t('auth.login.error')}`,
+        description: result.error || t('auth.login.invalidCredentials'),
         variant: "destructive"
       });
     }
@@ -53,20 +53,20 @@ const Login = () => {
           <h1 className="text-4xl font-bold">
             <span className="text-gradient">Afroboost</span> Mailer
           </h1>
-          <p className="text-gray-400 mt-2">Marketing intelligent multicanal</p>
+          <p className="text-gray-400 mt-2">{t('nav.dashboard')}</p>
         </div>
 
         <Card className="glass border-primary/20">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Connexion</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('auth.login.title')}</CardTitle>
             <CardDescription className="text-center">
-              Connectez-vous à votre compte
+              {t('auth.login.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.login.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -82,7 +82,7 @@ const Login = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">{t('auth.login.password')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -105,12 +105,12 @@ const Login = () => {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Connexion...
+                    {t('auth.login.loading')}
                   </>
                 ) : (
                   <>
                     <LogIn className="mr-2 h-4 w-4" />
-                    Se connecter
+                    {t('auth.login.submit')}
                   </>
                 )}
               </Button>
@@ -118,16 +118,16 @@ const Login = () => {
 
             <div className="mt-6 text-center text-sm">
               <p className="text-gray-400">
-                Pas encore de compte ?{' '}
+                {t('auth.login.noAccount')}{' '}
                 <Link to="/register" className="text-primary hover:underline">
-                  Créer un compte
+                  {t('auth.login.createAccount')}
                 </Link>
               </p>
             </div>
 
             <div className="mt-4 text-center">
               <Link to="/" className="text-sm text-gray-400 hover:text-primary">
-                ← Retour à l'accueil
+                {t('auth.login.backHome')}
               </Link>
             </div>
           </CardContent>

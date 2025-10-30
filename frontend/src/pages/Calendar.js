@@ -165,7 +165,7 @@ const Calendar = () => {
       {/* All Scheduled Campaigns */}
       <Card className="glass border-primary/20">
         <CardHeader>
-          <CardTitle>Toutes les campagnes programmées</CardTitle>
+          <CardTitle>{t('calendar.allScheduled')}</CardTitle>
         </CardHeader>
         <CardContent>
           {scheduledCampaigns.length > 0 ? (

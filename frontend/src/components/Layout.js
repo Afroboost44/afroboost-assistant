@@ -23,6 +23,7 @@ const Layout = ({ children }) => {
     { name: 'WhatsApp', href: '/whatsapp', icon: MessageCircle },
     { name: t('nav.analytics'), href: '/analytics', icon: BarChart3 },
     { name: t('nav.calendar'), href: '/calendar', icon: Calendar },
+    { name: 'Profil', href: '/profile', icon: User },
     { name: t('nav.admin'), href: '/admin', icon: Settings },
     { name: t('nav.pricing'), href: '/pricing', icon: CreditCard },
   ];

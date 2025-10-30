@@ -486,6 +486,44 @@ const Contacts = () => {
                 />
               </div>
               <div>
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+41 XX XXX XX XX"
+                  data-testid="add-phone-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="subscription_status">Statut d'abonnement</Label>
+                <Select
+                  value={formData.subscription_status}
+                  onValueChange={(value) => setFormData({ ...formData, subscription_status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="non-subscriber">Non abonné</SelectItem>
+                    <SelectItem value="active">Abonné actif</SelectItem>
+                    <SelectItem value="trial">Essai gratuit</SelectItem>
+                    <SelectItem value="expired">Expiré</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="membership_type">Type d'abonnement</Label>
+                <Input
+                  id="membership_type"
+                  value={formData.membership_type}
+                  onChange={(e) => setFormData({ ...formData, membership_type: e.target.value })}
+                  placeholder="Standard, Premium, VIP..."
+                  data-testid="add-membership-input"
+                />
+              </div>
+              <div>
                 <Label htmlFor="group">{t('contacts.group')}</Label>
                 <Input
                   id="group"

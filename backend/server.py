@@ -574,6 +574,133 @@ async def update_admin_settings(settings_update: AdminSettingsUpdate):
 
 
 # ========================
+# ROUTES - PASSWORD RESET
+# ========================
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Send password reset email"""
+    # Check if user exists
+    user = await db.users.find_one({"email": request.email})
+    if not user:
+        # Don't reveal if email exists or not for security
+        return {"message": "If your email is registered, you will receive a password reset link"}
+    
+    # Generate reset token
+    reset_token = str(uuid.uuid4())
+    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    
+    # Save token to database
+    token_data = PasswordResetToken(
+        email=request.email,
+        token=reset_token,
+        expires_at=expires_at
+    )
+    token_dict = token_data.model_dump()
+    token_dict['expires_at'] = token_dict['expires_at'].isoformat()
+    token_dict['created_at'] = token_dict['created_at'].isoformat()
+    
+    await db.password_reset_tokens.insert_one(token_dict)
+    
+    # Get frontend URL from environment or use default
+    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    reset_link = f"{frontend_url}/reset-password?token={reset_token}"
+    
+    # Send email using Resend
+    resend_api_key = os.environ.get('RESEND_API_KEY')
+    if resend_api_key:
+        resend.api_key = resend_api_key
+        
+        try:
+            email_html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #D91CD2 0%, #8B5CF6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; }}
+                    .button {{ display: inline-block; padding: 15px 30px; background: #D91CD2; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                    .footer {{ text-align: center; padding: 20px; color: #666; font-size: 12px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🔐 Réinitialisation de mot de passe</h1>
+                    </div>
+                    <div class="content">
+                        <p>Bonjour,</p>
+                        <p>Vous avez demandé à réinitialiser votre mot de passe pour votre compte Afroboost Mailer.</p>
+                        <p>Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
+                        <p style="text-align: center;">
+                            <a href="{reset_link}" class="button">Réinitialiser mon mot de passe</a>
+                        </p>
+                        <p><strong>Ce lien est valide pendant 1 heure.</strong></p>
+                        <p>Si vous n'avez pas demandé cette réinitialisation, ignorez simplement cet email.</p>
+                        <p>Cordialement,<br>L'équipe Afroboost</p>
+                    </div>
+                    <div class="footer">
+                        <p>Afroboost Mailer - Marketing intelligent multicanal</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            resend.Emails.send({
+                "from": "Afroboost Mailer <onboarding@resend.dev>",
+                "to": request.email,
+                "subject": "🔐 Réinitialisation de votre mot de passe",
+                "html": email_html
+            })
+            
+            logger.info(f"Password reset email sent to {request.email}")
+        except Exception as e:
+            logger.error(f"Failed to send email: {str(e)}")
+            # Don't fail the request if email fails
+    else:
+        logger.warning(f"RESEND_API_KEY not set. Reset link: {reset_link}")
+    
+    return {"message": "If your email is registered, you will receive a password reset link"}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """Reset password with token"""
+    # Find valid token
+    token = await db.password_reset_tokens.find_one({
+        "token": request.token,
+        "used": False
+    })
+    
+    if not token:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    
+    # Check if token expired
+    expires_at = datetime.fromisoformat(token['expires_at']) if isinstance(token['expires_at'], str) else token['expires_at']
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Reset token has expired")
+    
+    # Update user password
+    new_password_hash = hash_password(request.new_password)
+    await db.users.update_one(
+        {"email": token['email']},
+        {"$set": {"password": new_password_hash}}
+    )
+    
+    # Mark token as used
+    await db.password_reset_tokens.update_one(
+        {"token": request.token},
+        {"$set": {"used": True}}
+    )
+    
+    logger.info(f"Password reset successful for {token['email']}")
+    
+    return {"message": "Password reset successful"}
+
+
+# ========================
 # ROUTES - CONTACTS
 # ========================
 

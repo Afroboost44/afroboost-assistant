@@ -195,17 +195,6 @@ const Campaigns = () => {
     );
   };
 
-  const quillModules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link', 'image'],
-      ['clean']
-    ]
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full" data-testid="campaigns-loading">

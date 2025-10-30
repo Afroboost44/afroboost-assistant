@@ -108,6 +108,95 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
+# Catalog & Reservations Models
+class CatalogItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # Coach/seller ID
+    title: str
+    description: str
+    category: str  # course, event, product
+    price: float
+    currency: str = "CHF"
+    image_url: Optional[str] = None
+    stock_quantity: Optional[int] = None  # None = unlimited
+    max_attendees: Optional[int] = None  # For events/courses
+    current_attendees: int = 0
+    
+    # Event/Course specific fields
+    event_date: Optional[datetime] = None
+    event_duration: Optional[int] = None  # Duration in minutes
+    location: Optional[str] = None
+    
+    # Status
+    is_active: bool = True
+    is_published: bool = True
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CatalogItemCreate(BaseModel):
+    title: str
+    description: str
+    category: str
+    price: float
+    currency: str = "CHF"
+    image_url: Optional[str] = None
+    stock_quantity: Optional[int] = None
+    max_attendees: Optional[int] = None
+    event_date: Optional[str] = None
+    event_duration: Optional[int] = None
+    location: Optional[str] = None
+
+class CatalogItemUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    stock_quantity: Optional[int] = None
+    max_attendees: Optional[int] = None
+    is_active: Optional[bool] = None
+    is_published: Optional[bool] = None
+
+class Reservation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    catalog_item_id: str
+    user_id: str  # Coach/seller ID
+    
+    # Customer info
+    customer_name: str
+    customer_email: EmailStr
+    customer_phone: Optional[str] = None
+    
+    # Reservation details
+    quantity: int = 1
+    total_price: float
+    currency: str = "CHF"
+    
+    # Payment info
+    payment_method: Optional[str] = None  # stripe, twint, cash, bank_transfer
+    payment_status: str = "pending"  # pending, completed, failed, refunded
+    payment_intent_id: Optional[str] = None  # Stripe payment intent ID
+    
+    # Status
+    status: str = "pending"  # pending, confirmed, cancelled, completed
+    
+    # Timestamps
+    reservation_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    notes: Optional[str] = None
+
+class ReservationCreate(BaseModel):
+    catalog_item_id: str
+    customer_name: str
+    customer_email: EmailStr
+    customer_phone: Optional[str] = None
+    quantity: int = 1
+    payment_method: str = "stripe"
+    notes: Optional[str] = None
+
 class AdminSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

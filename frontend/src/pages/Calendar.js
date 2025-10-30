@@ -109,10 +109,13 @@ const Calendar = () => {
         <Card className="glass border-primary/20" data-testid="scheduled-campaigns">
           <CardHeader>
             <CardTitle>
-              Campagnes prévues le {selectedDate.toLocaleDateString(i18n.language, { 
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
+              {t('calendar.scheduledCampaigns', { 
+                date: selectedDate.toLocaleDateString(i18n.language, { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })
               })}
             </CardTitle>
           </CardHeader>

@@ -57,15 +57,31 @@ const Contacts = () => {
 
   useEffect(() => {
     fetchContacts();
+    fetchContactsStats();
   }, []);
 
   useEffect(() => {
     filterContacts();
-  }, [contacts, searchQuery, selectedGroup]);
+  }, [contacts, searchQuery, selectedGroup, selectedStatus]);
+
+  const fetchContactsStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/contacts/stats/summary`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setContactsStats(response.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
   const fetchContacts = async () => {
     try {
-      const response = await axios.get(`${API}/contacts`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/contacts`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setContacts(response.data);
     } catch (error) {
       console.error('Error fetching contacts:', error);
@@ -81,12 +97,17 @@ const Contacts = () => {
     if (searchQuery) {
       filtered = filtered.filter(contact =>
         contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        contact.email.toLowerCase().includes(searchQuery.toLowerCase())
+        contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (contact.phone && contact.phone.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
     if (selectedGroup !== 'all') {
       filtered = filtered.filter(contact => contact.group === selectedGroup);
+    }
+
+    if (selectedStatus !== 'all') {
+      filtered = filtered.filter(contact => contact.subscription_status === selectedStatus);
     }
 
     setFilteredContacts(filtered);

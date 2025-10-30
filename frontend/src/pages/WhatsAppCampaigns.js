@@ -225,7 +225,7 @@ const WhatsAppCampaigns = () => {
       {campaigns.length === 0 && (
         <Card className="glass border-primary/20">
           <CardContent className="py-12 text-center text-gray-400">
-            Aucune campagne WhatsApp. Cliquez sur "Créer une campagne" pour commencer.
+            {t('whatsapp.noCampaigns')}
           </CardContent>
         </Card>
       )}
@@ -236,7 +236,7 @@ const WhatsAppCampaigns = () => {
             <DialogTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-primary" />
-                Créer une campagne WhatsApp
+                {t('whatsapp.createCampaign')}
               </span>
               <Button
                 type="button"

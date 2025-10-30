@@ -307,6 +307,101 @@ const Profile = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* API Keys Configuration Dialog */}
+      <Dialog open={showApiDialog} onOpenChange={setShowApiDialog}>
+        <DialogContent className="glass max-w-2xl" data-testid="api-keys-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-primary" />
+              Configurer mes clés API
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="openai">Clé API OpenAI (GPT-4-Turbo)</Label>
+              <Input
+                id="openai"
+                type="password"
+                value={apiFormData.openai_api_key}
+                onChange={(e) => setApiFormData({ ...apiFormData, openai_api_key: e.target.value })}
+                placeholder="sk-proj-..."
+                className="font-mono"
+                data-testid="openai-key-input"
+              />
+              <p className="text-xs text-gray-400">
+                Générer du contenu email/WhatsApp avec IA
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="resend">Clé API Resend</Label>
+              <Input
+                id="resend"
+                type="password"
+                value={apiFormData.resend_api_key}
+                onChange={(e) => setApiFormData({ ...apiFormData, resend_api_key: e.target.value })}
+                placeholder="re_..."
+                className="font-mono"
+                data-testid="resend-key-input"
+              />
+              <p className="text-xs text-gray-400">
+                Envoyer des emails HTML professionnels
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp-token">WhatsApp Access Token</Label>
+              <Input
+                id="whatsapp-token"
+                type="password"
+                value={apiFormData.whatsapp_access_token}
+                onChange={(e) => setApiFormData({ ...apiFormData, whatsapp_access_token: e.target.value })}
+                placeholder="EAAG..."
+                className="font-mono"
+                data-testid="whatsapp-token-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp-phone">WhatsApp Phone Number ID</Label>
+              <Input
+                id="whatsapp-phone"
+                type="text"
+                value={apiFormData.whatsapp_phone_number_id}
+                onChange={(e) => setApiFormData({ ...apiFormData, whatsapp_phone_number_id: e.target.value })}
+                placeholder="123456789012345"
+                className="font-mono"
+                data-testid="whatsapp-phone-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stripe-key">Stripe Publishable Key</Label>
+              <Input
+                id="stripe-key"
+                type="text"
+                value={apiFormData.stripe_publishable_key}
+                onChange={(e) => setApiFormData({ ...apiFormData, stripe_publishable_key: e.target.value })}
+                placeholder="pk_live_..."
+                className="font-mono"
+                data-testid="stripe-key-input"
+              />
+              <p className="text-xs text-gray-400">
+                Accepter les paiements via Stripe
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setShowApiDialog(false)}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleSaveApiKeys}
+              className="bg-primary hover:bg-primary/90" 
+              data-testid="save-api-keys-button"
+            >
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

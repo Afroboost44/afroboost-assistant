@@ -123,7 +123,7 @@ const Layout = ({ children }) => {
                 className="w-full justify-start text-gray-300 hover:text-primary hover:bg-primary/20"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Déconnexion
+                {t('auth.logout')}
               </Button>
             </div>
           </div>

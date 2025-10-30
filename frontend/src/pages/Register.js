@@ -27,8 +27,8 @@ const Register = () => {
     // Validation
     if (password !== confirmPassword) {
       toast({
-        title: "❌ Erreur",
-        description: "Les mots de passe ne correspondent pas",
+        title: `❌ ${t('common.error')}`,
+        description: t('auth.register.passwordMismatch'),
         variant: "destructive"
       });
       return;
@@ -36,8 +36,8 @@ const Register = () => {
 
     if (password.length < 6) {
       toast({
-        title: "❌ Erreur",
-        description: "Le mot de passe doit contenir au moins 6 caractères",
+        title: `❌ ${t('common.error')}`,
+        description: t('auth.register.passwordTooShort'),
         variant: "destructive"
       });
       return;
@@ -48,17 +48,19 @@ const Register = () => {
     const result = await register(name, email, password);
 
     if (result.success) {
+      const welcomeMessage = result.user.role === 'admin' 
+        ? t('auth.register.welcomeAdmin', { name: result.user.name })
+        : t('auth.register.welcomeUser', { name: result.user.name });
+      
       toast({
-        title: "✅ Compte créé avec succès",
-        description: result.user.role === 'admin' 
-          ? `Bienvenue ${result.user.name} ! Vous êtes administrateur.`
-          : `Bienvenue ${result.user.name} !`,
+        title: `✅ ${t('auth.register.success')}`,
+        description: welcomeMessage,
       });
       navigate('/dashboard');
     } else {
       toast({
-        title: "❌ Erreur d'inscription",
-        description: result.error || "Une erreur est survenue",
+        title: `❌ ${t('auth.register.error')}`,
+        description: result.error || t('common.error'),
         variant: "destructive"
       });
     }
@@ -77,20 +79,20 @@ const Register = () => {
           <h1 className="text-4xl font-bold">
             <span className="text-gradient">Afroboost</span> Mailer
           </h1>
-          <p className="text-gray-400 mt-2">Marketing intelligent multicanal</p>
+          <p className="text-gray-400 mt-2">{t('nav.dashboard')}</p>
         </div>
 
         <Card className="glass border-primary/20">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Créer un compte</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('auth.register.title')}</CardTitle>
             <CardDescription className="text-center">
-              Commencez gratuitement dès aujourd'hui
+              {t('auth.register.subtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Nom complet</Label>
+                <Label htmlFor="name">{t('auth.register.name')}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -106,7 +108,7 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth.register.email')}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -122,7 +124,7 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
+                <Label htmlFor="password">{t('auth.register.password')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -139,7 +141,7 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirmPassword">{t('auth.register.confirmPassword')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -163,12 +165,12 @@ const Register = () => {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Création...
+                    {t('auth.register.loading')}
                   </>
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Créer mon compte
+                    {t('auth.register.submit')}
                   </>
                 )}
               </Button>
@@ -176,16 +178,16 @@ const Register = () => {
 
             <div className="mt-6 text-center text-sm">
               <p className="text-gray-400">
-                Vous avez déjà un compte ?{' '}
+                {t('auth.register.hasAccount')}{' '}
                 <Link to="/login" className="text-primary hover:underline">
-                  Se connecter
+                  {t('auth.register.login')}
                 </Link>
               </p>
             </div>
 
             <div className="mt-4 text-center">
               <Link to="/" className="text-sm text-gray-400 hover:text-primary">
-                ← Retour à l'accueil
+                {t('auth.register.backHome')}
               </Link>
             </div>
           </CardContent>

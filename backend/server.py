@@ -1539,6 +1539,217 @@ async def get_stripe_config():
     return {"publishable_key": settings.stripe_publishable_key}
 
 
+
+# ========================
+# ROUTES - PRICING PLANS (ADMIN)
+# ========================
+
+@api_router.get("/pricing-plans", response_model=List[PricingPlan])
+async def get_pricing_plans(active_only: bool = False):
+    """Get all pricing plans"""
+    query = {"active": True} if active_only else {}
+    plans = await db.pricing_plans.find(query, {"_id": 0}).to_list(100)
+    
+    for plan in plans:
+        if isinstance(plan.get('created_at'), str):
+            plan['created_at'] = datetime.fromisoformat(plan['created_at'])
+    
+    # Sort by order
+    plans.sort(key=lambda x: x.get('order', 0))
+    return plans
+
+@api_router.get("/pricing-plans/{plan_id}", response_model=PricingPlan)
+async def get_pricing_plan(plan_id: str):
+    """Get a specific pricing plan"""
+    plan = await db.pricing_plans.find_one({"id": plan_id}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Pricing plan not found")
+    
+    if isinstance(plan.get('created_at'), str):
+        plan['created_at'] = datetime.fromisoformat(plan['created_at'])
+    
+    return plan
+
+@api_router.post("/pricing-plans", response_model=PricingPlan)
+async def create_pricing_plan(plan_data: PricingPlanCreate):
+    """Create a new pricing plan"""
+    plan = PricingPlan(**plan_data.model_dump())
+    
+    doc = plan.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.pricing_plans.insert_one(doc)
+    return plan
+
+@api_router.put("/pricing-plans/{plan_id}", response_model=PricingPlan)
+async def update_pricing_plan(plan_id: str, plan_update: PricingPlanUpdate):
+    """Update a pricing plan"""
+    plan = await db.pricing_plans.find_one({"id": plan_id}, {"_id": 0})
+    if not plan:
+        raise HTTPException(status_code=404, detail="Pricing plan not found")
+    
+    if isinstance(plan.get('created_at'), str):
+        plan['created_at'] = datetime.fromisoformat(plan['created_at'])
+    
+    plan_obj = PricingPlan(**plan)
+    update_data = plan_update.model_dump(exclude_unset=True)
+    
+    for key, value in update_data.items():
+        setattr(plan_obj, key, value)
+    
+    doc = plan_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.pricing_plans.update_one({"id": plan_id}, {"$set": doc})
+    return plan_obj
+
+@api_router.delete("/pricing-plans/{plan_id}")
+async def delete_pricing_plan(plan_id: str):
+    """Delete a pricing plan"""
+    result = await db.pricing_plans.delete_one({"id": plan_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Pricing plan not found")
+    return {"message": "Pricing plan deleted successfully"}
+
+@api_router.post("/pricing-plans/initialize")
+async def initialize_default_plans():
+    """Initialize default pricing plans (run once)"""
+    # Check if plans already exist
+    existing = await db.pricing_plans.count_documents({})
+    if existing > 0:
+        raise HTTPException(status_code=400, detail="Pricing plans already initialized")
+    
+    default_plans = [
+        PricingPlan(
+            name="Starter",
+            name_en="Starter",
+            name_de="Starter",
+            price=0,
+            currency="CHF",
+            interval="month",
+            features_fr=[
+                "Jusqu'à 100 emails/mois",
+                "1 utilisateur",
+                "Templates simples",
+                "Support par email"
+            ],
+            features_en=[
+                "Up to 100 emails/month",
+                "1 user",
+                "Basic templates",
+                "Email support"
+            ],
+            features_de=[
+                "Bis zu 100 E-Mails/Monat",
+                "1 Benutzer",
+                "Einfache Vorlagen",
+                "E-Mail-Support"
+            ],
+            limits={
+                "emails_per_month": 100,
+                "whatsapp_per_month": 0,
+                "contacts_max": 500,
+                "ai_enabled": False,
+                "whatsapp_enabled": False,
+                "multi_user": False
+            },
+            active=True,
+            highlighted=False,
+            order=1
+        ),
+        PricingPlan(
+            name="Pro Coach",
+            name_en="Pro Coach",
+            name_de="Pro Coach",
+            price=49,
+            currency="CHF",
+            interval="month",
+            features_fr=[
+                "Jusqu'à 5000 emails/mois",
+                "IA Afroboost intégrée",
+                "Relances automatiques",
+                "Tableau de bord complet",
+                "Support prioritaire"
+            ],
+            features_en=[
+                "Up to 5000 emails/month",
+                "Afroboost AI integrated",
+                "Automatic follow-ups",
+                "Complete dashboard",
+                "Priority support"
+            ],
+            features_de=[
+                "Bis zu 5000 E-Mails/Monat",
+                "Afroboost KI integriert",
+                "Automatische Nachverfolgung",
+                "Vollständiges Dashboard",
+                "Prioritätssupport"
+            ],
+            limits={
+                "emails_per_month": 5000,
+                "whatsapp_per_month": 1000,
+                "contacts_max": 10000,
+                "ai_enabled": True,
+                "whatsapp_enabled": True,
+                "multi_user": False
+            },
+            active=True,
+            highlighted=True,
+            order=2
+        ),
+        PricingPlan(
+            name="Business",
+            name_en="Business",
+            name_de="Business",
+            price=149,
+            currency="CHF",
+            interval="month",
+            features_fr=[
+                "Emails illimités",
+                "Multi-utilisateurs",
+                "IA avancée",
+                "Intégration WhatsApp",
+                "Branding personnalisé",
+                "Support dédié 24/7"
+            ],
+            features_en=[
+                "Unlimited emails",
+                "Multi-user access",
+                "Advanced AI",
+                "WhatsApp integration",
+                "Custom branding",
+                "24/7 dedicated support"
+            ],
+            features_de=[
+                "Unbegrenzte E-Mails",
+                "Multi-Benutzer-Zugriff",
+                "Erweiterte KI",
+                "WhatsApp-Integration",
+                "Individuelles Branding",
+                "24/7 dedizierter Support"
+            ],
+            limits={
+                "emails_per_month": -1,  # -1 = unlimited
+                "whatsapp_per_month": -1,
+                "contacts_max": -1,
+                "ai_enabled": True,
+                "whatsapp_enabled": True,
+                "multi_user": True
+            },
+            active=True,
+            highlighted=False,
+            order=3
+        )
+    ]
+    
+    for plan in default_plans:
+        doc = plan.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        await db.pricing_plans.insert_one(doc)
+    
+    return {"message": "Default pricing plans initialized successfully", "count": len(default_plans)}
+
+
 # ========================
 # BASE ROUTES
 # ========================

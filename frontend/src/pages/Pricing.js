@@ -8,11 +8,17 @@ import { Badge } from '@/components/ui/badge';
 const Pricing = () => {
   const { t } = useTranslation();
 
+  const descriptions = {
+    fr: ['Pour découvrir la plateforme', 'Pour les coachs et formateurs', 'Pour les entreprises'],
+    en: ['To discover the platform', 'For coaches and trainers', 'For businesses'],
+    de: ['Um die Plattform zu entdecken', 'Für Trainer und Coaches', 'Für Unternehmen']
+  };
+
   const plans = [
     {
       name: t('pricing.starter.name'),
       price: t('pricing.starter.price'),
-      description: 'Pour découvrir la plateforme',
+      description: descriptions[i18n.language]?.[0] || descriptions.fr[0],
       features: t('pricing.starter.features', { returnObjects: true }),
       cta: t('pricing.tryNow'),
       highlighted: false,
@@ -21,7 +27,7 @@ const Pricing = () => {
     {
       name: t('pricing.pro.name'),
       price: t('pricing.pro.price'),
-      description: 'Pour les coachs et formateurs',
+      description: descriptions[i18n.language]?.[1] || descriptions.fr[1],
       features: t('pricing.pro.features', { returnObjects: true }),
       cta: t('pricing.subscribe'),
       highlighted: true,
@@ -30,7 +36,7 @@ const Pricing = () => {
     {
       name: t('pricing.business.name'),
       price: t('pricing.business.price'),
-      description: 'Pour les entreprises',
+      description: descriptions[i18n.language]?.[2] || descriptions.fr[2],
       features: t('pricing.business.features', { returnObjects: true }),
       cta: t('pricing.subscribe'),
       highlighted: false,

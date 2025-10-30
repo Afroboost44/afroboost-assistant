@@ -745,6 +745,253 @@ async def reset_password(request: ResetPasswordRequest):
 
 
 # ========================
+# ROUTES - WHATSAPP
+# ========================
+
+@api_router.post("/whatsapp/config")
+async def configure_whatsapp(
+    phone_id: str,
+    access_token: str,
+    business_account_id: str,
+    phone_number: str,
+    display_name: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Configure WhatsApp credentials for user"""
+    try:
+        # Test credentials by creating client
+        from whatsapp_client import WhatsAppClient
+        client = WhatsAppClient(phone_id=phone_id, access_token=access_token)
+        await client.close()
+        
+        # Save or update config
+        existing_config = await db.whatsapp_configs.find_one({"user_id": current_user["id"]})
+        
+        config_data = {
+            "user_id": current_user["id"],
+            "phone_id": phone_id,
+            "access_token": access_token,
+            "business_account_id": business_account_id,
+            "phone_number": phone_number,
+            "display_name": display_name,
+            "is_configured": True,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        if existing_config:
+            await db.whatsapp_configs.update_one(
+                {"user_id": current_user["id"]},
+                {"$set": config_data}
+            )
+        else:
+            config_data["id"] = str(uuid.uuid4())
+            config_data["created_at"] = datetime.now(timezone.utc).isoformat()
+            await db.whatsapp_configs.insert_one(config_data)
+        
+        return {"message": "WhatsApp configured successfully", "configured": True}
+    except Exception as e:
+        logger.error(f"Failed to configure WhatsApp: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid WhatsApp credentials: {str(e)}")
+
+@api_router.get("/whatsapp/config")
+async def get_whatsapp_config(current_user: Dict = Depends(get_current_user)):
+    """Get WhatsApp configuration for user"""
+    config = await db.whatsapp_configs.find_one(
+        {"user_id": current_user["id"]},
+        {"_id": 0, "access_token": 0}  # Don't return access token
+    )
+    
+    if not config:
+        return {"configured": False}
+    
+    return {"configured": True, "config": config}
+
+@api_router.post("/whatsapp/campaigns")
+async def create_whatsapp_campaign(
+    title: str,
+    message: str,
+    target_contacts: List[str] = [],
+    target_tags: List[str] = [],
+    target_groups: List[str] = [],
+    scheduled_at: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create WhatsApp campaign"""
+    campaign = WhatsAppCampaign(
+        user_id=current_user["id"],
+        title=title,
+        message=message,
+        target_contacts=target_contacts,
+        target_tags=target_tags,
+        target_groups=target_groups,
+        scheduled_at=datetime.fromisoformat(scheduled_at) if scheduled_at else None,
+        status="draft"
+    )
+    
+    campaign_dict = campaign.model_dump()
+    campaign_dict["created_at"] = campaign_dict["created_at"].isoformat()
+    campaign_dict["updated_at"] = campaign_dict["updated_at"].isoformat()
+    if campaign_dict.get("scheduled_at"):
+        campaign_dict["scheduled_at"] = campaign_dict["scheduled_at"].isoformat()
+    
+    await db.whatsapp_campaigns.insert_one(campaign_dict)
+    
+    return {"message": "Campaign created", "campaign_id": campaign.id}
+
+@api_router.get("/whatsapp/campaigns")
+async def get_whatsapp_campaigns(current_user: Dict = Depends(get_current_user)):
+    """Get all WhatsApp campaigns for user"""
+    campaigns = await db.whatsapp_campaigns.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Parse dates
+    for campaign in campaigns:
+        if isinstance(campaign.get('created_at'), str):
+            campaign['created_at'] = datetime.fromisoformat(campaign['created_at'])
+        if isinstance(campaign.get('updated_at'), str):
+            campaign['updated_at'] = datetime.fromisoformat(campaign['updated_at'])
+        if isinstance(campaign.get('scheduled_at'), str):
+            campaign['scheduled_at'] = datetime.fromisoformat(campaign['scheduled_at'])
+    
+    return campaigns
+
+@api_router.post("/whatsapp/campaigns/{campaign_id}/send")
+async def send_whatsapp_campaign(
+    campaign_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Send WhatsApp campaign"""
+    from whatsapp_client import WhatsAppClient
+    
+    # Get campaign
+    campaign = await db.whatsapp_campaigns.find_one({
+        "id": campaign_id,
+        "user_id": current_user["id"]
+    })
+    
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Get WhatsApp config
+    config = await db.whatsapp_configs.find_one({"user_id": current_user["id"]})
+    
+    if not config or not config.get("is_configured"):
+        raise HTTPException(status_code=400, detail="WhatsApp not configured")
+    
+    # Get target contacts
+    target_phones = []
+    
+    # Get contacts by IDs
+    if campaign.get("target_contacts"):
+        contacts = await db.contacts.find(
+            {"id": {"$in": campaign["target_contacts"]}},
+            {"_id": 0}
+        ).to_list(length=None)
+        target_phones.extend([c.get("email") for c in contacts if c.get("email")])  # Using email as phone for now
+    
+    # Get contacts by tags
+    if campaign.get("target_tags"):
+        contacts = await db.contacts.find(
+            {"tags": {"$in": campaign["target_tags"]}},
+            {"_id": 0}
+        ).to_list(length=None)
+        target_phones.extend([c.get("email") for c in contacts if c.get("email")])
+    
+    # Get contacts by groups
+    if campaign.get("target_groups"):
+        contacts = await db.contacts.find(
+            {"groups": {"$in": campaign["target_groups"]}},
+            {"_id": 0}
+        ).to_list(length=None)
+        target_phones.extend([c.get("email") for c in contacts if c.get("email")])
+    
+    # Remove duplicates
+    target_phones = list(set(target_phones))
+    
+    if not target_phones:
+        raise HTTPException(status_code=400, detail="No target contacts found")
+    
+    # Initialize WhatsApp client
+    client = WhatsAppClient(
+        phone_id=config["phone_id"],
+        access_token=config["access_token"]
+    )
+    
+    # Send messages
+    sent_count = 0
+    failed_count = 0
+    
+    for phone in target_phones:
+        try:
+            # Send message
+            response = await client.send_text_message(
+                recipient_phone=phone,
+                message_text=campaign["message"]
+            )
+            
+            # Store message record
+            wa_message = WhatsAppMessage(
+                campaign_id=campaign_id,
+                user_id=current_user["id"],
+                recipient_phone=phone,
+                message_text=campaign["message"],
+                wa_message_id=response.get("messages", [{}])[0].get("id"),
+                status="sent"
+            )
+            
+            msg_dict = wa_message.model_dump()
+            msg_dict["created_at"] = msg_dict["created_at"].isoformat()
+            msg_dict["updated_at"] = msg_dict["updated_at"].isoformat()
+            
+            await db.whatsapp_messages.insert_one(msg_dict)
+            
+            sent_count += 1
+            
+        except Exception as e:
+            logger.error(f"Failed to send to {phone}: {e}")
+            failed_count += 1
+            
+            # Store failed message
+            wa_message = WhatsAppMessage(
+                campaign_id=campaign_id,
+                user_id=current_user["id"],
+                recipient_phone=phone,
+                message_text=campaign["message"],
+                status="failed",
+                error_message=str(e)
+            )
+            
+            msg_dict = wa_message.model_dump()
+            msg_dict["created_at"] = msg_dict["created_at"].isoformat()
+            msg_dict["updated_at"] = msg_dict["updated_at"].isoformat()
+            
+            await db.whatsapp_messages.insert_one(msg_dict)
+    
+    await client.close()
+    
+    # Update campaign stats
+    await db.whatsapp_campaigns.update_one(
+        {"id": campaign_id},
+        {
+            "$set": {
+                "status": "sent",
+                "sent_count": sent_count,
+                "failed_count": failed_count,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    return {
+        "message": "Campaign sent",
+        "sent_count": sent_count,
+        "failed_count": failed_count
+    }
+
+
+# ========================
 # ROUTES - CONTACTS
 # ========================
 

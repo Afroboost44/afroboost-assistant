@@ -1,5 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, File, UploadFile, BackgroundTasks
-from fastapi.responses import Response, RedirectResponse
+from fastapi import FastAPI, APIRouter, HTTPException, File, UploadFile, BackgroundTasks, Request
+from fastapi.responses import Response, RedirectResponse, JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -7,7 +7,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
 import io
@@ -16,6 +16,9 @@ from openai import OpenAI
 import resend
 import openpyxl
 import pandas as pd
+import stripe
+from whatsapp_service import WhatsAppService
+from ai_memory_service import AIMemoryService
 
 
 ROOT_DIR = Path(__file__).parent

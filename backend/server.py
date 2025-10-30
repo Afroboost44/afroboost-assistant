@@ -48,6 +48,14 @@ logger = logging.getLogger(__name__)
 # Initialize AI Memory Service
 ai_memory = AIMemoryService(db)
 
+# JWT Configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24 * 7  # 7 days
+
+# Security
+security = HTTPBearer()
+
 
 # ========================
 # MODELS

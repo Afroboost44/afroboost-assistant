@@ -55,6 +55,14 @@ class AdminSettings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     openai_api_key: Optional[str] = None
     resend_api_key: Optional[str] = None
+    whatsapp_access_token: Optional[str] = None
+    whatsapp_phone_number_id: Optional[str] = None
+    whatsapp_verify_token: Optional[str] = None
+    stripe_publishable_key: Optional[str] = None
+    stripe_secret_key: Optional[str] = None
+    bank_iban: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_currency: str = "CHF"
     company_name: str = "Afroboost"
     sender_email: str = "contact@afroboost.com"
     sender_name: str = "Coach Bassi"
@@ -63,6 +71,14 @@ class AdminSettings(BaseModel):
 class AdminSettingsUpdate(BaseModel):
     openai_api_key: Optional[str] = None
     resend_api_key: Optional[str] = None
+    whatsapp_access_token: Optional[str] = None
+    whatsapp_phone_number_id: Optional[str] = None
+    whatsapp_verify_token: Optional[str] = None
+    stripe_publishable_key: Optional[str] = None
+    stripe_secret_key: Optional[str] = None
+    bank_iban: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_currency: Optional[str] = None
     company_name: Optional[str] = None
     sender_email: Optional[str] = None
     sender_name: Optional[str] = None

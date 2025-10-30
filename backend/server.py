@@ -2153,6 +2153,234 @@ async def get_stripe_config():
     return {"publishable_key": settings.stripe_publishable_key}
 
 
+# ========================
+# ROUTES - CATALOG & RESERVATIONS
+# ========================
+
+@api_router.post("/catalog")
+async def create_catalog_item(
+    item_data: CatalogItemCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a new catalog item (product/course/event)"""
+    item = CatalogItem(
+        user_id=current_user["id"],
+        **item_data.model_dump(exclude={'event_date'})
+    )
+    
+    # Parse event date if provided
+    if item_data.event_date:
+        item.event_date = datetime.fromisoformat(item_data.event_date)
+    
+    item_dict = item.model_dump()
+    item_dict["created_at"] = item_dict["created_at"].isoformat()
+    item_dict["updated_at"] = item_dict["updated_at"].isoformat()
+    if item_dict.get("event_date"):
+        item_dict["event_date"] = item_dict["event_date"].isoformat()
+    
+    await db.catalog_items.insert_one(item_dict)
+    
+    return {"message": "Catalog item created", "id": item.id}
+
+@api_router.get("/catalog")
+async def get_catalog_items(
+    category: Optional[str] = None,
+    user_id: Optional[str] = None,
+    published_only: bool = True
+):
+    """Get catalog items (public or filtered by user)"""
+    query = {}
+    
+    if published_only:
+        query["is_published"] = True
+        query["is_active"] = True
+    
+    if category:
+        query["category"] = category
+    
+    if user_id:
+        query["user_id"] = user_id
+    
+    items = await db.catalog_items.find(query, {"_id": 0}).to_list(length=None)
+    
+    # Parse dates
+    for item in items:
+        if isinstance(item.get('created_at'), str):
+            item['created_at'] = datetime.fromisoformat(item['created_at'])
+        if isinstance(item.get('updated_at'), str):
+            item['updated_at'] = datetime.fromisoformat(item['updated_at'])
+        if isinstance(item.get('event_date'), str):
+            item['event_date'] = datetime.fromisoformat(item['event_date'])
+    
+    return items
+
+@api_router.get("/catalog/{item_id}")
+async def get_catalog_item(item_id: str):
+    """Get a single catalog item (public)"""
+    item = await db.catalog_items.find_one({"id": item_id}, {"_id": 0})
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # Parse dates
+    if isinstance(item.get('created_at'), str):
+        item['created_at'] = datetime.fromisoformat(item['created_at'])
+    if isinstance(item.get('updated_at'), str):
+        item['updated_at'] = datetime.fromisoformat(item['updated_at'])
+    if isinstance(item.get('event_date'), str):
+        item['event_date'] = datetime.fromisoformat(item['event_date'])
+    
+    return item
+
+@api_router.put("/catalog/{item_id}")
+async def update_catalog_item(
+    item_id: str,
+    update_data: CatalogItemUpdate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update a catalog item"""
+    # Check ownership
+    item = await db.catalog_items.find_one({"id": item_id, "user_id": current_user["id"]})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found or unauthorized")
+    
+    # Update
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    update_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.catalog_items.update_one(
+        {"id": item_id},
+        {"$set": update_dict}
+    )
+    
+    return {"message": "Item updated successfully"}
+
+@api_router.delete("/catalog/{item_id}")
+async def delete_catalog_item(
+    item_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Delete a catalog item"""
+    result = await db.catalog_items.delete_one({"id": item_id, "user_id": current_user["id"]})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found or unauthorized")
+    
+    return {"message": "Item deleted successfully"}
+
+@api_router.post("/reservations")
+async def create_reservation(reservation_data: ReservationCreate):
+    """Create a new reservation (public endpoint)"""
+    # Get catalog item
+    item = await db.catalog_items.find_one({"id": reservation_data.catalog_item_id})
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    if not item.get("is_active") or not item.get("is_published"):
+        raise HTTPException(status_code=400, detail="Item is not available")
+    
+    # Check availability
+    if item.get("max_attendees"):
+        if item.get("current_attendees", 0) + reservation_data.quantity > item["max_attendees"]:
+            raise HTTPException(status_code=400, detail="Not enough places available")
+    
+    if item.get("stock_quantity") is not None:
+        if item.get("stock_quantity", 0) < reservation_data.quantity:
+            raise HTTPException(status_code=400, detail="Not enough stock available")
+    
+    # Calculate total
+    total_price = item["price"] * reservation_data.quantity
+    
+    # Create reservation
+    reservation = Reservation(
+        catalog_item_id=reservation_data.catalog_item_id,
+        user_id=item["user_id"],
+        customer_name=reservation_data.customer_name,
+        customer_email=reservation_data.customer_email,
+        customer_phone=reservation_data.customer_phone,
+        quantity=reservation_data.quantity,
+        total_price=total_price,
+        currency=item.get("currency", "CHF"),
+        payment_method=reservation_data.payment_method,
+        notes=reservation_data.notes
+    )
+    
+    res_dict = reservation.model_dump()
+    res_dict["reservation_date"] = res_dict["reservation_date"].isoformat()
+    res_dict["created_at"] = res_dict["created_at"].isoformat()
+    res_dict["updated_at"] = res_dict["updated_at"].isoformat()
+    
+    await db.reservations.insert_one(res_dict)
+    
+    # Update item availability
+    if item.get("max_attendees"):
+        await db.catalog_items.update_one(
+            {"id": reservation_data.catalog_item_id},
+            {"$inc": {"current_attendees": reservation_data.quantity}}
+        )
+    
+    if item.get("stock_quantity") is not None:
+        await db.catalog_items.update_one(
+            {"id": reservation_data.catalog_item_id},
+            {"$inc": {"stock_quantity": -reservation_data.quantity}}
+        )
+    
+    # TODO: Send confirmation email
+    # TODO: Create payment intent if payment_method is stripe
+    
+    return {
+        "message": "Reservation created successfully",
+        "reservation_id": reservation.id,
+        "total_price": total_price,
+        "currency": reservation.currency
+    }
+
+@api_router.get("/reservations")
+async def get_reservations(current_user: Dict = Depends(get_current_user)):
+    """Get all reservations for the coach"""
+    reservations = await db.reservations.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Parse dates
+    for res in reservations:
+        if isinstance(res.get('reservation_date'), str):
+            res['reservation_date'] = datetime.fromisoformat(res['reservation_date'])
+        if isinstance(res.get('created_at'), str):
+            res['created_at'] = datetime.fromisoformat(res['created_at'])
+        if isinstance(res.get('updated_at'), str):
+            res['updated_at'] = datetime.fromisoformat(res['updated_at'])
+    
+    return reservations
+
+@api_router.patch("/reservations/{reservation_id}/status")
+async def update_reservation_status(
+    reservation_id: str,
+    status: str,
+    payment_status: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update reservation status"""
+    update_data = {
+        "status": status,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if payment_status:
+        update_data["payment_status"] = payment_status
+    
+    result = await db.reservations.update_one(
+        {"id": reservation_id, "user_id": current_user["id"]},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    
+    return {"message": "Reservation updated successfully"}
+
 
 # ========================
 # ROUTES - PRICING PLANS (ADMIN)

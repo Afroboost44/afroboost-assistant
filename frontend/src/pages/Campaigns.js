@@ -209,7 +209,7 @@ const Campaigns = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2" data-testid="campaigns-title">{t('campaigns.title')}</h1>
-          <p className="text-gray-400">{campaigns.length} campagnes</p>
+          <p className="text-gray-400">{t('campaigns.subtitle', { count: campaigns.length })}</p>
         </div>
         <Button
           onClick={() => setShowCreateDialog(true)}

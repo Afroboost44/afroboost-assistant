@@ -267,7 +267,7 @@ const Campaigns = () => {
                         data-testid={`edit-campaign-${index}`}
                       >
                         <Edit className="mr-1 h-3 w-3" />
-                        Modifier
+                        {t('campaigns.edit')}
                       </Button>
                       <Button
                         size="sm"
@@ -276,7 +276,7 @@ const Campaigns = () => {
                         data-testid={`send-campaign-${index}`}
                       >
                         <Send className="mr-1 h-3 w-3" />
-                        Envoyer
+                        {t('campaigns.send')}
                       </Button>
                     </>
                   )}

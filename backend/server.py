@@ -164,6 +164,89 @@ class AIGenerateResponse(BaseModel):
     content: str
     language: str
 
+# WhatsApp Models
+class WhatsAppCampaign(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    message_content: str
+    language: str = "fr"
+    status: str = "draft"  # draft, scheduled, sending, sent, failed
+    scheduled_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    target_groups: List[str] = []
+    target_tags: List[str] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    stats: Dict = {"sent": 0, "delivered": 0, "read": 0, "replied": 0, "failed": 0}
+
+class WhatsAppCampaignCreate(BaseModel):
+    title: str
+    message_content: str
+    language: str = "fr"
+    scheduled_at: Optional[datetime] = None
+    target_groups: List[str] = []
+    target_tags: List[str] = []
+
+class WhatsAppCampaignUpdate(BaseModel):
+    title: Optional[str] = None
+    message_content: Optional[str] = None
+    language: Optional[str] = None
+    scheduled_at: Optional[datetime] = None
+    target_groups: Optional[List[str]] = None
+    target_tags: Optional[List[str]] = None
+    status: Optional[str] = None
+
+class WhatsAppMessage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: Optional[str] = None
+    contact_id: str
+    contact_phone: str
+    direction: str  # inbound, outbound
+    content: str
+    status: str  # sent, delivered, read, failed
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    error_message: Optional[str] = None
+
+class WhatsAppIncomingMessage(BaseModel):
+    from_phone: str
+    message_content: str
+    message_id: str
+    timestamp: datetime
+
+class AIConversationRequest(BaseModel):
+    contact_id: str
+    contact_name: str
+    contact_phone: str
+    message: str
+    campaign_context: Optional[str] = None
+    language: str = "fr"
+
+class AIConversationResponse(BaseModel):
+    response: str
+    context_used: str
+
+# Stripe/Payment Models
+class SubscriptionPlan(BaseModel):
+    name: str
+    price: float
+    currency: str = "CHF"
+    interval: str = "month"  # month, year
+    features: List[str] = []
+
+class PaymentIntent(BaseModel):
+    amount: int  # Amount in cents
+    currency: str = "chf"
+    customer_email: str
+    description: str
+
+class SubscriptionCreate(BaseModel):
+    customer_email: str
+    customer_name: str
+    plan_id: str
+    payment_method_id: str
+
+
 
 # ========================
 # HELPER FUNCTIONS

@@ -216,11 +216,82 @@ const Contacts = () => {
     setFormData({
       name: '',
       email: '',
+      phone: '',
       group: 'general',
       tags: '',
-      active: true
+      active: true,
+      subscription_status: 'non-subscriber',
+      membership_type: '',
+      notes: ''
     });
     setCurrentContact(null);
+  };
+
+  // Nouvelles fonctions pour la gestion avancée
+  const handleSelectContact = (contactId) => {
+    setSelectedContacts(prev => {
+      if (prev.includes(contactId)) {
+        return prev.filter(id => id !== contactId);
+      } else {
+        return [...prev, contactId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedContacts.length === filteredContacts.length) {
+      setSelectedContacts([]);
+    } else {
+      setSelectedContacts(filteredContacts.map(c => c.id));
+    }
+  };
+
+  const handleSendBulkMessage = async () => {
+    if (selectedContacts.length === 0) {
+      toast.error('Aucun contact sélectionné');
+      return;
+    }
+
+    if (!bulkMessage.trim()) {
+      toast.error('Le message ne peut pas être vide');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/contacts/bulk-message`,
+        {
+          contact_ids: selectedContacts,
+          message: bulkMessage,
+          channel: bulkChannel
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      
+      toast.success(`Message envoyé à ${selectedContacts.length} contact(s)`);
+      setShowBulkMessageDialog(false);
+      setBulkMessage('');
+      setSelectedContacts([]);
+    } catch (error) {
+      console.error('Error sending bulk message:', error);
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'envoi des messages');
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const badges = {
+      'active': { label: 'Abonné', color: 'bg-green-500' },
+      'non-subscriber': { label: 'Non abonné', color: 'bg-gray-500' },
+      'trial': { label: 'Essai', color: 'bg-blue-500' },
+      'expired': { label: 'Expiré', color: 'bg-red-500' }
+    };
+    const badge = badges[status] || badges['non-subscriber'];
+    return (
+      <Badge className={`${badge.color} text-white`}>
+        {badge.label}
+      </Badge>
+    );
   };
 
   const groups = ['all', ...new Set(contacts.map(c => c.group))];

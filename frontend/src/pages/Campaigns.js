@@ -301,7 +301,7 @@ const Campaigns = () => {
       {campaigns.length === 0 && (
         <Card className="glass border-primary/20">
           <CardContent className="py-12 text-center text-gray-400" data-testid="no-campaigns-message">
-            Aucune campagne créée. Cliquez sur "Créer une campagne" pour commencer.
+            {t('campaigns.noCampaigns')}
           </CardContent>
         </Card>
       )}

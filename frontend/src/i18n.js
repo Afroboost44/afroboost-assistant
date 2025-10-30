@@ -707,9 +707,19 @@ i18n
   .init({
     resources,
     fallbackLng: 'fr',
+    lng: localStorage.getItem('language') || 'fr',
     interpolation: {
       escapeValue: false
+    },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage']
     }
   });
+
+// Save language preference when changed
+i18n.on('languageChanged', (lng) => {
+  localStorage.setItem('language', lng);
+});
 
 export default i18n;

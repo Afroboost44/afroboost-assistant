@@ -2719,10 +2719,10 @@ async def send_reservation_confirmation_email(
                     </tr>
                     <tr>
                         <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Prix total:</strong></td>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right; color: #6366f1; font-size: 18px;"><strong>{total_price:.2f} {currency}</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right; color: #6366f1; font-size: 18px;"><strong>{{total_price:.2f}} {{currency}}</strong></td>
                     </tr>
-                    {event_date_row}
-                    {location_row}
+                    {{event_date_row}}
+                    {{location_row}}
                 </table>
             </div>
             

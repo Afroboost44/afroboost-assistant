@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Mail, BarChart3, Calendar, Settings, CreditCard, Globe, Menu, X, MessageCircle, User, LogOut, Package } from 'lucide-react';
+import { LayoutDashboard, Users, Mail, BarChart3, Calendar, Settings, CreditCard, Globe, Menu, X, MessageCircle, User, LogOut, Package, Gift, TrendingDown, UserPlus, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,

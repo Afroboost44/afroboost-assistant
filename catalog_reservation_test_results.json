@@ -1,17 +1,97 @@
 {
-  "total_tests": 1,
-  "passed": 0,
-  "failed": 1,
-  "success_rate": 0.0,
+  "total_tests": 10,
+  "passed": 2,
+  "failed": 8,
+  "success_rate": 20.0,
   "results": [
     {
       "test": "Setup Admin Authentication",
-      "success": false,
-      "message": "Failed to authenticate admin user: 401",
-      "timestamp": "2025-10-31T04:32:12.712169+00:00",
+      "success": true,
+      "message": "Admin user created and authenticated",
+      "timestamp": "2025-10-31T04:32:30.136097+00:00",
       "details": {
-        "response": "{\"detail\":\"Invalid email or password\"}"
+        "user_id": "1fe38224-58b8-4b30-bdc1-f37978bd2fc6",
+        "role": "user"
       }
+    },
+    {
+      "test": "Create Catalog Course",
+      "success": false,
+      "message": "Course created but response data incorrect",
+      "timestamp": "2025-10-31T04:32:30.161788+00:00",
+      "details": {
+        "response": {
+          "message": "Catalog item created",
+          "id": "c7a0a5f5-810b-418f-b54d-979c10124504"
+        }
+      }
+    },
+    {
+      "test": "Create Catalog Product",
+      "success": false,
+      "message": "Product created but response data incorrect",
+      "timestamp": "2025-10-31T04:32:30.673822+00:00",
+      "details": {
+        "response": {
+          "message": "Catalog item created",
+          "id": "3866579d-b162-4bcd-8adf-10aa714f01a1"
+        }
+      }
+    },
+    {
+      "test": "Get Catalog Items",
+      "success": true,
+      "message": "Successfully retrieved 2 catalog items",
+      "timestamp": "2025-10-31T04:32:31.186209+00:00",
+      "details": {
+        "total_items": 2,
+        "has_course": true,
+        "has_product": true
+      }
+    },
+    {
+      "test": "Create Reservation Success",
+      "success": false,
+      "message": "No course found in catalog",
+      "timestamp": "2025-10-31T04:32:31.686328+00:00",
+      "details": {}
+    },
+    {
+      "test": "Create Second Reservation",
+      "success": false,
+      "message": "No course found in catalog",
+      "timestamp": "2025-10-31T04:32:32.186450+00:00",
+      "details": {}
+    },
+    {
+      "test": "Create Reservation Exceed Capacity",
+      "success": false,
+      "message": "No course found in catalog",
+      "timestamp": "2025-10-31T04:32:32.686577+00:00",
+      "details": {}
+    },
+    {
+      "test": "Get Reservations Authenticated",
+      "success": false,
+      "message": "Expected list with reservations but got: <class 'list'> with length 0",
+      "timestamp": "2025-10-31T04:32:33.198254+00:00",
+      "details": {
+        "response": []
+      }
+    },
+    {
+      "test": "Update Reservation Status",
+      "success": false,
+      "message": "No admin token or reservations available",
+      "timestamp": "2025-10-31T04:32:33.698364+00:00",
+      "details": {}
+    },
+    {
+      "test": "Email Confirmation Logs",
+      "success": false,
+      "message": "No reservations to check email for",
+      "timestamp": "2025-10-31T04:32:34.198474+00:00",
+      "details": {}
     }
   ]
 }

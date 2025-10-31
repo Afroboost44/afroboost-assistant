@@ -962,26 +962,57 @@ class CatalogReservationTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                self.reservations.append(data)
                 
-                # Verify reservation data
-                if (data.get("customer_name") == reservation_data["customer_name"] and
-                    data.get("quantity") == 3 and
-                    data.get("status") == "pending" and
-                    "id" in data):
+                # The API returns {message, reservation_id, total_price, currency} format
+                if "reservation_id" in data:
+                    # Fetch the created reservation to verify it
+                    headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+                    reservations_response = self.session.get(f"{BASE_URL}/reservations", headers=headers_auth)
                     
-                    self.log_test(
-                        "Create Reservation Success",
-                        True,
-                        f"Successfully created reservation for {data['customer_name']}",
-                        {"reservation_id": data["id"], "quantity": data["quantity"], "total_price": data.get("total_price")}
-                    )
-                    return True
+                    if reservations_response.status_code == 200:
+                        reservations = reservations_response.json()
+                        created_reservation = next((res for res in reservations if res.get("id") == data["reservation_id"]), None)
+                        
+                        if created_reservation:
+                            self.reservations.append(created_reservation)
+                            
+                            if (created_reservation.get("customer_name") == reservation_data["customer_name"] and
+                                created_reservation.get("quantity") == 3 and
+                                created_reservation.get("status") == "pending"):
+                                
+                                self.log_test(
+                                    "Create Reservation Success",
+                                    True,
+                                    f"Successfully created reservation for {created_reservation['customer_name']}",
+                                    {"reservation_id": created_reservation["id"], "quantity": created_reservation["quantity"], "total_price": data.get("total_price")}
+                                )
+                                return True
+                            else:
+                                self.log_test(
+                                    "Create Reservation Success",
+                                    False,
+                                    "Reservation created but data incorrect",
+                                    {"created_reservation": created_reservation}
+                                )
+                        else:
+                            self.log_test(
+                                "Create Reservation Success",
+                                False,
+                                "Reservation created but not found in list",
+                                {"response": data}
+                            )
+                    else:
+                        self.log_test(
+                            "Create Reservation Success",
+                            False,
+                            "Reservation created but failed to fetch reservations",
+                            {"response": data}
+                        )
                 else:
                     self.log_test(
                         "Create Reservation Success",
                         False,
-                        "Reservation created but data incorrect",
+                        "Reservation creation response missing reservation_id",
                         {"response": data}
                     )
             else:

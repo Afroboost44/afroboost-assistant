@@ -4370,7 +4370,7 @@ async def create_referral(
     try:
         # Check if referral already exists for this email
         existing = await db.referrals.find_one({
-            "referrer_id": current_user.id,
+            "referrer_id": current_user["id"],
             "referred_email": referral.referred_email
         })
         if existing:

@@ -62,7 +62,7 @@ const Pricing = () => {
         a: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.'
       },
       {
-        q: 'How does Afroboost AI work?',
+        q: 'How does BoostTribe AI work?',
         a: 'Our AI uses GPT-4-turbo to generate custom email and WhatsApp content in French, English and German. It understands your campaign context and adapts to your brand tone.'
       },
       {

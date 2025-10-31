@@ -2693,8 +2693,60 @@ async def send_reservation_confirmation_email(
     html_content = f"""
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0a0a0a; color: #ffffff;">
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 10px; margin-bottom: 30px;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 Confirmation de Réservation</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Confirmation de Réservation</h1>
         </div>
+        
+        <div style="background-color: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #6366f1;">
+            <p style="color: #ffffff; font-size: 16px; margin-bottom: 20px;">
+                Bonjour <strong>{customer_name}</strong>,
+            </p>
+            
+            <p style="color: #d1d5db; margin-bottom: 25px;">
+                Nous avons le plaisir de confirmer votre réservation pour <strong style="color: #6366f1;">{item_title}</strong>.
+            </p>
+            
+            <div style="background-color: #0a0a0a; padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin-bottom: 25px;">
+                <h2 style="color: #6366f1; margin-top: 0; font-size: 18px;">Détails de votre réservation</h2>
+                
+                <table style="width: 100%; color: #d1d5db;">
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Type:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{category_label}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Quantité:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{quantity}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Prix total:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right; color: #6366f1; font-size: 18px;"><strong>{total_price:.2f} {currency}</strong></td>
+                    </tr>
+                    {'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">' + event_date_formatted + '</td></tr>' if event_date else ''}
+                    {'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Lieu:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">' + str(location) + '</td></tr>' if location else ''}
+                </table>
+            </div>
+            
+            {'<div style="background-color: #6366f1; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;"><p style="color: #ffffff; margin: 0; font-size: 14px;"><strong>Accès casque Afroboost Silent</strong></p><p style="color: #ffffff; margin: 5px 0 0 0; font-size: 12px;">Présentez cette confirmation à l\'entrée</p></div>' if item_category in ['course', 'event'] else ''}
+            
+            <p style="color: #d1d5db; margin-bottom: 10px;">
+                <strong>Numéro de réservation:</strong> <code style="background-color: #2a2a2a; padding: 4px 8px; border-radius: 4px; color: #6366f1;">{reservation_id[:8]}</code>
+            </p>
+            
+            <p style="color: #d1d5db; margin-top: 30px;">
+                Si vous avez des questions ou souhaitez modifier votre réservation, n'hésitez pas à nous contacter.
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a2a2a;">
+            <p style="color: #6366f1; font-size: 18px; font-weight: bold; margin-bottom: 5px;">
+                Merci de votre confiance !
+            </p>
+            <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                L'équipe <strong style="color: #6366f1;">Afroboost</strong>
+            </p>
+        </div>
+    </div>
+    """
         
         <div style="background-color: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #6366f1;">
             <p style="color: #ffffff; font-size: 16px; margin-bottom: 20px;">

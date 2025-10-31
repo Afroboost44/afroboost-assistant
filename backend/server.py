@@ -3520,6 +3520,269 @@ async def health_check():
 
 
 # Include the router in the main app
+
+
+# ========================
+# ROUTES - REMINDERS & AUTOMATION
+# ========================
+
+@api_router.get("/reminders", response_model=List[Reminder])
+async def get_reminders(
+    status: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Get all reminders for current user"""
+    query = {"user_id": current_user["id"]}
+    if status:
+        query["status"] = status
+    
+    reminders = await db.reminders.find(query, {"_id": 0}).sort("scheduled_at", 1).to_list(length=None)
+    
+    # Parse dates
+    for reminder in reminders:
+        for field in ['scheduled_at', 'sent_at', 'created_at', 'updated_at']:
+            if isinstance(reminder.get(field), str):
+                reminder[field] = datetime.fromisoformat(reminder[field])
+    
+    return reminders
+
+@api_router.post("/reminders", response_model=Reminder)
+async def create_reminder(
+    reminder_data: ReminderCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a new reminder"""
+    scheduled_at = datetime.fromisoformat(reminder_data.scheduled_at)
+    
+    reminder = Reminder(
+        user_id=current_user["id"],
+        **reminder_data.model_dump(exclude={'scheduled_at'}),
+        scheduled_at=scheduled_at
+    )
+    
+    reminder_dict = reminder.model_dump()
+    reminder_dict["scheduled_at"] = reminder_dict["scheduled_at"].isoformat()
+    if reminder_dict.get("sent_at"):
+        reminder_dict["sent_at"] = reminder_dict["sent_at"].isoformat()
+    reminder_dict["created_at"] = reminder_dict["created_at"].isoformat()
+    reminder_dict["updated_at"] = reminder_dict["updated_at"].isoformat()
+    
+    await db.reminders.insert_one(reminder_dict)
+    
+    return reminder
+
+@api_router.patch("/reminders/{reminder_id}/status")
+async def update_reminder_status(
+    reminder_id: str,
+    status: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update reminder status"""
+    update_data = {
+        "status": status,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if status == "sent":
+        update_data["sent_at"] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.reminders.update_one(
+        {"id": reminder_id, "user_id": current_user["id"]},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+    
+    return {"message": "Reminder status updated"}
+
+@api_router.delete("/reminders/{reminder_id}")
+async def delete_reminder(
+    reminder_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Delete a reminder"""
+    result = await db.reminders.delete_one({
+        "id": reminder_id,
+        "user_id": current_user["id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Reminder not found")
+    
+    return {"message": "Reminder deleted"}
+
+@api_router.get("/automation/rules", response_model=List[AutomationRule])
+async def get_automation_rules(current_user: Dict = Depends(get_current_user)):
+    """Get all automation rules"""
+    rules = await db.automation_rules.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Parse dates
+    for rule in rules:
+        for field in ['last_executed', 'created_at', 'updated_at']:
+            if isinstance(rule.get(field), str):
+                rule[field] = datetime.fromisoformat(rule[field])
+    
+    return rules
+
+@api_router.post("/automation/rules", response_model=AutomationRule)
+async def create_automation_rule(
+    rule_data: AutomationRuleCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a new automation rule"""
+    rule = AutomationRule(
+        user_id=current_user["id"],
+        **rule_data.model_dump()
+    )
+    
+    rule_dict = rule.model_dump()
+    if rule_dict.get("last_executed"):
+        rule_dict["last_executed"] = rule_dict["last_executed"].isoformat()
+    rule_dict["created_at"] = rule_dict["created_at"].isoformat()
+    rule_dict["updated_at"] = rule_dict["updated_at"].isoformat()
+    
+    await db.automation_rules.insert_one(rule_dict)
+    
+    return rule
+
+@api_router.patch("/automation/rules/{rule_id}")
+async def update_automation_rule(
+    rule_id: str,
+    is_active: bool,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Activate/deactivate automation rule"""
+    result = await db.automation_rules.update_one(
+        {"id": rule_id, "user_id": current_user["id"]},
+        {"$set": {
+            "is_active": is_active,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    
+    return {"message": "Rule updated"}
+
+@api_router.delete("/automation/rules/{rule_id}")
+async def delete_automation_rule(
+    rule_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Delete automation rule"""
+    result = await db.automation_rules.delete_one({
+        "id": rule_id,
+        "user_id": current_user["id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Rule not found")
+    
+    return {"message": "Rule deleted"}
+
+@api_router.get("/reminders/templates", response_model=List[ReminderTemplate])
+async def get_reminder_templates(current_user: Dict = Depends(get_current_user)):
+    """Get reminder templates"""
+    templates = await db.reminder_templates.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Parse dates
+    for template in templates:
+        if isinstance(template.get('created_at'), str):
+            template['created_at'] = datetime.fromisoformat(template['created_at'])
+    
+    return templates
+
+@api_router.post("/reminders/templates", response_model=ReminderTemplate)
+async def create_reminder_template(
+    template_data: ReminderTemplateCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create reminder template"""
+    template = ReminderTemplate(
+        user_id=current_user["id"],
+        **template_data.model_dump()
+    )
+    
+    template_dict = template.model_dump()
+    template_dict["created_at"] = template_dict["created_at"].isoformat()
+    
+    await db.reminder_templates.insert_one(template_dict)
+    
+    return template
+
+@api_router.post("/reminders/process")
+async def process_due_reminders(current_user: Dict = Depends(get_current_user)):
+    """Process all due reminders (for testing - in production would be a cron job)"""
+    now = datetime.now(timezone.utc)
+    
+    due_reminders = await db.reminders.find({
+        "user_id": current_user["id"],
+        "status": "pending",
+        "scheduled_at": {"$lte": now.isoformat()}
+    }, {"_id": 0}).to_list(length=None)
+    
+    processed = 0
+    failed = 0
+    
+    for reminder_dict in due_reminders:
+        try:
+            # Get target contacts
+            contacts = []
+            if reminder_dict.get("target_contacts"):
+                contacts = await db.contacts.find({
+                    "id": {"$in": reminder_dict["target_contacts"]}
+                }, {"_id": 0}).to_list(length=None)
+            
+            # Send via selected channels
+            for channel in reminder_dict.get("channels", ["email"]):
+                if channel == "email":
+                    # Send emails (simulation)
+                    for contact in contacts:
+                        logger.info(f"[SIMULATION] Sending email reminder to {contact['email']}")
+                
+                elif channel == "whatsapp":
+                    # Send WhatsApp (simulation)
+                    for contact in contacts:
+                        logger.info(f"[SIMULATION] Sending WhatsApp reminder to {contact.get('phone', 'N/A')}")
+            
+            # Update reminder status
+            await db.reminders.update_one(
+                {"id": reminder_dict["id"]},
+                {"$set": {
+                    "status": "sent",
+                    "sent_at": now.isoformat(),
+                    "updated_at": now.isoformat()
+                }}
+            )
+            
+            processed += 1
+            
+        except Exception as e:
+            logger.error(f"Error processing reminder {reminder_dict['id']}: {e}")
+            await db.reminders.update_one(
+                {"id": reminder_dict["id"]},
+                {"$set": {
+                    "status": "failed",
+                    "updated_at": now.isoformat()
+                }}
+            )
+            failed += 1
+    
+    return {
+        "processed": processed,
+        "failed": failed,
+        "total_due": len(due_reminders)
+    }
+
+
 app.include_router(api_router)
 
 app.add_middleware(

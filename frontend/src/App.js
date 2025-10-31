@@ -23,6 +23,7 @@ import Profile from '@/pages/Profile';
 import PricingManagement from '@/pages/PricingManagement';
 import Catalog from '@/pages/Catalog';
 import Reservations from '@/pages/Reservations';
+import Reminders from '@/pages/Reminders';
 
 function App() {
   return (

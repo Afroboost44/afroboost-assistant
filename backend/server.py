@@ -2326,7 +2326,24 @@ async def create_reservation(reservation_data: ReservationCreate):
             {"$inc": {"stock_quantity": -reservation_data.quantity}}
         )
     
-    # TODO: Send confirmation email
+    # Send confirmation email
+    try:
+        await send_reservation_confirmation_email(
+            customer_name=reservation.customer_name,
+            customer_email=reservation.customer_email,
+            item_title=item["title"],
+            item_category=item["category"],
+            quantity=reservation.quantity,
+            total_price=total_price,
+            currency=reservation.currency,
+            event_date=item.get("event_date"),
+            location=item.get("location"),
+            reservation_id=reservation.id
+        )
+    except Exception as e:
+        logger.error(f"Failed to send confirmation email: {str(e)}")
+        # Continue even if email fails
+    
     # TODO: Create payment intent if payment_method is stripe
     
     return {

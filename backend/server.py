@@ -4377,7 +4377,7 @@ async def create_referral(
             raise HTTPException(status_code=400, detail="Referral already exists for this email")
         
         # Get user's existing referral code or generate new one
-        user_referrals = await db.referrals.find_one({"referrer_id": current_user.id})
+        user_referrals = await db.referrals.find_one({"referrer_id": current_user["id"]})
         referral_code = user_referrals.get('referral_code') if user_referrals else str(uuid.uuid4())[:8].upper()
         
         # Create referral

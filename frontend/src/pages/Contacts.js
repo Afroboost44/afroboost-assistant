@@ -505,6 +505,19 @@ const Contacts = () => {
                         <Button
                           size="sm"
                           variant="ghost"
+                          onClick={() => {
+                            setSelectedContacts([contact.id]);
+                            setBulkChannel('whatsapp');
+                            setShowBulkMessageDialog(true);
+                          }}
+                          className="text-green-500 hover:text-green-400"
+                          title="Envoyer WhatsApp"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           onClick={() => openEditDialog(contact)}
                           data-testid={`edit-contact-${index}`}
                         >

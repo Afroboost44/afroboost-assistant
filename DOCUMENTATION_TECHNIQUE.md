@@ -659,7 +659,7 @@ Afroboost Mailer est une plateforme marketing complète qui permet de gérer des
 
 ### Base URL
 - **Local:** `http://localhost:8001/api`
-- **Production:** `https://boost-campaigns.preview.emergentagent.com/api`
+- **Production:** `https://marketing-suite-9.preview.emergentagent.com/api`
 
 ### Authentication
 
@@ -982,7 +982,7 @@ JWT_SECRET=your_secret_key_here
 RESEND_API_KEY=re_xxx
 
 # Frontend URL (for email links)
-FRONTEND_URL=https://boost-campaigns.preview.emergentagent.com
+FRONTEND_URL=https://marketing-suite-9.preview.emergentagent.com
 
 # AI Service
 EMERGENT_LLM_KEY=sk-emergent-44217751557316eA26
@@ -1002,7 +1002,7 @@ TWINT_MERCHANT_ID=
 #### Frontend (.env)
 ```env
 # Backend API URL
-REACT_APP_BACKEND_URL=https://boost-campaigns.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://marketing-suite-9.preview.emergentagent.com
 ```
 
 ### Ports
@@ -1032,7 +1032,7 @@ tail -f /var/log/supervisor/frontend.err.log
 
 **Environnement actuel:** Kubernetes + Nginx
 
-**URL Production:** https://boost-campaigns.preview.emergentagent.com
+**URL Production:** https://marketing-suite-9.preview.emergentagent.com
 
 **Infrastructure:**
 - Kubernetes pods pour backend/frontend

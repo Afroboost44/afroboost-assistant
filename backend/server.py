@@ -4197,11 +4197,11 @@ async def create_discount(
             raise HTTPException(status_code=400, detail="Discount code already exists")
         
         # Create discount
-        new_discount = Discount(
-            **discount.dict(),
-            code=discount.code.upper(),
-            created_by=current_user["id"]
-        )
+        discount_data = discount.dict()
+        discount_data['code'] = discount.code.upper()
+        discount_data['created_by'] = current_user["id"]
+        
+        new_discount = Discount(**discount_data)
         
         discount_dict = new_discount.dict()
         discount_dict['created_at'] = discount_dict['created_at'].isoformat()

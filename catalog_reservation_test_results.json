@@ -1,50 +1,46 @@
 {
   "total_tests": 10,
-  "passed": 2,
-  "failed": 8,
-  "success_rate": 20.0,
+  "passed": 6,
+  "failed": 4,
+  "success_rate": 60.0,
   "results": [
     {
       "test": "Setup Admin Authentication",
       "success": true,
       "message": "Admin user created and authenticated",
-      "timestamp": "2025-10-31T04:32:30.136097+00:00",
+      "timestamp": "2025-10-31T04:32:58.038654+00:00",
       "details": {
-        "user_id": "1fe38224-58b8-4b30-bdc1-f37978bd2fc6",
+        "user_id": "4b7ae573-77ea-49aa-9284-d08d96a33baa",
         "role": "user"
       }
     },
     {
       "test": "Create Catalog Course",
-      "success": false,
-      "message": "Course created but response data incorrect",
-      "timestamp": "2025-10-31T04:32:30.161788+00:00",
+      "success": true,
+      "message": "Successfully created course: Advanced Dance Masterclass",
+      "timestamp": "2025-10-31T04:32:58.060821+00:00",
       "details": {
-        "response": {
-          "message": "Catalog item created",
-          "id": "c7a0a5f5-810b-418f-b54d-979c10124504"
-        }
+        "course_id": "6fb07f35-a7d4-4fa1-b2ca-71db9d3c33a2",
+        "max_attendees": 10
       }
     },
     {
       "test": "Create Catalog Product",
-      "success": false,
-      "message": "Product created but response data incorrect",
-      "timestamp": "2025-10-31T04:32:30.673822+00:00",
+      "success": true,
+      "message": "Successfully created product: Afroboost T-Shirt",
+      "timestamp": "2025-10-31T04:32:58.584336+00:00",
       "details": {
-        "response": {
-          "message": "Catalog item created",
-          "id": "3866579d-b162-4bcd-8adf-10aa714f01a1"
-        }
+        "product_id": "601b5170-32bb-4582-843a-6a80bc0432d7",
+        "stock": 50
       }
     },
     {
       "test": "Get Catalog Items",
       "success": true,
-      "message": "Successfully retrieved 2 catalog items",
-      "timestamp": "2025-10-31T04:32:31.186209+00:00",
+      "message": "Successfully retrieved 4 catalog items",
+      "timestamp": "2025-10-31T04:32:59.093624+00:00",
       "details": {
-        "total_items": 2,
+        "total_items": 4,
         "has_course": true,
         "has_product": true
       }
@@ -52,46 +48,58 @@
     {
       "test": "Create Reservation Success",
       "success": false,
-      "message": "No course found in catalog",
-      "timestamp": "2025-10-31T04:32:31.686328+00:00",
-      "details": {}
+      "message": "Reservation created but data incorrect",
+      "timestamp": "2025-10-31T04:33:00.175122+00:00",
+      "details": {
+        "response": {
+          "message": "Reservation created successfully",
+          "reservation_id": "a48d862c-5123-4f3a-bfcb-1f30c04d9c5c",
+          "total_price": 450.0,
+          "currency": "CHF"
+        }
+      }
     },
     {
       "test": "Create Second Reservation",
       "success": false,
-      "message": "No course found in catalog",
-      "timestamp": "2025-10-31T04:32:32.186450+00:00",
+      "message": "Exception during second reservation creation: 'customer_name'",
+      "timestamp": "2025-10-31T04:33:00.871217+00:00",
       "details": {}
     },
     {
       "test": "Create Reservation Exceed Capacity",
-      "success": false,
-      "message": "No course found in catalog",
-      "timestamp": "2025-10-31T04:32:32.686577+00:00",
-      "details": {}
+      "success": true,
+      "message": "Correctly rejected reservation exceeding capacity",
+      "timestamp": "2025-10-31T04:33:01.382445+00:00",
+      "details": {
+        "status_code": 400,
+        "message": "Not enough places available"
+      }
     },
     {
       "test": "Get Reservations Authenticated",
-      "success": false,
-      "message": "Expected list with reservations but got: <class 'list'> with length 0",
-      "timestamp": "2025-10-31T04:32:33.198254+00:00",
+      "success": true,
+      "message": "Successfully retrieved 2 reservations",
+      "timestamp": "2025-10-31T04:33:01.891219+00:00",
       "details": {
-        "response": []
+        "total_reservations": 2
       }
     },
     {
       "test": "Update Reservation Status",
       "success": false,
-      "message": "No admin token or reservations available",
-      "timestamp": "2025-10-31T04:32:33.698364+00:00",
+      "message": "Exception during status update: 'id'",
+      "timestamp": "2025-10-31T04:33:02.391340+00:00",
       "details": {}
     },
     {
       "test": "Email Confirmation Logs",
       "success": false,
-      "message": "No reservations to check email for",
-      "timestamp": "2025-10-31T04:32:34.198474+00:00",
-      "details": {}
+      "message": "No email confirmation activity found in logs",
+      "timestamp": "2025-10-31T04:33:02.896250+00:00",
+      "details": {
+        "log_content": "K\nINFO:     10.64.133.249:56334 - \"POST /api/catalog HTTP/1.1\" 200 OK\nINFO:     10.64.139.33:51606 - \"GET /api/catalog HTTP/1.1\" 200 OK\nINFO:     10.64.139.62:58808 - \"GET /api/catalog HTTP/1.1\" 200 OK\nINFO:     10.64.133.254:55918 - \"POST /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.128.73:39838 - \"POST /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.139.62:58808 - \"POST /api/reservations HTTP/1.1\" 400 Bad Request\nINFO:     10.64.133.249:56334 - \"GET /api/reservations HTTP/1.1\" 200 OK\n"
+      }
     }
   ]
 }

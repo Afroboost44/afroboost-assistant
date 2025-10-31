@@ -276,7 +276,7 @@ const Pricing = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={() => toast.info('Email: contact@afroboost.com')}
+                onClick={() => toast.info('Email: contact@boosttribe.com')}
                 data-testid="cta-contact"
               >
                 {currentCta.contact}

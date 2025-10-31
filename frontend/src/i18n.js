@@ -258,7 +258,7 @@ const resources = {
           price: '49 CHF/mois',
           features: [
             'Jusqu\'à 5000 emails/mois',
-            'IA Afroboost intégrée',
+            'IA BoostTribe intégrée',
             'Relances automatiques',
             'Tableau de bord complet',
             'Support prioritaire'

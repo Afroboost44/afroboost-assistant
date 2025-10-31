@@ -1600,8 +1600,10 @@ class ContactsTestSuite:
             return False
         
         try:
-            message_data = {
-                "contact_ids": [contact["id"] for contact in self.contacts],
+            # API expects query parameters, not JSON body
+            contact_ids = [contact["id"] for contact in self.contacts]
+            params = {
+                "contact_ids": contact_ids,
                 "message": "Welcome to Afroboost! Join our next dance session.",
                 "channel": "email"
             }
@@ -1610,7 +1612,7 @@ class ContactsTestSuite:
             response = self.session.post(
                 f"{BASE_URL}/contacts/bulk-message",
                 headers=headers_auth,
-                json=message_data
+                params=params
             )
             
             if response.status_code == 200:

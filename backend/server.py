@@ -2154,6 +2154,299 @@ async def ai_conversation(request: AIConversationRequest):
         system_prompt = f"""Tu es l'assistant IA d'Afroboost, une entreprise de danse et fitness.
 Tu réponds aux messages de manière professionnelle, amicale et énergique en {request.language}.
 
+
+
+# ========================
+# ROUTES - ADVANCED WHATSAPP (TEMPLATES & CAMPAIGNS)
+# ========================
+
+@api_router.get("/whatsapp/templates", response_model=List[MessageTemplate])
+async def get_message_templates(current_user: Dict = Depends(get_current_user)):
+    """Get all message templates for the user"""
+    templates = await db.message_templates.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Parse dates
+    for template in templates:
+        if isinstance(template.get('created_at'), str):
+            template['created_at'] = datetime.fromisoformat(template['created_at'])
+        if isinstance(template.get('updated_at'), str):
+            template['updated_at'] = datetime.fromisoformat(template['updated_at'])
+    
+    return templates
+
+@api_router.post("/whatsapp/templates", response_model=MessageTemplate)
+async def create_message_template(
+    template_data: MessageTemplateCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a new message template"""
+    template = MessageTemplate(
+        user_id=current_user["id"],
+        **template_data.model_dump(),
+        has_media=bool(template_data.media_url)
+    )
+    
+    template_dict = template.model_dump()
+    template_dict["created_at"] = template_dict["created_at"].isoformat()
+    template_dict["updated_at"] = template_dict["updated_at"].isoformat()
+    
+    await db.message_templates.insert_one(template_dict)
+    
+    return template
+
+@api_router.put("/whatsapp/templates/{template_id}", response_model=MessageTemplate)
+async def update_message_template(
+    template_id: str,
+    template_data: MessageTemplateUpdate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update a message template"""
+    update_data = {k: v for k, v in template_data.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    if "media_url" in update_data:
+        update_data["has_media"] = bool(update_data["media_url"])
+    
+    result = await db.message_templates.update_one(
+        {"id": template_id, "user_id": current_user["id"]},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    template = await db.message_templates.find_one(
+        {"id": template_id},
+        {"_id": 0}
+    )
+    
+    # Parse dates
+    if isinstance(template.get('created_at'), str):
+        template['created_at'] = datetime.fromisoformat(template['created_at'])
+    if isinstance(template.get('updated_at'), str):
+        template['updated_at'] = datetime.fromisoformat(template['updated_at'])
+    
+    return MessageTemplate(**template)
+
+@api_router.delete("/whatsapp/templates/{template_id}")
+async def delete_message_template(
+    template_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Delete a message template"""
+    result = await db.message_templates.delete_one(
+        {"id": template_id, "user_id": current_user["id"]}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    return {"message": "Template deleted successfully"}
+
+@api_router.get("/whatsapp/advanced-campaigns", response_model=List[AdvancedWhatsAppCampaign])
+async def get_advanced_campaigns(current_user: Dict = Depends(get_current_user)):
+    """Get all advanced WhatsApp campaigns for the user"""
+    campaigns = await db.advanced_whatsapp_campaigns.find(
+        {"user_id": current_user["id"]},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Parse dates
+    for campaign in campaigns:
+        for date_field in ['created_at', 'updated_at', 'scheduled_at', 'sent_at']:
+            if isinstance(campaign.get(date_field), str):
+                campaign[date_field] = datetime.fromisoformat(campaign[date_field])
+    
+    return campaigns
+
+@api_router.post("/whatsapp/advanced-campaigns", response_model=AdvancedWhatsAppCampaign)
+async def create_advanced_campaign(
+    campaign_data: AdvancedWhatsAppCampaignCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a new advanced WhatsApp campaign"""
+    # Parse scheduled_at if provided
+    scheduled_at = None
+    if campaign_data.scheduled_at:
+        try:
+            scheduled_at = datetime.fromisoformat(campaign_data.scheduled_at)
+        except:
+            pass
+    
+    campaign = AdvancedWhatsAppCampaign(
+        user_id=current_user["id"],
+        title=campaign_data.title,
+        template_id=campaign_data.template_id,
+        message_content=campaign_data.message_content,
+        language=campaign_data.language,
+        buttons=campaign_data.buttons,
+        list_sections=campaign_data.list_sections,
+        has_media=bool(campaign_data.media_url),
+        media_url=campaign_data.media_url,
+        media_type=campaign_data.media_type,
+        target_contacts=campaign_data.target_contacts,
+        target_tags=campaign_data.target_tags,
+        target_status=campaign_data.target_status,
+        use_personalization=campaign_data.use_personalization,
+        scheduled_at=scheduled_at,
+        payment_links=campaign_data.payment_links
+    )
+    
+    campaign_dict = campaign.model_dump()
+    campaign_dict["created_at"] = campaign_dict["created_at"].isoformat()
+    campaign_dict["updated_at"] = campaign_dict["updated_at"].isoformat()
+    if campaign_dict.get("scheduled_at"):
+        campaign_dict["scheduled_at"] = campaign_dict["scheduled_at"].isoformat()
+    
+    await db.advanced_whatsapp_campaigns.insert_one(campaign_dict)
+    
+    return campaign
+
+@api_router.post("/whatsapp/advanced-campaigns/{campaign_id}/send")
+async def send_advanced_campaign(
+    campaign_id: str,
+    background_tasks: BackgroundTasks,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Send an advanced WhatsApp campaign (SIMULATION MODE)"""
+    campaign = await db.advanced_whatsapp_campaigns.find_one(
+        {"id": campaign_id, "user_id": current_user["id"]},
+        {"_id": 0}
+    )
+    
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Get target contacts
+    query = {}
+    if campaign.get("target_contacts"):
+        query["id"] = {"$in": campaign["target_contacts"]}
+    if campaign.get("target_tags"):
+        query["tags"] = {"$in": campaign["target_tags"]}
+    if campaign.get("target_status"):
+        query["status"] = campaign["target_status"]
+    
+    contacts = await db.contacts.find(query, {"_id": 0}).to_list(length=None)
+    
+    if not contacts:
+        raise HTTPException(status_code=400, detail="No contacts match the targeting criteria")
+    
+    # SIMULATION MODE - Just log and update stats
+    logger.info(f"[SIMULATION] Sending campaign {campaign_id} to {len(contacts)} contacts")
+    
+    # Update campaign status
+    await db.advanced_whatsapp_campaigns.update_one(
+        {"id": campaign_id},
+        {
+            "$set": {
+                "status": "sent",
+                "sent_at": datetime.now(timezone.utc).isoformat(),
+                "stats.sent": len(contacts),
+                "stats.delivered": len(contacts),  # Simulate all delivered
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Create analytics records (simulation)
+    for contact in contacts:
+        analytics = CampaignAnalytics(
+            campaign_id=campaign_id,
+            contact_id=contact["id"],
+            contact_phone=contact.get("phone_number", "Unknown"),
+            sent=True,
+            delivered=True,  # Simulate delivery
+            sent_at=datetime.now(timezone.utc),
+            delivered_at=datetime.now(timezone.utc)
+        )
+        
+        analytics_dict = analytics.model_dump()
+        analytics_dict["created_at"] = analytics_dict["created_at"].isoformat()
+        if analytics_dict.get("sent_at"):
+            analytics_dict["sent_at"] = analytics_dict["sent_at"].isoformat()
+        if analytics_dict.get("delivered_at"):
+            analytics_dict["delivered_at"] = analytics_dict["delivered_at"].isoformat()
+        
+        await db.campaign_analytics.insert_one(analytics_dict)
+    
+    return {
+        "message": "Campaign sent successfully (SIMULATION MODE)",
+        "contacts_targeted": len(contacts),
+        "status": "sent"
+    }
+
+@api_router.get("/whatsapp/campaigns/{campaign_id}/analytics")
+async def get_campaign_analytics(
+    campaign_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Get detailed analytics for a campaign"""
+    # Verify campaign belongs to user
+    campaign = await db.advanced_whatsapp_campaigns.find_one(
+        {"id": campaign_id, "user_id": current_user["id"]},
+        {"_id": 0}
+    )
+    
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Get analytics
+    analytics = await db.campaign_analytics.find(
+        {"campaign_id": campaign_id},
+        {"_id": 0}
+    ).to_list(length=None)
+    
+    # Calculate summary
+    summary = {
+        "total": len(analytics),
+        "sent": sum(1 for a in analytics if a.get("sent")),
+        "delivered": sum(1 for a in analytics if a.get("delivered")),
+        "read": sum(1 for a in analytics if a.get("read")),
+        "replied": sum(1 for a in analytics if a.get("replied")),
+        "clicked": sum(1 for a in analytics if a.get("clicked")),
+        "payment_completed": sum(1 for a in analytics if a.get("payment_completed"))
+    }
+    
+    return {
+        "campaign": campaign,
+        "summary": summary,
+        "details": analytics
+    }
+
+@api_router.post("/whatsapp/payment-link")
+async def create_payment_link(
+    payment_data: PaymentLinkCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a payment link for WhatsApp (SIMULATION MODE)"""
+    # SIMULATION - Generate a dummy link
+    payment_id = str(uuid.uuid4())[:8]
+    
+    if payment_data.payment_method == "stripe":
+        # In real implementation, create Stripe payment link here
+        link = f"https://pay.stripe.com/simulation/{payment_id}"
+    elif payment_data.payment_method == "twint":
+        # In real implementation, create Twint payment link here
+        link = f"https://pay.twint.ch/simulation/{payment_id}"
+    else:
+        raise HTTPException(status_code=400, detail="Invalid payment method")
+    
+    logger.info(f"[SIMULATION] Created payment link: {link}")
+    
+    return {
+        "payment_link": link,
+        "payment_id": payment_id,
+        "amount": payment_data.amount,
+        "currency": payment_data.currency,
+        "description": payment_data.description,
+        "method": payment_data.payment_method,
+        "note": "SIMULATION MODE - This is a test link"
+    }
+
+
 {context}"""
         
         response = client.chat.completions.create(

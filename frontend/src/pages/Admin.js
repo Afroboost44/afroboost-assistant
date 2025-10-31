@@ -444,7 +444,7 @@ const Admin = () => {
                   type="email"
                   value={formData.sender_email}
                   onChange={(e) => setFormData({ ...formData, sender_email: e.target.value })}
-                  placeholder="contact@afroboost.com"
+                  placeholder="contact@boosttribe.com"
                   data-testid="sender-email-input"
                 />
                 <p className="text-sm text-gray-400">

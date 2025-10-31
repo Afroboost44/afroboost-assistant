@@ -4396,7 +4396,7 @@ async def create_referral(
         await db.referrals.insert_one(referral_dict)
         
         # TODO: Send referral invitation email
-        logger.info(f"Referral created: {current_user.email} -> {referral.referred_email}")
+        logger.info(f"Referral created: {current_user['email']} -> {referral.referred_email}")
         
         return new_referral
     except HTTPException:

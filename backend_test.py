@@ -2072,7 +2072,17 @@ class AIAssistantTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list):
+                # API returns {"sessions": []} format
+                if isinstance(data, dict) and "sessions" in data:
+                    sessions = data["sessions"]
+                    self.log_test(
+                        "Get Sessions",
+                        True,
+                        f"Successfully retrieved {len(sessions)} AI sessions",
+                        {"total_sessions": len(sessions)}
+                    )
+                    return True
+                elif isinstance(data, list):
                     self.log_test(
                         "Get Sessions",
                         True,

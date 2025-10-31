@@ -44,7 +44,7 @@ const Pricing = () => {
         a: 'Oui, vous pouvez upgrader ou downgrader votre plan à tout moment. Les changements prennent effet immédiatement.'
       },
       {
-        q: 'Comment fonctionne l\'IA Afroboost ?',
+        q: 'Comment fonctionne l\'IA BoostTribe ?',
         a: 'Notre IA utilise GPT-4-turbo pour générer du contenu email et WhatsApp sur mesure en français, anglais et allemand. Elle comprend le contexte de vos campagnes et s\'adapte au ton de votre marque.'
       },
       {

@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import AIAssistantWidget from '@/components/AIAssistantWidget';
 
 const Layout = ({ children }) => {
   const { t, i18n } = useTranslation();

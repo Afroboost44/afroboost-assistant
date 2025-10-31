@@ -721,7 +721,14 @@ const Contacts = () => {
       <Dialog open={showBulkMessageDialog} onOpenChange={setShowBulkMessageDialog}>
         <DialogContent className="glass">
           <DialogHeader>
-            <DialogTitle>Envoyer un message à {selectedContacts.length} contact(s)</DialogTitle>
+            <DialogTitle>
+              💬 Envoyer un message à {selectedContacts.length} contact(s)
+              {selectedContacts.length === 1 && contacts.find(c => c.id === selectedContacts[0]) && (
+                <span className="text-sm font-normal text-gray-400 block mt-1">
+                  → {contacts.find(c => c.id === selectedContacts[0]).name}
+                </span>
+              )}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
@@ -742,19 +749,22 @@ const Contacts = () => {
                 id="bulk-message"
                 value={bulkMessage}
                 onChange={(e) => setBulkMessage(e.target.value)}
-                placeholder="Votre message ici..."
+                placeholder={bulkChannel === 'whatsapp' ? "Bonjour ! Comment allez-vous ? 👋" : "Votre message ici..."}
                 className="w-full min-h-[150px] p-3 rounded-md bg-background border border-primary/20 text-white"
                 required
               />
+              <p className="text-xs text-gray-500 mt-2">
+                {bulkChannel === 'whatsapp' && '💡 Mode simulation - Les messages seront enregistrés mais non envoyés'}
+              </p>
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setShowBulkMessageDialog(false)}>
               Annuler
             </Button>
-            <Button onClick={handleSendBulkMessage} className="bg-primary hover:bg-primary/90">
+            <Button onClick={handleSendBulkMessage} className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
               <MessageCircle className="mr-2 h-4 w-4" />
-              Envoyer
+              Envoyer {bulkChannel === 'whatsapp' ? 'WhatsApp' : 'Email'}
             </Button>
           </DialogFooter>
         </DialogContent>

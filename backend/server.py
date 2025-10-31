@@ -2689,46 +2689,31 @@ async def send_reservation_confirmation_email(
         'product': 'Produit'
     }.get(item_category, 'Article')
     
-    # Prepare conditional rows FIRST
-    event_date_row = ''
+    # Simple text email (avoiding HTML complexity issues)
+    text_content = f"""
+Bonjour {customer_name},
+
+Nous avons le plaisir de confirmer votre reservation pour: {item_title}
+
+Details:
+- Type: {category_label}
+- Quantite: {quantity}
+- Prix total: {total_price:.2f} {currency}
+"""
+    
     if event_date_formatted:
-        event_date_row = f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{event_date_formatted}</td></tr>'
-    
-    location_row = ''
+        text_content += f"- Date: {event_date_formatted}\n"
     if location:
-        location_row = f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Lieu:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{location}</td></tr>'
+        text_content += f"- Lieu: {location}\n"
     
-    access_badge = ''
-    if item_category in ['course', 'event']:
-        access_badge = '<div style="background-color: #6366f1; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;"><p style="color: #ffffff; margin: 0; font-size: 14px;"><strong>Acces casque Afroboost Silent</strong></p><p style="color: #ffffff; margin: 5px 0 0 0; font-size: 12px;">Presentez cette confirmation a l entree</p></div>'
-    
-    # Build HTML email using string concatenation to avoid f-string parsing issues
-    html_content = (
-        '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0a0a0a; color: #ffffff;">'
-        '<div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 10px; margin-bottom: 30px;">'
-        '<h1 style="color: #ffffff; margin: 0; font-size: 28px;">Confirmation de Reservation</h1>'
-        '</div>'
-        '<div style="background-color: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #6366f1;">'
-        f'<p style="color: #ffffff; font-size: 16px; margin-bottom: 20px;">Bonjour <strong>{customer_name}</strong>,</p>'
-        f'<p style="color: #d1d5db; margin-bottom: 25px;">Nous avons le plaisir de confirmer votre reservation pour <strong style="color: #6366f1;">{item_title}</strong>.</p>'
-        '<div style="background-color: #0a0a0a; padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin-bottom: 25px;">'
-        '<h2 style="color: #6366f1; margin-top: 0; font-size: 18px;">Details de votre reservation</h2>'
-        '<table style="width: 100%; color: #d1d5db;">'
-        f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Type:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{category_label}</td></tr>'
-        f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Quantite:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{quantity}</td></tr>'
-        f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Prix total:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right; color: #6366f1; font-size: 18px;"><strong>{total_price:.2f} {currency}</strong></td></tr>'
-        f'{event_date_row}'
-        f'{location_row}'
-        '</table></div>'
-        f'{access_badge}'
-        f'<p style="color: #d1d5db; margin-bottom: 10px;"><strong>Numero de reservation:</strong> <code style="background-color: #2a2a2a; padding: 4px 8px; border-radius: 4px; color: #6366f1;">{reservation_id[:8]}</code></p>'
-        "<p style=\"color: #d1d5db; margin-top: 30px;\">Si vous avez des questions ou souhaitez modifier votre reservation, n'hesitez pas a nous contacter.</p>"
-        '</div>'
-        '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a2a2a;">'
-        '<p style="color: #6366f1; font-size: 18px; font-weight: bold; margin-bottom: 5px;">Merci de votre confiance !</p>'
-        '<p style="color: #9ca3af; font-size: 14px; margin: 0;">L equipe <strong style="color: #6366f1;">Afroboost</strong></p>'
-        '</div></div>'
-    )
+    text_content += f"""
+Numero de reservation: {reservation_id[:8]}
+
+Si vous avez des questions ou souhaitez modifier votre reservation, n'hesitez pas a nous contacter.
+
+Merci de votre confiance!
+L'equipe Afroboost
+"""
     
     try:
         resend.Emails.send({

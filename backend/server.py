@@ -2719,8 +2719,8 @@ L'equipe Afroboost
         resend.Emails.send({
             "from": "Afroboost <onboarding@resend.dev>",
             "to": [customer_email],
-            "subject": f"✅ Confirmation de réservation - {item_title}",
-            "html": html_content
+            "subject": f"Confirmation de reservation - {item_title}",
+            "text": text_content
         })
         logger.info(f"Confirmation email sent to {customer_email}")
     except Exception as e:

@@ -1906,7 +1906,16 @@ class WhatsAppTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                if "stats" in data or "sent" in data:
+                # API returns detailed analytics with campaign, summary, and details
+                if "campaign" in data and "summary" in data:
+                    self.log_test(
+                        "Get Campaign Analytics",
+                        True,
+                        f"Successfully retrieved campaign analytics",
+                        {"campaign_id": campaign["id"], "summary": data.get("summary", {})}
+                    )
+                    return True
+                elif "stats" in data or "sent" in data:
                     self.log_test(
                         "Get Campaign Analytics",
                         True,
@@ -1915,7 +1924,7 @@ class WhatsAppTestSuite:
                     )
                     return True
                 else:
-                    self.log_test("Get Campaign Analytics", False, "Analytics response missing stats", {"response": data})
+                    self.log_test("Get Campaign Analytics", False, "Analytics response missing expected fields", {"response": data})
             else:
                 self.log_test("Get Campaign Analytics", False, f"Failed to get analytics: {response.status_code}", {"response": response.text})
         except Exception as e:

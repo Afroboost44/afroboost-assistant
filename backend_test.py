@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 
 # Configuration
-BASE_URL = "https://boost-campaigns.preview.emergentagent.com/api"
+BASE_URL = "https://campaign-hub-66.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Test data

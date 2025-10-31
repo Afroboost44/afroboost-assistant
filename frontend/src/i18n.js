@@ -836,7 +836,7 @@ const resources = {
           price: '49 CHF/Monat',
           features: [
             'Bis zu 5000 E-Mails/Monat',
-            'Afroboost KI integriert',
+            'BoostTribe KI integriert',
             'Automatische Nachverfolgung',
             'Vollständiges Dashboard',
             'Prioritätssupport'

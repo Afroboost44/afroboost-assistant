@@ -28,8 +28,8 @@ const Admin = () => {
     bank_iban: '',
     bank_name: '',
     bank_currency: 'CHF',
-    company_name: 'Afroboost',
-    sender_email: 'contact@afroboost.com',
+    company_name: 'BoostTribe',
+    sender_email: 'contact@boosttribe.com',
     sender_name: 'Coach Bassi'
   });
 

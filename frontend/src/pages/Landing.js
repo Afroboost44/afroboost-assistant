@@ -64,7 +64,7 @@ const Landing = () => {
       },
       cta: {
         title: 'Prêt à booster vos campagnes ?',
-        subtitle: 'Rejoignez Afroboost Mailer aujourd\'hui',
+        subtitle: 'Rejoignez BoostTribe aujourd\'hui',
         button: 'Démarrer maintenant'
       }
     },

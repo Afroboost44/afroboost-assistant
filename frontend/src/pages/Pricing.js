@@ -97,19 +97,19 @@ const Pricing = () => {
   const ctaSection = {
     fr: {
       title: 'Prêt à transformer vos campagnes marketing ?',
-      subtitle: 'Rejoignez les coachs et entreprises qui utilisent Afroboost Mailer pour automatiser et optimiser leur email et WhatsApp marketing.',
+      subtitle: 'Rejoignez les coachs et entreprises qui utilisent BoostTribe pour automatiser et optimiser leur email et WhatsApp marketing.',
       startNow: 'Commencer maintenant',
       contact: 'Nous contacter'
     },
     en: {
       title: 'Ready to transform your marketing campaigns?',
-      subtitle: 'Join the coaches and businesses using Afroboost Mailer to automate and optimize their email and WhatsApp marketing.',
+      subtitle: 'Join the coaches and businesses using BoostTribe to automate and optimize their email and WhatsApp marketing.',
       startNow: 'Start now',
       contact: 'Contact us'
     },
     de: {
       title: 'Bereit, Ihre Marketing-Kampagnen zu transformieren?',
-      subtitle: 'Schließen Sie sich den Trainern und Unternehmen an, die Afroboost Mailer verwenden, um ihr E-Mail- und WhatsApp-Marketing zu automatisieren und zu optimieren.',
+      subtitle: 'Schließen Sie sich den Trainern und Unternehmen an, die BoostTribe verwenden, um ihr E-Mail- und WhatsApp-Marketing zu automatisieren und zu optimieren.',
       startNow: 'Jetzt starten',
       contact: 'Kontaktieren Sie uns'
     }

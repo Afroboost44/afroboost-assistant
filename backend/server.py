@@ -2153,6 +2153,135 @@ async def get_stripe_config():
     return {"publishable_key": settings.stripe_publishable_key}
 
 
+
+# ========================
+# RESERVATION EMAIL HELPER
+# ========================
+
+async def send_reservation_confirmation_email(
+    customer_name: str,
+    customer_email: str,
+    item_title: str,
+    item_category: str,
+    quantity: int,
+    total_price: float,
+    currency: str,
+    event_date: Optional[str] = None,
+    location: Optional[str] = None,
+    reservation_id: str = ""
+):
+    """Send reservation confirmation email via Resend"""
+    resend_api_key = os.environ.get('RESEND_API_KEY')
+    
+    if not resend_api_key:
+        logger.warning("RESEND_API_KEY not configured, skipping email")
+        return
+    
+    resend.api_key = resend_api_key
+    
+    # Format event date
+    event_date_formatted = ""
+    if event_date:
+        try:
+            dt = datetime.fromisoformat(event_date) if isinstance(event_date, str) else event_date
+            event_date_formatted = dt.strftime("%d %B %Y à %H:%M")
+        except:
+            event_date_formatted = str(event_date)
+    
+    # Build email content
+    category_label = {
+        'course': 'Cours',
+        'event': 'Événement',
+        'product': 'Produit'
+    }.get(item_category, 'Article')
+    
+    # Email HTML
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0a0a0a; color: #ffffff;">
+        <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 10px; margin-bottom: 30px;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">🎉 Confirmation de Réservation</h1>
+        </div>
+        
+        <div style="background-color: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #6366f1;">
+            <p style="color: #ffffff; font-size: 16px; margin-bottom: 20px;">
+                Bonjour <strong>{customer_name}</strong>,
+            </p>
+            
+            <p style="color: #d1d5db; margin-bottom: 25px;">
+                Nous avons le plaisir de confirmer votre réservation pour <strong style="color: #6366f1;">{item_title}</strong>.
+            </p>
+            
+            <div style="background-color: #0a0a0a; padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin-bottom: 25px;">
+                <h2 style="color: #6366f1; margin-top: 0; font-size: 18px;">📋 Détails de votre réservation</h2>
+                
+                <table style="width: 100%; color: #d1d5db;">
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Type:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{category_label}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Quantité:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{quantity}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Prix total:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right; color: #6366f1; font-size: 18px;"><strong>{total_price:.2f} {currency}</strong></td>
+                    </tr>
+                    {f'''
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Date:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">📅 {event_date_formatted}</td>
+                    </tr>
+                    ''' if event_date else ''}
+                    {f'''
+                    <tr>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Lieu:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">📍 {location}</td>
+                    </tr>
+                    ''' if location else ''}
+                </table>
+            </div>
+            
+            {'''
+            <div style="background-color: #6366f1; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
+                <p style="color: #ffffff; margin: 0; font-size: 14px;">🎧 <strong>Accès casque Afroboost Silent</strong></p>
+                <p style="color: #ffffff; margin: 5px 0 0 0; font-size: 12px;">Présentez cette confirmation à l'entrée</p>
+            </div>
+            ''' if item_category == 'course' or item_category == 'event' else ''}
+            
+            <p style="color: #d1d5db; margin-bottom: 10px;">
+                <strong>Numéro de réservation:</strong> <code style="background-color: #2a2a2a; padding: 4px 8px; border-radius: 4px; color: #6366f1;">{reservation_id[:8]}</code>
+            </p>
+            
+            <p style="color: #d1d5db; margin-top: 30px;">
+                Si vous avez des questions ou souhaitez modifier votre réservation, n'hésitez pas à nous contacter.
+            </p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a2a2a;">
+            <p style="color: #6366f1; font-size: 18px; font-weight: bold; margin-bottom: 5px;">
+                Merci de votre confiance ! 🙏
+            </p>
+            <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                L'équipe <strong style="color: #6366f1;">Afroboost</strong>
+            </p>
+        </div>
+    </div>
+    """
+    
+    try:
+        resend.Emails.send({
+            "from": "Afroboost <onboarding@resend.dev>",
+            "to": [customer_email],
+            "subject": f"✅ Confirmation de réservation - {item_title}",
+            "html": html_content
+        })
+        logger.info(f"Confirmation email sent to {customer_email}")
+    except Exception as e:
+        logger.error(f"Error sending confirmation email: {str(e)}")
+        raise
+
+
 # ========================
 # ROUTES - CATALOG & RESERVATIONS
 # ========================

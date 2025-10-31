@@ -1250,12 +1250,10 @@ class CatalogReservationTestSuite:
             headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
             reservation = self.reservations[0]
             
-            update_data = {"status": "confirmed"}
-            
+            # Status is passed as query parameter
             response = self.session.patch(
-                f"{BASE_URL}/reservations/{reservation['id']}/status",
-                headers=headers,
-                json=update_data
+                f"{BASE_URL}/reservations/{reservation['id']}/status?status=confirmed",
+                headers=headers
             )
             
             if response.status_code == 200:

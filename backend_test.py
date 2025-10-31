@@ -1062,15 +1062,48 @@ class CatalogReservationTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                self.reservations.append(data)
                 
-                self.log_test(
-                    "Create Second Reservation",
-                    True,
-                    f"Successfully created second reservation for {data['customer_name']}",
-                    {"reservation_id": data["id"], "quantity": data["quantity"]}
-                )
-                return True
+                # The API returns {message, reservation_id, total_price, currency} format
+                if "reservation_id" in data:
+                    # Fetch the created reservation to verify it
+                    headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+                    reservations_response = self.session.get(f"{BASE_URL}/reservations", headers=headers_auth)
+                    
+                    if reservations_response.status_code == 200:
+                        reservations = reservations_response.json()
+                        created_reservation = next((res for res in reservations if res.get("id") == data["reservation_id"]), None)
+                        
+                        if created_reservation:
+                            self.reservations.append(created_reservation)
+                            
+                            self.log_test(
+                                "Create Second Reservation",
+                                True,
+                                f"Successfully created second reservation for {created_reservation['customer_name']}",
+                                {"reservation_id": created_reservation["id"], "quantity": created_reservation["quantity"]}
+                            )
+                            return True
+                        else:
+                            self.log_test(
+                                "Create Second Reservation",
+                                False,
+                                "Second reservation created but not found in list",
+                                {"response": data}
+                            )
+                    else:
+                        self.log_test(
+                            "Create Second Reservation",
+                            False,
+                            "Second reservation created but failed to fetch reservations",
+                            {"response": data}
+                        )
+                else:
+                    self.log_test(
+                        "Create Second Reservation",
+                        False,
+                        "Second reservation creation response missing reservation_id",
+                        {"response": data}
+                    )
             else:
                 self.log_test(
                     "Create Second Reservation",

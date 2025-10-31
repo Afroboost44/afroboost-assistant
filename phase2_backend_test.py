@@ -562,7 +562,7 @@ class DiscountsTestSuite:
             end_date = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
             
             discount_data = {
-                "code": "FIXED50",
+                "code": f"FIXED{int(time.time())}",
                 "discount_type": "fixed_amount",
                 "discount_value": 50,
                 "name": "Fixed 50 CHF Off",

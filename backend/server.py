@@ -4095,7 +4095,7 @@ async def get_gift_cards(current_user: User = Depends(get_current_user)):
     """Get all gift cards created by current user"""
     try:
         gift_cards = await db.gift_cards.find(
-            {"sender_id": current_user.id},
+            {"sender_id": current_user["id"]},
             {"_id": 0}
         ).to_list(length=None)
         return gift_cards

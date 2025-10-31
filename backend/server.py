@@ -22,6 +22,7 @@ import bcrypt
 import jwt
 from whatsapp_service import WhatsAppService
 from ai_memory_service import AIMemoryService
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 
 ROOT_DIR = Path(__file__).parent

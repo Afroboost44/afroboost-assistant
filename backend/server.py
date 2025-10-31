@@ -408,6 +408,37 @@ class AIConversationResponse(BaseModel):
 
 
 # ========================
+# AI ASSISTANT MODELS
+# ========================
+
+class AIAssistantMessage(BaseModel):
+    """Message for AI Assistant chat"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    session_id: str
+    role: str  # user, assistant, system
+    content: str
+    context: Optional[Dict[str, Any]] = {}
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AIAssistantRequest(BaseModel):
+    """Request for AI Assistant"""
+    message: str
+    session_id: Optional[str] = None
+    context: Optional[Dict[str, Any]] = {}
+    task_type: Optional[str] = "general"  # general, campaign, analysis, strategy
+
+class AIAssistantResponse(BaseModel):
+    """Response from AI Assistant"""
+    response: str
+    session_id: str
+    suggestions: Optional[List[str]] = []
+    context: Optional[Dict[str, Any]] = {}
+
+
+
+# ========================
 # ADVANCED WHATSAPP MODELS
 # ========================
 

@@ -547,7 +547,7 @@ const resources = {
           price: '$49/month',
           features: [
             'Up to 5000 emails/month',
-            'Afroboost AI integrated',
+            'BoostTribe AI integrated',
             'Automatic follow-ups',
             'Complete dashboard',
             'Priority support'

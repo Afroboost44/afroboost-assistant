@@ -56,7 +56,7 @@ const Layout = ({ children }) => {
             {/* Logo */}
             <div className="flex items-center flex-shrink-0 px-4 mb-8">
               <h1 className="text-2xl font-bold text-gradient" data-testid="app-logo">
-                Afroboost Mailer
+                BoostTribe
               </h1>
             </div>
 

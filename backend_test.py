@@ -626,10 +626,10 @@ class CatalogReservationTestSuite:
     def setup_auth(self):
         """Setup authentication by creating admin user and getting token"""
         try:
-            # Register admin user
+            # Register admin user with unique email for testing
             admin_user = {
-                "name": "Admin Coach",
-                "email": "admin@afroboost.com",
+                "name": "Test Admin Coach",
+                "email": f"testadmin{int(time.time())}@afroboost.com",
                 "password": "AdminPass123!"
             }
             

@@ -2478,9 +2478,9 @@ async def create_payment_link(
     }
 
 
-{context}"""
-        
-        response = client.chat.completions.create(
+# ========================
+# ROUTES - AI CONVERSATION MEMORY
+# ========================
             model="gpt-4-turbo",
             messages=[
                 {"role": "system", "content": system_prompt},

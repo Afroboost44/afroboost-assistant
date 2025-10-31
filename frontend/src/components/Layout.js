@@ -155,7 +155,7 @@ const Layout = ({ children }) => {
             <div className="flex flex-col flex-grow pt-20 pb-4 overflow-y-auto">
               <div className="flex items-center flex-shrink-0 px-4 mb-8">
                 <h1 className="text-2xl font-bold text-gradient">
-                  Afroboost Mailer
+                  BoostTribe
                 </h1>
               </div>
 

@@ -2431,6 +2431,21 @@ class RemindersAutomationTestSuite:
         print(f"📊 Test Results: {passed}/{total} tests passed")
         
         return passed == total
+    
+    def get_summary(self):
+        """Get test summary"""
+        passed = sum(1 for result in self.test_results if result["success"])
+        total = len(self.test_results)
+        
+        summary = {
+            "total_tests": total,
+            "passed": passed,
+            "failed": total - passed,
+            "success_rate": (passed / total * 100) if total > 0 else 0,
+            "results": self.test_results
+        }
+        
+        return summary
 
 
 def main():

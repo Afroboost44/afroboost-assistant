@@ -1442,29 +1442,1021 @@ class CatalogReservationTestSuite:
         return summary
 
 
+class ContactsTestSuite:
+    def __init__(self):
+        self.session = requests.Session()
+        self.admin_token = None
+        self.test_results = []
+        self.contacts = []
+        
+    def log_test(self, test_name, success, message, details=None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "details": details or {}
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if details and not success:
+            print(f"   Details: {details}")
+    
+    def setup_auth(self):
+        """Setup authentication"""
+        try:
+            admin_user = {
+                "name": "Contact Test Admin",
+                "email": f"contactadmin{int(time.time())}@afroboost.com",
+                "password": "AdminPass123!"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/auth/register",
+                headers=HEADERS,
+                json=admin_user
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data["token"]
+                return True
+            else:
+                # Try login if user exists
+                login_data = {"email": admin_user["email"], "password": admin_user["password"]}
+                response = self.session.post(f"{BASE_URL}/auth/login", headers=HEADERS, json=login_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.admin_token = data["token"]
+                    return True
+        except Exception as e:
+            self.log_test("Setup Auth", False, f"Auth setup failed: {str(e)}")
+        return False
+    
+    def test_create_contact(self):
+        """Test creating a contact with phone number"""
+        try:
+            contact_data = {
+                "name": "Emma Thompson",
+                "email": "emma.thompson@afroboost.com",
+                "phone": "+41791234567",
+                "tags": ["vip", "dancer"],
+                "group": "premium",
+                "subscription_status": "active",
+                "membership_type": "premium"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/contacts",
+                headers=HEADERS,
+                json=contact_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("email") == contact_data["email"] and data.get("phone") == contact_data["phone"]:
+                    self.contacts.append(data)
+                    self.log_test(
+                        "Create Contact",
+                        True,
+                        f"Successfully created contact: {data['name']}",
+                        {"contact_id": data["id"], "phone": data["phone"], "tags": data["tags"]}
+                    )
+                    return True
+                else:
+                    self.log_test("Create Contact", False, "Contact created but data incorrect", {"response": data})
+            else:
+                self.log_test("Create Contact", False, f"Failed to create contact: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Create Contact", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_contacts(self):
+        """Test retrieving contacts list"""
+        try:
+            response = self.session.get(f"{BASE_URL}/contacts", headers=HEADERS)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list) and len(data) > 0:
+                    self.log_test(
+                        "Get Contacts",
+                        True,
+                        f"Successfully retrieved {len(data)} contacts",
+                        {"total_contacts": len(data)}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Contacts", False, "No contacts found or invalid response", {"response": data})
+            else:
+                self.log_test("Get Contacts", False, f"Failed to get contacts: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Contacts", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_update_contact(self):
+        """Test updating a contact"""
+        if not self.contacts:
+            self.log_test("Update Contact", False, "No contacts available to update")
+            return False
+        
+        try:
+            contact = self.contacts[0]
+            update_data = {
+                "name": "Emma Thompson-Updated",
+                "tags": ["vip", "dancer", "instructor"]
+            }
+            
+            response = self.session.put(
+                f"{BASE_URL}/contacts/{contact['id']}",
+                headers=HEADERS,
+                json=update_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("name") == update_data["name"] and "instructor" in data.get("tags", []):
+                    self.log_test(
+                        "Update Contact",
+                        True,
+                        f"Successfully updated contact: {data['name']}",
+                        {"updated_name": data["name"], "tags": data["tags"]}
+                    )
+                    return True
+                else:
+                    self.log_test("Update Contact", False, "Contact updated but data incorrect", {"response": data})
+            else:
+                self.log_test("Update Contact", False, f"Failed to update contact: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Update Contact", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_bulk_message(self):
+        """Test sending bulk message to contacts"""
+        if not self.contacts:
+            self.log_test("Bulk Message", False, "No contacts available for bulk message")
+            return False
+        
+        try:
+            message_data = {
+                "contact_ids": [contact["id"] for contact in self.contacts],
+                "message": "Welcome to Afroboost! Join our next dance session.",
+                "channel": "email"
+            }
+            
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            response = self.session.post(
+                f"{BASE_URL}/contacts/bulk-message",
+                headers=headers_auth,
+                json=message_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "sent_count" in data:
+                    self.log_test(
+                        "Bulk Message",
+                        True,
+                        f"Bulk message sent successfully",
+                        {"sent_count": data["sent_count"], "failed_count": data.get("failed_count", 0)}
+                    )
+                    return True
+                else:
+                    self.log_test("Bulk Message", False, "Bulk message response missing counts", {"response": data})
+            else:
+                self.log_test("Bulk Message", False, f"Failed to send bulk message: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Bulk Message", False, f"Exception: {str(e)}")
+        return False
+    
+    def run_all_tests(self):
+        """Run all contacts tests"""
+        print("🚀 Starting Contacts Management Test Suite")
+        print(f"📍 Testing against: {BASE_URL}")
+        print("=" * 60)
+        
+        if not self.setup_auth():
+            print("❌ Failed to setup authentication - aborting tests")
+            return False
+        
+        tests = [
+            self.test_create_contact,
+            self.test_get_contacts,
+            self.test_update_contact,
+            self.test_bulk_message
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test in tests:
+            success = test()
+            if success:
+                passed += 1
+            time.sleep(0.5)
+        
+        print("=" * 60)
+        print(f"📊 Test Results: {passed}/{total} tests passed")
+        
+        return passed == total
+
+
+class WhatsAppTestSuite:
+    def __init__(self):
+        self.session = requests.Session()
+        self.admin_token = None
+        self.test_results = []
+        self.templates = []
+        self.campaigns = []
+        
+    def log_test(self, test_name, success, message, details=None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "details": details or {}
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if details and not success:
+            print(f"   Details: {details}")
+    
+    def setup_auth(self):
+        """Setup authentication"""
+        try:
+            admin_user = {
+                "name": "WhatsApp Test Admin",
+                "email": f"whatsappadmin{int(time.time())}@afroboost.com",
+                "password": "AdminPass123!"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/auth/register", headers=HEADERS, json=admin_user)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data["token"]
+                return True
+            else:
+                login_data = {"email": admin_user["email"], "password": admin_user["password"]}
+                response = self.session.post(f"{BASE_URL}/auth/login", headers=HEADERS, json=login_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.admin_token = data["token"]
+                    return True
+        except Exception as e:
+            self.log_test("Setup Auth", False, f"Auth setup failed: {str(e)}")
+        return False
+    
+    def test_create_template(self):
+        """Test creating WhatsApp message template"""
+        if not self.admin_token:
+            self.log_test("Create Template", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            template_data = {
+                "name": "Welcome Message",
+                "category": "marketing",
+                "content": "Bonjour {{nom}}! Bienvenue chez Afroboost. Rejoignez notre prochaine session de danse!",
+                "variables": ["nom"],
+                "language": "fr",
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "text": "Plus d'infos",
+                        "id": "more_info"
+                    }
+                ]
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/whatsapp/templates",
+                headers=headers_auth,
+                json=template_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data:
+                    self.templates.append(data)
+                    self.log_test(
+                        "Create Template",
+                        True,
+                        f"Successfully created template: {data.get('name', 'Unknown')}",
+                        {"template_id": data["id"], "variables": data.get("variables", [])}
+                    )
+                    return True
+                else:
+                    self.log_test("Create Template", False, "Template creation response missing ID", {"response": data})
+            else:
+                self.log_test("Create Template", False, f"Failed to create template: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Create Template", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_templates(self):
+        """Test retrieving WhatsApp templates"""
+        if not self.admin_token:
+            self.log_test("Get Templates", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            response = self.session.get(f"{BASE_URL}/whatsapp/templates", headers=headers_auth)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test(
+                        "Get Templates",
+                        True,
+                        f"Successfully retrieved {len(data)} templates",
+                        {"total_templates": len(data)}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Templates", False, "Invalid response format", {"response": data})
+            else:
+                self.log_test("Get Templates", False, f"Failed to get templates: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Templates", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_create_advanced_campaign(self):
+        """Test creating advanced WhatsApp campaign"""
+        if not self.admin_token:
+            self.log_test("Create Advanced Campaign", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            campaign_data = {
+                "title": "Nouvelle Session de Danse",
+                "message_content": "🕺 Nouvelle session de danse Afroboost! Rejoignez-nous pour une expérience unique.",
+                "language": "fr",
+                "buttons": [
+                    {
+                        "type": "reply",
+                        "text": "Je m'inscris",
+                        "id": "register"
+                    },
+                    {
+                        "type": "url",
+                        "text": "Voir le programme",
+                        "url": "https://afroboost.com/programme"
+                    }
+                ],
+                "target_tags": ["dancer", "vip"],
+                "use_personalization": True,
+                "scheduled_at": "2025-02-01T10:00:00Z"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/whatsapp/advanced-campaigns",
+                headers=headers_auth,
+                json=campaign_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data:
+                    self.campaigns.append(data)
+                    self.log_test(
+                        "Create Advanced Campaign",
+                        True,
+                        f"Successfully created campaign: {data.get('title', 'Unknown')}",
+                        {"campaign_id": data["id"], "status": data.get("status", "unknown")}
+                    )
+                    return True
+                else:
+                    self.log_test("Create Advanced Campaign", False, "Campaign creation response missing ID", {"response": data})
+            else:
+                self.log_test("Create Advanced Campaign", False, f"Failed to create campaign: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Create Advanced Campaign", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_send_campaign(self):
+        """Test sending WhatsApp campaign"""
+        if not self.admin_token or not self.campaigns:
+            self.log_test("Send Campaign", False, "No admin token or campaigns available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            campaign = self.campaigns[0]
+            
+            response = self.session.post(
+                f"{BASE_URL}/whatsapp/advanced-campaigns/{campaign['id']}/send",
+                headers=headers_auth
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Send Campaign",
+                    True,
+                    f"Campaign send initiated successfully",
+                    {"campaign_id": campaign["id"], "message": data.get("message", "Unknown")}
+                )
+                return True
+            else:
+                self.log_test("Send Campaign", False, f"Failed to send campaign: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Send Campaign", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_campaign_analytics(self):
+        """Test getting campaign analytics"""
+        if not self.admin_token or not self.campaigns:
+            self.log_test("Get Campaign Analytics", False, "No admin token or campaigns available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            campaign = self.campaigns[0]
+            
+            response = self.session.get(
+                f"{BASE_URL}/whatsapp/campaigns/{campaign['id']}/analytics",
+                headers=headers_auth
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "stats" in data or "sent" in data:
+                    self.log_test(
+                        "Get Campaign Analytics",
+                        True,
+                        f"Successfully retrieved campaign analytics",
+                        {"campaign_id": campaign["id"], "analytics": data}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Campaign Analytics", False, "Analytics response missing stats", {"response": data})
+            else:
+                self.log_test("Get Campaign Analytics", False, f"Failed to get analytics: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Campaign Analytics", False, f"Exception: {str(e)}")
+        return False
+    
+    def run_all_tests(self):
+        """Run all WhatsApp tests"""
+        print("🚀 Starting WhatsApp Advanced Campaigns Test Suite")
+        print(f"📍 Testing against: {BASE_URL}")
+        print("=" * 60)
+        
+        if not self.setup_auth():
+            print("❌ Failed to setup authentication - aborting tests")
+            return False
+        
+        tests = [
+            self.test_create_template,
+            self.test_get_templates,
+            self.test_create_advanced_campaign,
+            self.test_send_campaign,
+            self.test_get_campaign_analytics
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test in tests:
+            success = test()
+            if success:
+                passed += 1
+            time.sleep(0.5)
+        
+        print("=" * 60)
+        print(f"📊 Test Results: {passed}/{total} tests passed")
+        
+        return passed == total
+
+
+class AIAssistantTestSuite:
+    def __init__(self):
+        self.session = requests.Session()
+        self.admin_token = None
+        self.test_results = []
+        self.sessions = []
+        
+    def log_test(self, test_name, success, message, details=None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "details": details or {}
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if details and not success:
+            print(f"   Details: {details}")
+    
+    def setup_auth(self):
+        """Setup authentication"""
+        try:
+            admin_user = {
+                "name": "AI Test Admin",
+                "email": f"aiadmin{int(time.time())}@afroboost.com",
+                "password": "AdminPass123!"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/auth/register", headers=HEADERS, json=admin_user)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data["token"]
+                return True
+            else:
+                login_data = {"email": admin_user["email"], "password": admin_user["password"]}
+                response = self.session.post(f"{BASE_URL}/auth/login", headers=HEADERS, json=login_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.admin_token = data["token"]
+                    return True
+        except Exception as e:
+            self.log_test("Setup Auth", False, f"Auth setup failed: {str(e)}")
+        return False
+    
+    def test_ai_chat(self):
+        """Test AI assistant chat functionality"""
+        if not self.admin_token:
+            self.log_test("AI Chat", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            chat_data = {
+                "message": "Bonjour! Peux-tu m'aider à créer une campagne de marketing pour mes cours de danse?",
+                "task_type": "campaign",
+                "context": {
+                    "business_type": "dance_studio",
+                    "target_audience": "young_adults"
+                }
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/ai/assistant/chat",
+                headers=headers_auth,
+                json=chat_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "response" in data and "session_id" in data:
+                    self.sessions.append(data["session_id"])
+                    self.log_test(
+                        "AI Chat",
+                        True,
+                        f"AI chat successful - received response",
+                        {"session_id": data["session_id"], "has_suggestions": "suggestions" in data}
+                    )
+                    return True
+                else:
+                    self.log_test("AI Chat", False, "Chat response missing required fields", {"response": data})
+            else:
+                self.log_test("AI Chat", False, f"Failed to chat with AI: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("AI Chat", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_sessions(self):
+        """Test getting AI assistant sessions"""
+        if not self.admin_token:
+            self.log_test("Get Sessions", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            response = self.session.get(f"{BASE_URL}/ai/assistant/sessions", headers=headers_auth)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test(
+                        "Get Sessions",
+                        True,
+                        f"Successfully retrieved {len(data)} AI sessions",
+                        {"total_sessions": len(data)}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Sessions", False, "Invalid sessions response format", {"response": data})
+            else:
+                self.log_test("Get Sessions", False, f"Failed to get sessions: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Sessions", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_conversation_history(self):
+        """Test getting conversation history"""
+        if not self.admin_token or not self.sessions:
+            self.log_test("Get Conversation History", False, "No admin token or sessions available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            session_id = self.sessions[0]
+            
+            response = self.session.get(
+                f"{BASE_URL}/ai/assistant/history/{session_id}",
+                headers=headers_auth
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test(
+                        "Get Conversation History",
+                        True,
+                        f"Successfully retrieved conversation history with {len(data)} messages",
+                        {"session_id": session_id, "message_count": len(data)}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Conversation History", False, "Invalid history response format", {"response": data})
+            else:
+                self.log_test("Get Conversation History", False, f"Failed to get history: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Conversation History", False, f"Exception: {str(e)}")
+        return False
+    
+    def run_all_tests(self):
+        """Run all AI assistant tests"""
+        print("🚀 Starting AI Assistant Test Suite")
+        print(f"📍 Testing against: {BASE_URL}")
+        print("=" * 60)
+        
+        if not self.setup_auth():
+            print("❌ Failed to setup authentication - aborting tests")
+            return False
+        
+        tests = [
+            self.test_ai_chat,
+            self.test_get_sessions,
+            self.test_get_conversation_history
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test in tests:
+            success = test()
+            if success:
+                passed += 1
+            time.sleep(0.5)
+        
+        print("=" * 60)
+        print(f"📊 Test Results: {passed}/{total} tests passed")
+        
+        return passed == total
+
+
+class RemindersAutomationTestSuite:
+    def __init__(self):
+        self.session = requests.Session()
+        self.admin_token = None
+        self.test_results = []
+        self.reminders = []
+        self.automation_rules = []
+        
+    def log_test(self, test_name, success, message, details=None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "details": details or {}
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if details and not success:
+            print(f"   Details: {details}")
+    
+    def setup_auth(self):
+        """Setup authentication"""
+        try:
+            admin_user = {
+                "name": "Reminders Test Admin",
+                "email": f"remindersadmin{int(time.time())}@afroboost.com",
+                "password": "AdminPass123!"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/auth/register", headers=HEADERS, json=admin_user)
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.admin_token = data["token"]
+                return True
+            else:
+                login_data = {"email": admin_user["email"], "password": admin_user["password"]}
+                response = self.session.post(f"{BASE_URL}/auth/login", headers=HEADERS, json=login_data)
+                if response.status_code == 200:
+                    data = response.json()
+                    self.admin_token = data["token"]
+                    return True
+        except Exception as e:
+            self.log_test("Setup Auth", False, f"Auth setup failed: {str(e)}")
+        return False
+    
+    def test_create_reminder(self):
+        """Test creating a reminder"""
+        if not self.admin_token:
+            self.log_test("Create Reminder", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            reminder_data = {
+                "title": "Rappel Session de Danse",
+                "description": "N'oubliez pas votre session de danse demain à 18h",
+                "reminder_type": "event",
+                "scheduled_at": "2025-02-15T17:00:00Z",
+                "channels": ["email", "whatsapp"],
+                "message_template": "Bonjour {{nom}}, votre session de danse est prévue demain à {{heure}}.",
+                "message_variables": {
+                    "nom": "Client",
+                    "heure": "18h00"
+                }
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/reminders",
+                headers=headers_auth,
+                json=reminder_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data:
+                    self.reminders.append(data)
+                    self.log_test(
+                        "Create Reminder",
+                        True,
+                        f"Successfully created reminder: {data.get('title', 'Unknown')}",
+                        {"reminder_id": data["id"], "channels": data.get("channels", [])}
+                    )
+                    return True
+                else:
+                    self.log_test("Create Reminder", False, "Reminder creation response missing ID", {"response": data})
+            else:
+                self.log_test("Create Reminder", False, f"Failed to create reminder: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Create Reminder", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_reminders(self):
+        """Test retrieving reminders"""
+        if not self.admin_token:
+            self.log_test("Get Reminders", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            response = self.session.get(f"{BASE_URL}/reminders", headers=headers_auth)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test(
+                        "Get Reminders",
+                        True,
+                        f"Successfully retrieved {len(data)} reminders",
+                        {"total_reminders": len(data)}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Reminders", False, "Invalid reminders response format", {"response": data})
+            else:
+                self.log_test("Get Reminders", False, f"Failed to get reminders: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Reminders", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_create_automation_rule(self):
+        """Test creating automation rule"""
+        if not self.admin_token:
+            self.log_test("Create Automation Rule", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            rule_data = {
+                "name": "Bienvenue Nouveau Contact",
+                "description": "Envoie un message de bienvenue aux nouveaux contacts",
+                "trigger_event": "new_contact",
+                "trigger_conditions": {
+                    "subscription_status": "active"
+                },
+                "action_type": "send_email",
+                "action_config": {
+                    "template": "welcome_email",
+                    "subject": "Bienvenue chez Afroboost!",
+                    "delay_minutes": 5
+                },
+                "delay_minutes": 5,
+                "is_active": True
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/automation/rules",
+                headers=headers_auth,
+                json=rule_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                if "id" in data:
+                    self.automation_rules.append(data)
+                    self.log_test(
+                        "Create Automation Rule",
+                        True,
+                        f"Successfully created automation rule: {data.get('name', 'Unknown')}",
+                        {"rule_id": data["id"], "trigger": data.get("trigger_event", "unknown")}
+                    )
+                    return True
+                else:
+                    self.log_test("Create Automation Rule", False, "Rule creation response missing ID", {"response": data})
+            else:
+                self.log_test("Create Automation Rule", False, f"Failed to create rule: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Create Automation Rule", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_get_automation_rules(self):
+        """Test retrieving automation rules"""
+        if not self.admin_token:
+            self.log_test("Get Automation Rules", False, "No admin token available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            response = self.session.get(f"{BASE_URL}/automation/rules", headers=headers_auth)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    self.log_test(
+                        "Get Automation Rules",
+                        True,
+                        f"Successfully retrieved {len(data)} automation rules",
+                        {"total_rules": len(data)}
+                    )
+                    return True
+                else:
+                    self.log_test("Get Automation Rules", False, "Invalid rules response format", {"response": data})
+            else:
+                self.log_test("Get Automation Rules", False, f"Failed to get rules: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Get Automation Rules", False, f"Exception: {str(e)}")
+        return False
+    
+    def test_toggle_automation_rule(self):
+        """Test toggling automation rule active status"""
+        if not self.admin_token or not self.automation_rules:
+            self.log_test("Toggle Automation Rule", False, "No admin token or rules available")
+            return False
+        
+        try:
+            headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
+            rule = self.automation_rules[0]
+            
+            # Toggle the rule (disable it)
+            toggle_data = {"is_active": False}
+            
+            response = self.session.patch(
+                f"{BASE_URL}/automation/rules/{rule['id']}",
+                headers=headers_auth,
+                json=toggle_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log_test(
+                    "Toggle Automation Rule",
+                    True,
+                    f"Successfully toggled automation rule",
+                    {"rule_id": rule["id"], "new_status": "disabled"}
+                )
+                return True
+            else:
+                self.log_test("Toggle Automation Rule", False, f"Failed to toggle rule: {response.status_code}", {"response": response.text})
+        except Exception as e:
+            self.log_test("Toggle Automation Rule", False, f"Exception: {str(e)}")
+        return False
+    
+    def run_all_tests(self):
+        """Run all reminders and automation tests"""
+        print("🚀 Starting Reminders & Automation Test Suite")
+        print(f"📍 Testing against: {BASE_URL}")
+        print("=" * 60)
+        
+        if not self.setup_auth():
+            print("❌ Failed to setup authentication - aborting tests")
+            return False
+        
+        tests = [
+            self.test_create_reminder,
+            self.test_get_reminders,
+            self.test_create_automation_rule,
+            self.test_get_automation_rules,
+            self.test_toggle_automation_rule
+        ]
+        
+        passed = 0
+        total = len(tests)
+        
+        for test in tests:
+            success = test()
+            if success:
+                passed += 1
+            time.sleep(0.5)
+        
+        print("=" * 60)
+        print(f"📊 Test Results: {passed}/{total} tests passed")
+        
+        return passed == total
+
+
 def main():
-    """Main test execution"""
-    print("🧪 BACKEND TEST SUITE - MODULE 3: CATALOG & RESERVATIONS")
+    """Main test execution - Comprehensive Backend Testing"""
+    print("🧪 COMPREHENSIVE BACKEND TEST SUITE - ALL MODULES")
     print("=" * 80)
     
-    # Run catalog and reservation tests
-    catalog_test_suite = CatalogReservationTestSuite()
+    all_results = {}
+    overall_success = True
     
+    # Test suites to run
+    test_suites = [
+        ("Authentication", AuthTestSuite()),
+        ("Contacts Management", ContactsTestSuite()),
+        ("Catalog & Reservations", CatalogReservationTestSuite()),
+        ("WhatsApp Advanced Campaigns", WhatsAppTestSuite()),
+        ("AI Assistant", AIAssistantTestSuite()),
+        ("Reminders & Automation", RemindersAutomationTestSuite())
+    ]
+    
+    for suite_name, test_suite in test_suites:
+        print(f"\n🔄 Running {suite_name} Tests...")
+        try:
+            success = test_suite.run_all_tests()
+            summary = test_suite.get_summary()
+            all_results[suite_name] = {
+                "success": success,
+                "summary": summary
+            }
+            
+            if not success:
+                overall_success = False
+                
+        except Exception as e:
+            print(f"❌ {suite_name} test suite failed with exception: {str(e)}")
+            all_results[suite_name] = {
+                "success": False,
+                "error": str(e)
+            }
+            overall_success = False
+    
+    # Save comprehensive results
     try:
-        success = catalog_test_suite.run_all_tests()
-        summary = catalog_test_suite.get_summary()
+        with open('/app/comprehensive_backend_test_results.json', 'w') as f:
+            json.dump(all_results, f, indent=2, default=str)
         
-        # Save detailed results
-        with open('/app/catalog_reservation_test_results.json', 'w') as f:
-            json.dump(summary, f, indent=2, default=str)
-        
-        print(f"\n📄 Detailed results saved to: /app/catalog_reservation_test_results.json")
-        
-        return success
-        
+        print(f"\n📄 Comprehensive results saved to: /app/comprehensive_backend_test_results.json")
     except Exception as e:
-        print(f"❌ Test suite failed with exception: {str(e)}")
-        return False
+        print(f"⚠️ Failed to save results: {str(e)}")
+    
+    # Print final summary
+    print("\n" + "=" * 80)
+    print("📊 FINAL TEST SUMMARY")
+    print("=" * 80)
+    
+    for suite_name, result in all_results.items():
+        status = "✅ PASS" if result["success"] else "❌ FAIL"
+        print(f"{status} {suite_name}")
+        
+        if "summary" in result:
+            summary = result["summary"]
+            print(f"    Tests: {summary['passed']}/{summary['total_tests']} passed ({summary['success_rate']:.1f}%)")
+    
+    print("=" * 80)
+    
+    if overall_success:
+        print("🎉 ALL BACKEND MODULES TESTED SUCCESSFULLY!")
+    else:
+        print("⚠️ SOME TESTS FAILED - CHECK INDIVIDUAL RESULTS")
+    
+    return overall_success
 
 if __name__ == "__main__":
     success = main()

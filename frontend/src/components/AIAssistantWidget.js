@@ -40,7 +40,7 @@ const AIAssistantWidget = () => {
       setSessionId(newSessionId);
       setMessages([{
         role: 'assistant',
-        content: '👋 Bonjour ! Je suis votre assistant IA Afroboost. Comment puis-je vous aider aujourd\'hui ?',
+        content: '👋 Bonjour ! Je suis votre assistant IA BoostTribe. Comment puis-je vous aider aujourd\'hui ?',
         timestamp: new Date()
       }]);
       setSuggestions([

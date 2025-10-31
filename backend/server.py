@@ -2715,7 +2715,7 @@ Numero de reservation: {res_id_short}
 Si vous avez des questions ou souhaitez modifier votre reservation, contactez-nous.
 
 Merci de votre confiance!
-L'equipe Afroboost
+Lequipe Afroboost
 """
     
     try:

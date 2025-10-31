@@ -2690,6 +2690,7 @@ async def send_reservation_confirmation_email(
     }.get(item_category, 'Article')
     
     # Simple text email (avoiding HTML complexity issues)
+    price_formatted = f"{total_price:.2f} {currency}"
     text_content = f"""
 Bonjour {customer_name},
 
@@ -2698,7 +2699,7 @@ Nous avons le plaisir de confirmer votre reservation pour: {item_title}
 Details:
 - Type: {category_label}
 - Quantite: {quantity}
-- Prix total: {total_price:.2f} {currency}
+- Prix total: {price_formatted}
 """
     
     if event_date_formatted:

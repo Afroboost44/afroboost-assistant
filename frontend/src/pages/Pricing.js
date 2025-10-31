@@ -154,7 +154,7 @@ const Pricing = () => {
       <div className="text-center space-y-4">
         <Badge className="bg-primary/20 text-primary border-primary/30 mb-4">
           <Sparkles className="mr-1 h-3 w-3" />
-          Tarifs Afroboost Mailer
+          Tarifs BoostTribe
         </Badge>
         <h1 className="text-5xl font-bold mb-4" data-testid="pricing-title">
           {t('pricing.title')}

@@ -484,7 +484,7 @@ class DiscountsTestSuite:
         
         try:
             validate_data = {
-                "code": "SUMMER2024",
+                "code": self.discounts[0]["code"] if self.discounts else "TESTCODE",
                 "contact_email": "test@test.com",
                 "items": [],
                 "subtotal": 100

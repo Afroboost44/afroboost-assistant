@@ -718,26 +718,55 @@ class CatalogReservationTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                self.catalog_items.append(data)
                 
-                # Verify response structure
-                if (data.get("category") == "course" and 
-                    data.get("title") == course_data["title"] and
-                    data.get("max_attendees") == 10 and
-                    "id" in data):
-                    
-                    self.log_test(
-                        "Create Catalog Course",
-                        True,
-                        f"Successfully created course: {data['title']}",
-                        {"course_id": data["id"], "max_attendees": data["max_attendees"]}
-                    )
-                    return True
+                # The API returns {message, id} format, so we need to fetch the created item
+                if "id" in data:
+                    # Fetch the created item to verify it
+                    item_response = self.session.get(f"{BASE_URL}/catalog", headers=headers)
+                    if item_response.status_code == 200:
+                        catalog_items = item_response.json()
+                        created_item = next((item for item in catalog_items if item.get("id") == data["id"]), None)
+                        
+                        if created_item:
+                            self.catalog_items.append(created_item)
+                            
+                            if (created_item.get("category") == "course" and 
+                                created_item.get("title") == course_data["title"] and
+                                created_item.get("max_attendees") == 10):
+                                
+                                self.log_test(
+                                    "Create Catalog Course",
+                                    True,
+                                    f"Successfully created course: {created_item['title']}",
+                                    {"course_id": created_item["id"], "max_attendees": created_item["max_attendees"]}
+                                )
+                                return True
+                            else:
+                                self.log_test(
+                                    "Create Catalog Course",
+                                    False,
+                                    "Course created but data incorrect",
+                                    {"created_item": created_item}
+                                )
+                        else:
+                            self.log_test(
+                                "Create Catalog Course",
+                                False,
+                                "Course created but not found in catalog list",
+                                {"response": data}
+                            )
+                    else:
+                        self.log_test(
+                            "Create Catalog Course",
+                            False,
+                            "Course created but failed to fetch catalog",
+                            {"response": data}
+                        )
                 else:
                     self.log_test(
                         "Create Catalog Course",
                         False,
-                        "Course created but response data incorrect",
+                        "Course creation response missing ID",
                         {"response": data}
                     )
             else:

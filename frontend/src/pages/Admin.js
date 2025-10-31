@@ -52,8 +52,8 @@ const Admin = () => {
         bank_iban: response.data.bank_iban || '',
         bank_name: response.data.bank_name || '',
         bank_currency: response.data.bank_currency || 'CHF',
-        company_name: response.data.company_name || 'Afroboost',
-        sender_email: response.data.sender_email || 'contact@afroboost.com',
+        company_name: response.data.company_name || 'BoostTribe',
+        sender_email: response.data.sender_email || 'contact@boosttribe.com',
         sender_name: response.data.sender_name || 'Coach Bassi'
       });
     } catch (error) {

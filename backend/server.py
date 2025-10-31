@@ -2689,11 +2689,11 @@ async def send_reservation_confirmation_email(
         'product': 'Produit'
     }.get(item_category, 'Article')
     
-    # Email HTML
-    html_content = f"""
+    # Email HTML - Using .format() to avoid f-string conflicts with CSS
+    html_content = """
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0a0a0a; color: #ffffff;">
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 10px; margin-bottom: 30px;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Confirmation de Réservation</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Confirmation de Reservation</h1>
         </div>
         
         <div style="background-color: #1a1a1a; padding: 30px; border-radius: 10px; border: 1px solid #6366f1;">
@@ -2702,11 +2702,11 @@ async def send_reservation_confirmation_email(
             </p>
             
             <p style="color: #d1d5db; margin-bottom: 25px;">
-                Nous avons le plaisir de confirmer votre réservation pour <strong style="color: #6366f1;">{item_title}</strong>.
+                Nous avons le plaisir de confirmer votre reservation pour <strong style="color: #6366f1;">{item_title}</strong>.
             </p>
             
             <div style="background-color: #0a0a0a; padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin-bottom: 25px;">
-                <h2 style="color: #6366f1; margin-top: 0; font-size: 18px;">Détails de votre réservation</h2>
+                <h2 style="color: #6366f1; margin-top: 0; font-size: 18px;">Details de votre reservation</h2>
                 
                 <table style="width: 100%; color: #d1d5db;">
                     <tr>
@@ -2714,26 +2714,26 @@ async def send_reservation_confirmation_email(
                         <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{category_label}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Quantité:</strong></td>
+                        <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Quantite:</strong></td>
                         <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{quantity}</td>
                     </tr>
                     <tr>
                         <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Prix total:</strong></td>
                         <td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right; color: #6366f1; font-size: 18px;"><strong>{total_price:.2f} {currency}</strong></td>
                     </tr>
-                    {'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">' + event_date_formatted + '</td></tr>' if event_date else ''}
-                    {'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Lieu:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">' + str(location) + '</td></tr>' if location else ''}
+                    {event_date_row}
+                    {location_row}
                 </table>
             </div>
             
-            {'<div style="background-color: #6366f1; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;"><p style="color: #ffffff; margin: 0; font-size: 14px;"><strong>Accès casque Afroboost Silent</strong></p><p style="color: #ffffff; margin: 5px 0 0 0; font-size: 12px;">Présentez cette confirmation à l\'entrée</p></div>' if item_category in ['course', 'event'] else ''}
+            {access_badge}
             
             <p style="color: #d1d5db; margin-bottom: 10px;">
-                <strong>Numéro de réservation:</strong> <code style="background-color: #2a2a2a; padding: 4px 8px; border-radius: 4px; color: #6366f1;">{reservation_id[:8]}</code>
+                <strong>Numero de reservation:</strong> <code style="background-color: #2a2a2a; padding: 4px 8px; border-radius: 4px; color: #6366f1;">{reservation_id_short}</code>
             </p>
             
             <p style="color: #d1d5db; margin-top: 30px;">
-                Si vous avez des questions ou souhaitez modifier votre réservation, n'hésitez pas à nous contacter.
+                Si vous avez des questions ou souhaitez modifier votre reservation, n'hesitez pas a nous contacter.
             </p>
         </div>
         
@@ -2742,11 +2742,38 @@ async def send_reservation_confirmation_email(
                 Merci de votre confiance !
             </p>
             <p style="color: #9ca3af; font-size: 14px; margin: 0;">
-                L'équipe <strong style="color: #6366f1;">Afroboost</strong>
+                L'equipe <strong style="color: #6366f1;">Afroboost</strong>
             </p>
         </div>
     </div>
     """
+    
+    # Prepare conditional rows
+    event_date_row = ''
+    if event_date_formatted:
+        event_date_row = f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Date:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{event_date_formatted}</td></tr>'
+    
+    location_row = ''
+    if location:
+        location_row = f'<tr><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a;"><strong>Lieu:</strong></td><td style="padding: 8px 0; border-bottom: 1px solid #2a2a2a; text-align: right;">{location}</td></tr>'
+    
+    access_badge = ''
+    if item_category in ['course', 'event']:
+        access_badge = '<div style="background-color: #6366f1; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 25px;"><p style="color: #ffffff; margin: 0; font-size: 14px;"><strong>Acces casque Afroboost Silent</strong></p><p style="color: #ffffff; margin: 5px 0 0 0; font-size: 12px;">Presentez cette confirmation a l\'entree</p></div>'
+    
+    # Format the HTML
+    html_content = html_content.format(
+        customer_name=customer_name,
+        item_title=item_title,
+        category_label=category_label,
+        quantity=quantity,
+        total_price=total_price,
+        currency=currency,
+        event_date_row=event_date_row,
+        location_row=location_row,
+        access_badge=access_badge,
+        reservation_id_short=reservation_id[:8]
+    )
     
     try:
         resend.Emails.send({

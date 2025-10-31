@@ -405,6 +405,176 @@ class AIConversationResponse(BaseModel):
     response: str
     context_used: str
 
+
+
+# ========================
+# ADVANCED WHATSAPP MODELS
+# ========================
+
+class InteractiveButton(BaseModel):
+    """Button for WhatsApp interactive messages"""
+    type: str  # reply, url, call
+    text: str
+    id: Optional[str] = None  # For reply buttons
+    url: Optional[str] = None  # For URL buttons
+    phone_number: Optional[str] = None  # For call buttons
+
+class InteractiveList(BaseModel):
+    """List item for WhatsApp interactive messages"""
+    id: str
+    title: str
+    description: Optional[str] = None
+
+class InteractiveSection(BaseModel):
+    """Section containing list items"""
+    title: str
+    rows: List[InteractiveList]
+
+class MessageTemplate(BaseModel):
+    """Pre-defined message templates"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    category: str  # marketing, utility, transactional
+    content: str
+    variables: List[str] = []  # List of variables like {{nom}}, {{prenom}}
+    language: str = "fr"
+    buttons: List[InteractiveButton] = []
+    has_media: bool = False
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None  # image, document, video
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class MessageTemplateCreate(BaseModel):
+    name: str
+    category: str
+    content: str
+    variables: List[str] = []
+    language: str = "fr"
+    buttons: List[InteractiveButton] = []
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
+
+class MessageTemplateUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    content: Optional[str] = None
+    variables: Optional[List[str]] = None
+    buttons: Optional[List[InteractiveButton]] = None
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
+
+class AdvancedWhatsAppCampaign(BaseModel):
+    """Enhanced WhatsApp campaign with interactive elements"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    template_id: Optional[str] = None
+    message_content: str
+    language: str = "fr"
+    
+    # Interactive elements
+    buttons: List[InteractiveButton] = []
+    list_sections: List[InteractiveSection] = []
+    
+    # Media
+    has_media: bool = False
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
+    
+    # Targeting
+    target_contacts: List[str] = []  # Specific contact IDs
+    target_tags: List[str] = []  # Filter by tags
+    target_status: Optional[str] = None  # Filter by member status
+    
+    # Personalization
+    use_personalization: bool = False
+    variables: Dict[str, str] = {}  # Variable mappings
+    
+    # Scheduling
+    status: str = "draft"  # draft, scheduled, sending, sent, failed
+    scheduled_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    
+    # Payment links
+    payment_links: List[Dict[str, str]] = []  # [{type: 'stripe', url: '...'}]
+    
+    # Analytics
+    stats: Dict = {
+        "sent": 0,
+        "delivered": 0,
+        "read": 0,
+        "replied": 0,
+        "failed": 0,
+        "clicked": 0,
+        "payments_completed": 0
+    }
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AdvancedWhatsAppCampaignCreate(BaseModel):
+    title: str
+    template_id: Optional[str] = None
+    message_content: str
+    language: str = "fr"
+    buttons: List[InteractiveButton] = []
+    list_sections: List[InteractiveSection] = []
+    media_url: Optional[str] = None
+    media_type: Optional[str] = None
+    target_contacts: List[str] = []
+    target_tags: List[str] = []
+    target_status: Optional[str] = None
+    use_personalization: bool = False
+    scheduled_at: Optional[str] = None
+    payment_links: List[Dict[str, str]] = []
+
+class CampaignAnalytics(BaseModel):
+    """Detailed analytics for campaigns"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: str
+    contact_id: str
+    contact_phone: str
+    
+    # Status tracking
+    sent: bool = False
+    delivered: bool = False
+    read: bool = False
+    replied: bool = False
+    clicked: bool = False
+    
+    # Timestamps
+    sent_at: Optional[datetime] = None
+    delivered_at: Optional[datetime] = None
+    read_at: Optional[datetime] = None
+    replied_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    
+    # Response data
+    reply_content: Optional[str] = None
+    button_clicked: Optional[str] = None
+    
+    # Payment tracking
+    payment_link_clicked: bool = False
+    payment_completed: bool = False
+    payment_amount: Optional[float] = None
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PaymentLinkCreate(BaseModel):
+    """Create payment link for WhatsApp"""
+    campaign_id: str
+    amount: float
+    currency: str = "CHF"
+    description: str
+    payment_method: str  # stripe, twint
+    contact_email: Optional[str] = None
+
+
 # Stripe/Payment Models
 class PricingPlan(BaseModel):
     model_config = ConfigDict(extra="ignore")

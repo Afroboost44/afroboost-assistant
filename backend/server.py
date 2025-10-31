@@ -2537,6 +2537,218 @@ async def clear_conversation_history(contact_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ========================
+# ROUTES - AI ASSISTANT (GLOBAL)
+# ========================
+
+@api_router.post("/ai/assistant/chat", response_model=AIAssistantResponse)
+async def ai_assistant_chat(
+    request: AIAssistantRequest,
+    current_user: Dict = Depends(get_current_user)
+):
+    """AI Assistant chat - omnipresent helper for users"""
+    try:
+        # Generate or use provided session_id
+        session_id = request.session_id or str(uuid.uuid4())
+        user_id = current_user["id"]
+        
+        # Get EMERGENT_LLM_KEY
+        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not api_key:
+            raise HTTPException(status_code=500, detail="AI service not configured")
+        
+        # Build system message based on task type
+        system_messages = {
+            "general": """Tu es l'Assistant IA d'Afroboost, une plateforme de marketing intelligente.
+Tu aides les utilisateurs à gérer leurs campagnes, contacts, et stratégies marketing.
+Sois professionnel, amical et concis. Réponds en français.""",
+            
+            "campaign": """Tu es un expert en création de campagnes marketing.
+Aide l'utilisateur à créer du contenu engageant pour emails et WhatsApp.
+Propose des structures, des accroches, et des appels à l'action efficaces.
+Adapte le ton selon le public cible.""",
+            
+            "analysis": """Tu es un analyste de données marketing.
+Aide l'utilisateur à comprendre ses statistiques et à en tirer des insights actionnables.
+Propose des recommandations concrètes basées sur les données.""",
+            
+            "strategy": """Tu es un stratège marketing.
+Aide l'utilisateur à planifier ses campagnes, définir ses objectifs, et optimiser son approche.
+Pose des questions pertinentes et guide vers les meilleures pratiques."""
+        }
+        
+        system_message = system_messages.get(request.task_type, system_messages["general"])
+        
+        # Add context to system message if provided
+        if request.context:
+            context_str = "\n\nContexte actuel:\n"
+            for key, value in request.context.items():
+                context_str += f"- {key}: {value}\n"
+            system_message += context_str
+        
+        # Initialize LlmChat with emergentintegrations
+        chat = LlmChat(
+            api_key=api_key,
+            session_id=session_id,
+            system_message=system_message
+        ).with_model("openai", "gpt-4o-mini")  # Using gpt-4o-mini as default (cost-effective)
+        
+        # Get conversation history from database
+        history = await db.ai_assistant_messages.find(
+            {"user_id": user_id, "session_id": session_id},
+            {"_id": 0}
+        ).sort("created_at", 1).limit(20).to_list(length=20)
+        
+        # Create user message
+        user_message = UserMessage(text=request.message)
+        
+        # Send message and get response
+        response_text = await chat.send_message(user_message)
+        
+        # Save user message to database
+        user_msg = AIAssistantMessage(
+            user_id=user_id,
+            session_id=session_id,
+            role="user",
+            content=request.message,
+            context=request.context or {}
+        )
+        user_msg_dict = user_msg.model_dump()
+        user_msg_dict["created_at"] = user_msg_dict["created_at"].isoformat()
+        await db.ai_assistant_messages.insert_one(user_msg_dict)
+        
+        # Save assistant response to database
+        assistant_msg = AIAssistantMessage(
+            user_id=user_id,
+            session_id=session_id,
+            role="assistant",
+            content=response_text,
+            context=request.context or {}
+        )
+        assistant_msg_dict = assistant_msg.model_dump()
+        assistant_msg_dict["created_at"] = assistant_msg_dict["created_at"].isoformat()
+        await db.ai_assistant_messages.insert_one(assistant_msg_dict)
+        
+        # Generate suggestions based on task type
+        suggestions = []
+        if request.task_type == "campaign":
+            suggestions = [
+                "Créer une campagne email",
+                "Générer du contenu WhatsApp",
+                "Optimiser mon message"
+            ]
+        elif request.task_type == "analysis":
+            suggestions = [
+                "Analyser mes statistiques",
+                "Comparer mes campagnes",
+                "Identifier les opportunités"
+            ]
+        elif request.task_type == "strategy":
+            suggestions = [
+                "Planifier ma prochaine campagne",
+                "Définir mes objectifs",
+                "Améliorer mon ROI"
+            ]
+        else:
+            suggestions = [
+                "Comment créer une campagne ?",
+                "Analyser mes résultats",
+                "Conseils marketing"
+            ]
+        
+        return AIAssistantResponse(
+            response=response_text,
+            session_id=session_id,
+            suggestions=suggestions,
+            context=request.context or {}
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in AI Assistant: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI Assistant error: {str(e)}")
+
+@api_router.get("/ai/assistant/sessions")
+async def get_ai_assistant_sessions(current_user: Dict = Depends(get_current_user)):
+    """Get all AI Assistant sessions for current user"""
+    try:
+        # Get unique session IDs with latest message
+        pipeline = [
+            {"$match": {"user_id": current_user["id"]}},
+            {"$sort": {"created_at": -1}},
+            {"$group": {
+                "_id": "$session_id",
+                "latest_message": {"$first": "$content"},
+                "latest_time": {"$first": "$created_at"},
+                "message_count": {"$sum": 1}
+            }},
+            {"$sort": {"latest_time": -1}},
+            {"$limit": 10}
+        ]
+        
+        sessions = await db.ai_assistant_messages.aggregate(pipeline).to_list(length=10)
+        
+        return {
+            "sessions": [
+                {
+                    "session_id": s["_id"],
+                    "preview": s["latest_message"][:100] + "..." if len(s["latest_message"]) > 100 else s["latest_message"],
+                    "message_count": s["message_count"],
+                    "updated_at": s["latest_time"]
+                }
+                for s in sessions
+            ]
+        }
+    except Exception as e:
+        logger.error(f"Error getting sessions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/ai/assistant/history/{session_id}")
+async def get_ai_assistant_history(
+    session_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Get chat history for a specific session"""
+    try:
+        messages = await db.ai_assistant_messages.find(
+            {"user_id": current_user["id"], "session_id": session_id},
+            {"_id": 0}
+        ).sort("created_at", 1).to_list(length=None)
+        
+        # Parse dates
+        for msg in messages:
+            if isinstance(msg.get('created_at'), str):
+                msg['created_at'] = datetime.fromisoformat(msg['created_at'])
+        
+        return {
+            "session_id": session_id,
+            "messages": messages
+        }
+    except Exception as e:
+        logger.error(f"Error getting history: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/ai/assistant/session/{session_id}")
+async def delete_ai_assistant_session(
+    session_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Delete an AI Assistant session"""
+    try:
+        result = await db.ai_assistant_messages.delete_many({
+            "user_id": current_user["id"],
+            "session_id": session_id
+        })
+        
+        return {
+            "message": "Session deleted",
+            "deleted_count": result.deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error deleting session: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================
 # ROUTES - STRIPE PAYMENTS
 # ========================

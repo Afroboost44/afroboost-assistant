@@ -8,10 +8,10 @@
       {
         "test": "Create Gift Card",
         "success": true,
-        "message": "Successfully created gift card with code: 90A79048",
-        "timestamp": "2025-10-31T15:55:48.245010+00:00",
+        "message": "Successfully created gift card with code: 11F74509",
+        "timestamp": "2025-10-31T15:56:44.649652+00:00",
         "details": {
-          "gift_card_id": "ac8ab707-b376-4180-9fc1-32e25dc862f9",
+          "gift_card_id": "754a407d-0c2b-45bf-aac7-e65a229ff74d",
           "amount": 100.0,
           "currency": "CHF"
         }
@@ -19,19 +19,19 @@
       {
         "test": "List Gift Cards",
         "success": true,
-        "message": "Successfully retrieved 1 gift cards",
-        "timestamp": "2025-10-31T15:55:48.761269+00:00",
+        "message": "Successfully retrieved 2 gift cards",
+        "timestamp": "2025-10-31T15:56:45.159812+00:00",
         "details": {
-          "total_cards": 1
+          "total_cards": 2
         }
       },
       {
         "test": "Validate Gift Card",
         "success": true,
-        "message": "Successfully validated gift card: 90A79048",
-        "timestamp": "2025-10-31T15:55:49.272050+00:00",
+        "message": "Successfully validated gift card: 11F74509",
+        "timestamp": "2025-10-31T15:56:45.670403+00:00",
         "details": {
-          "code": "90A79048",
+          "code": "11F74509",
           "status": "active",
           "amount": 100.0
         }
@@ -39,73 +39,112 @@
       {
         "test": "Redeem Gift Card",
         "success": false,
-        "message": "Failed to redeem gift card: 422",
-        "timestamp": "2025-10-31T15:55:49.789155+00:00",
+        "message": "Failed to redeem gift card: 500",
+        "timestamp": "2025-10-31T15:56:46.179592+00:00",
         "details": {
-          "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"code\"],\"msg\":\"Field required\",\"input\":{\"redeemed_by_name\":\"Client Test\",\"redeemed_by_email\":\"client@test.com\",\"amount_to_use\":50},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+          "response": "{\"detail\":\"unsupported operand type(s) for -: 'NoneType' and 'float'\"}"
         }
       }
     ]
   },
   "discounts": {
     "total_tests": 7,
-    "passed": 1,
-    "failed": 6,
-    "success_rate": 14.285714285714285,
+    "passed": 7,
+    "failed": 0,
+    "success_rate": 100.0,
     "results": [
       {
         "test": "Create Discount",
-        "success": false,
-        "message": "Failed to create discount: 500",
-        "timestamp": "2025-10-31T15:55:50.603294+00:00",
+        "success": true,
+        "message": "Successfully created discount: SUMMER2024",
+        "timestamp": "2025-10-31T15:56:46.957786+00:00",
         "details": {
-          "response": "{\"detail\":\"server.Discount() got multiple values for keyword argument 'code'\"}"
+          "discount_id": "b266604e-d22a-4a8b-8959-07c701006c49",
+          "discount_value": 20.0
         }
       },
       {
         "test": "List Discounts",
         "success": true,
-        "message": "Successfully retrieved 0 discounts",
-        "timestamp": "2025-10-31T15:55:51.115417+00:00",
+        "message": "Successfully retrieved 1 discounts",
+        "timestamp": "2025-10-31T15:56:47.468431+00:00",
         "details": {
-          "total_discounts": 0
+          "total_discounts": 1
         }
       },
       {
         "test": "Get Specific Discount",
-        "success": false,
-        "message": "No discounts available",
-        "timestamp": "2025-10-31T15:55:51.615523+00:00",
-        "details": {}
+        "success": true,
+        "message": "Successfully retrieved discount: SUMMER2024",
+        "timestamp": "2025-10-31T15:56:47.980513+00:00",
+        "details": {
+          "discount_id": "b266604e-d22a-4a8b-8959-07c701006c49",
+          "code": "SUMMER2024"
+        }
       },
       {
         "test": "Update Discount",
-        "success": false,
-        "message": "No discounts available",
-        "timestamp": "2025-10-31T15:55:52.115638+00:00",
-        "details": {}
+        "success": true,
+        "message": "Successfully updated discount",
+        "timestamp": "2025-10-31T15:56:48.494205+00:00",
+        "details": {
+          "discount_id": "b266604e-d22a-4a8b-8959-07c701006c49",
+          "new_value": 25
+        }
       },
       {
         "test": "Validate Discount Code",
-        "success": false,
-        "message": "No discounts available",
-        "timestamp": "2025-10-31T15:55:52.615752+00:00",
-        "details": {}
+        "success": true,
+        "message": "Successfully validated discount code: SUMMER2024",
+        "timestamp": "2025-10-31T15:56:49.004761+00:00",
+        "details": {
+          "code": "SUMMER2024",
+          "response": {
+            "valid": true,
+            "discount": {
+              "id": "b266604e-d22a-4a8b-8959-07c701006c49",
+              "code": "SUMMER2024",
+              "discount_type": "percentage",
+              "discount_value": 25.0,
+              "currency": "CHF",
+              "name": "Summer Sale",
+              "description": null,
+              "start_date": "2025-10-31T15:56:46.938031+00:00",
+              "end_date": "2025-11-30T15:56:46.938041+00:00",
+              "is_active": true,
+              "usage_limit": 100,
+              "usage_count": 0,
+              "per_user_limit": 1,
+              "applicable_to": [],
+              "minimum_purchase": null,
+              "target_contacts": [],
+              "target_tags": [],
+              "created_by": "c8353966-33c6-4145-80d4-71f174f4a481",
+              "created_at": "2025-10-31T15:56:46.944858+00:00",
+              "updated_at": "2025-10-31T15:56:48.490396+00:00"
+            },
+            "discount_amount": 25.0,
+            "final_amount": 75.0
+          }
+        }
       },
       {
         "test": "Delete Discount",
-        "success": false,
-        "message": "No discounts available",
-        "timestamp": "2025-10-31T15:55:53.115864+00:00",
-        "details": {}
+        "success": true,
+        "message": "Successfully deleted discount",
+        "timestamp": "2025-10-31T15:56:49.513738+00:00",
+        "details": {
+          "discount_id": "b266604e-d22a-4a8b-8959-07c701006c49"
+        }
       },
       {
         "test": "Create Fixed Discount",
-        "success": false,
-        "message": "Failed to create fixed discount: 500",
-        "timestamp": "2025-10-31T15:55:53.627342+00:00",
+        "success": true,
+        "message": "Successfully created fixed discount: FIXED50",
+        "timestamp": "2025-10-31T15:56:50.028128+00:00",
         "details": {
-          "response": "{\"detail\":\"server.Discount() got multiple values for keyword argument 'code'\"}"
+          "discount_id": "34073bdd-9d85-4999-8130-a355eca0c39f",
+          "discount_type": "fixed_amount"
         }
       }
     ]
@@ -119,17 +158,17 @@
       {
         "test": "Create Referral",
         "success": false,
-        "message": "Failed to create referral: 500",
-        "timestamp": "2025-10-31T15:55:54.436513+00:00",
+        "message": "Failed to create referral: 400",
+        "timestamp": "2025-10-31T15:56:50.829603+00:00",
         "details": {
-          "response": "{\"detail\":\"'dict' object has no attribute 'email'\"}"
+          "response": "{\"detail\":\"Referral already exists for this email\"}"
         }
       },
       {
         "test": "List My Referrals",
         "success": true,
         "message": "Successfully retrieved 1 referrals",
-        "timestamp": "2025-10-31T15:55:54.948217+00:00",
+        "timestamp": "2025-10-31T15:56:51.339921+00:00",
         "details": {
           "total_referrals": 1
         }
@@ -138,7 +177,7 @@
         "test": "Get Referral Stats",
         "success": true,
         "message": "Successfully retrieved referral stats",
-        "timestamp": "2025-10-31T15:55:55.459543+00:00",
+        "timestamp": "2025-10-31T15:56:51.851296+00:00",
         "details": {
           "total_referrals": 1,
           "referral_code": "25EA1204"
@@ -148,7 +187,7 @@
         "test": "Complete Referral",
         "success": false,
         "message": "No referrals available",
-        "timestamp": "2025-10-31T15:55:55.959654+00:00",
+        "timestamp": "2025-10-31T15:56:52.351411+00:00",
         "details": {}
       }
     ]
@@ -162,10 +201,10 @@
       {
         "test": "Start Ad Chat",
         "success": true,
-        "message": "Successfully started ad chat with session: 3bc99714-df98-4f9b-a212-9f57b8a9e4e9",
-        "timestamp": "2025-10-31T15:55:56.723671+00:00",
+        "message": "Successfully started ad chat with session: 5181b737-1b02-4335-a8d0-bb4f64b00819",
+        "timestamp": "2025-10-31T15:56:53.117772+00:00",
         "details": {
-          "chat_id": "433ff762-5efa-419a-8544-ab62696ce5a5",
+          "chat_id": "824fdedd-cf11-4d86-ab5e-9b33f4c293be",
           "ad_platform": "facebook",
           "visitor_name": "John Visitor"
         }
@@ -174,9 +213,9 @@
         "test": "Send Visitor Message",
         "success": true,
         "message": "Successfully sent visitor message",
-        "timestamp": "2025-10-31T15:55:57.231938+00:00",
+        "timestamp": "2025-10-31T15:56:53.628867+00:00",
         "details": {
-          "chat_id": "433ff762-5efa-419a-8544-ab62696ce5a5",
+          "chat_id": "824fdedd-cf11-4d86-ab5e-9b33f4c293be",
           "sender": "visitor"
         }
       },
@@ -184,26 +223,26 @@
         "test": "Send Agent Message",
         "success": true,
         "message": "Successfully sent agent message",
-        "timestamp": "2025-10-31T15:55:57.742565+00:00",
+        "timestamp": "2025-10-31T15:56:54.139129+00:00",
         "details": {
-          "chat_id": "433ff762-5efa-419a-8544-ab62696ce5a5",
+          "chat_id": "824fdedd-cf11-4d86-ab5e-9b33f4c293be",
           "sender": "agent"
         }
       },
       {
         "test": "List Chats",
         "success": true,
-        "message": "Successfully retrieved 2 chats",
-        "timestamp": "2025-10-31T15:55:58.250139+00:00",
+        "message": "Successfully retrieved 3 chats",
+        "timestamp": "2025-10-31T15:56:54.649815+00:00",
         "details": {
-          "total_chats": 2
+          "total_chats": 3
         }
       },
       {
         "test": "Filter Chats by Status",
         "success": true,
         "message": "Successfully filtered chats by status: 1 active chats",
-        "timestamp": "2025-10-31T15:55:58.757870+00:00",
+        "timestamp": "2025-10-31T15:56:55.159347+00:00",
         "details": {
           "active_chats": 1
         }
@@ -212,9 +251,9 @@
         "test": "Get Specific Chat",
         "success": true,
         "message": "Successfully retrieved chat with messages",
-        "timestamp": "2025-10-31T15:55:59.265115+00:00",
+        "timestamp": "2025-10-31T15:56:55.670157+00:00",
         "details": {
-          "chat_id": "433ff762-5efa-419a-8544-ab62696ce5a5",
+          "chat_id": "824fdedd-cf11-4d86-ab5e-9b33f4c293be",
           "message_count": 3
         }
       },
@@ -222,9 +261,9 @@
         "test": "Update Chat",
         "success": true,
         "message": "Successfully updated chat",
-        "timestamp": "2025-10-31T15:55:59.772997+00:00",
+        "timestamp": "2025-10-31T15:56:56.183006+00:00",
         "details": {
-          "chat_id": "433ff762-5efa-419a-8544-ab62696ce5a5",
+          "chat_id": "824fdedd-cf11-4d86-ab5e-9b33f4c293be",
           "new_status": "resolved",
           "lead_score": 85
         }
@@ -233,9 +272,9 @@
         "test": "Convert Chat to Contact",
         "success": true,
         "message": "Successfully converted chat to contact",
-        "timestamp": "2025-10-31T15:56:00.281048+00:00",
+        "timestamp": "2025-10-31T15:56:56.693316+00:00",
         "details": {
-          "chat_id": "433ff762-5efa-419a-8544-ab62696ce5a5",
+          "chat_id": "824fdedd-cf11-4d86-ab5e-9b33f4c293be",
           "response": {
             "message": "Chat converted to contact successfully",
             "contact_id": "7fc718fb-578f-4531-bea6-a47ee4fcade4"

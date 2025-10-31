@@ -27,6 +27,21 @@
         
         <title>BoostTribe - Marketing Multicanal Intelligent</title>
         
+        <!-- Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('BoostTribe SW registered:', registration);
+                        })
+                        .catch(error => {
+                            console.log('BoostTribe SW registration failed:', error);
+                        });
+                });
+            }
+        </script>
+        
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
         <!--
         These two scripts have been added for the testing, please do not edit or remove them

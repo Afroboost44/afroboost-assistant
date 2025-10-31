@@ -4073,7 +4073,7 @@ async def create_gift_card(
         # Create gift card document
         new_gift_card = GiftCard(
             **gift_card.dict(),
-            sender_id=current_user.id
+            sender_id=current_user["id"]
         )
         
         gift_card_dict = new_gift_card.dict()

@@ -74,6 +74,16 @@ function App() {
                 <Layout><Profile /></Layout>
               </ProtectedRoute>
             } />
+            <Route path="/catalog" element={
+              <ProtectedRoute>
+                <Layout><Catalog /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/reservations" element={
+              <ProtectedRoute>
+                <Layout><Reservations /></Layout>
+              </ProtectedRoute>
+            } />
 
             {/* Admin-only routes */}
             <Route path="/admin" element={

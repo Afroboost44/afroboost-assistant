@@ -4057,6 +4057,640 @@ async def process_due_reminders(current_user: Dict = Depends(get_current_user)):
     }
 
 
+
+
+# ========================
+# GIFT CARDS ROUTES
+# ========================
+
+@api_router.post("/gift-cards", response_model=GiftCard)
+async def create_gift_card(
+    gift_card: GiftCardCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new gift card"""
+    try:
+        # Create gift card document
+        new_gift_card = GiftCard(
+            **gift_card.dict(),
+            sender_id=current_user.id
+        )
+        
+        gift_card_dict = new_gift_card.dict()
+        gift_card_dict['created_at'] = gift_card_dict['created_at'].isoformat()
+        gift_card_dict['expires_at'] = gift_card_dict['expires_at'].isoformat()
+        
+        await db.gift_cards.insert_one(gift_card_dict)
+        
+        # TODO: Send gift card email to recipient
+        logger.info(f"Gift card created: {new_gift_card.code} for {gift_card.recipient_email}")
+        
+        return new_gift_card
+    except Exception as e:
+        logger.error(f"Error creating gift card: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/gift-cards", response_model=List[GiftCard])
+async def get_gift_cards(current_user: User = Depends(get_current_user)):
+    """Get all gift cards created by current user"""
+    try:
+        gift_cards = await db.gift_cards.find(
+            {"sender_id": current_user.id},
+            {"_id": 0}
+        ).to_list(length=None)
+        return gift_cards
+    except Exception as e:
+        logger.error(f"Error fetching gift cards: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/gift-cards/{code}", response_model=GiftCard)
+async def get_gift_card_by_code(code: str):
+    """Get gift card details by code (public endpoint for validation)"""
+    try:
+        gift_card = await db.gift_cards.find_one({"code": code.upper()}, {"_id": 0})
+        if not gift_card:
+            raise HTTPException(status_code=404, detail="Gift card not found")
+        
+        # Check if expired
+        expires_at = datetime.fromisoformat(gift_card['expires_at'])
+        if expires_at < datetime.now(timezone.utc):
+            gift_card['status'] = 'expired'
+            await db.gift_cards.update_one(
+                {"code": code.upper()},
+                {"$set": {"status": "expired"}}
+            )
+        
+        return gift_card
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching gift card: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/gift-cards/{code}/redeem", response_model=GiftCard)
+async def redeem_gift_card(
+    code: str,
+    redemption: GiftCardRedeem
+):
+    """Redeem a gift card"""
+    try:
+        # Find gift card
+        gift_card = await db.gift_cards.find_one({"code": code.upper()}, {"_id": 0})
+        if not gift_card:
+            raise HTTPException(status_code=404, detail="Gift card not found")
+        
+        # Validate status
+        if gift_card['status'] != 'active':
+            raise HTTPException(status_code=400, detail=f"Gift card is {gift_card['status']}")
+        
+        # Check expiration
+        expires_at = datetime.fromisoformat(gift_card['expires_at'])
+        if expires_at < datetime.now(timezone.utc):
+            raise HTTPException(status_code=400, detail="Gift card has expired")
+        
+        # Handle partial or full redemption
+        amount_to_use = redemption.amount_to_use or gift_card['amount']
+        remaining = gift_card.get('remaining_balance', gift_card['amount']) - amount_to_use
+        
+        if remaining < 0:
+            raise HTTPException(status_code=400, detail="Insufficient balance")
+        
+        # Update gift card
+        update_data = {
+            "used_at": datetime.now(timezone.utc).isoformat(),
+            "used_by": redemption.redeemed_by_email,
+            "remaining_balance": remaining,
+            "status": "used" if remaining == 0 else "active"
+        }
+        
+        await db.gift_cards.update_one(
+            {"code": code.upper()},
+            {"$set": update_data}
+        )
+        
+        # Fetch and return updated gift card
+        updated_gift_card = await db.gift_cards.find_one({"code": code.upper()}, {"_id": 0})
+        logger.info(f"Gift card redeemed: {code} by {redemption.redeemed_by_email}")
+        
+        return updated_gift_card
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error redeeming gift card: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
+# DISCOUNTS ROUTES
+# ========================
+
+@api_router.post("/discounts", response_model=Discount)
+async def create_discount(
+    discount: DiscountCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new discount code"""
+    try:
+        # Check if code already exists
+        existing = await db.discounts.find_one({"code": discount.code.upper()})
+        if existing:
+            raise HTTPException(status_code=400, detail="Discount code already exists")
+        
+        # Create discount
+        new_discount = Discount(
+            **discount.dict(),
+            code=discount.code.upper(),
+            created_by=current_user.id
+        )
+        
+        discount_dict = new_discount.dict()
+        discount_dict['created_at'] = discount_dict['created_at'].isoformat()
+        discount_dict['updated_at'] = discount_dict['updated_at'].isoformat()
+        discount_dict['start_date'] = discount_dict['start_date'].isoformat()
+        discount_dict['end_date'] = discount_dict['end_date'].isoformat()
+        
+        await db.discounts.insert_one(discount_dict)
+        
+        logger.info(f"Discount created: {new_discount.code}")
+        return new_discount
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating discount: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/discounts", response_model=List[Discount])
+async def get_discounts(current_user: User = Depends(get_current_user)):
+    """Get all discounts"""
+    try:
+        discounts = await db.discounts.find({}, {"_id": 0}).to_list(length=None)
+        return discounts
+    except Exception as e:
+        logger.error(f"Error fetching discounts: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/discounts/{discount_id}", response_model=Discount)
+async def get_discount(
+    discount_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get discount by ID"""
+    try:
+        discount = await db.discounts.find_one({"id": discount_id}, {"_id": 0})
+        if not discount:
+            raise HTTPException(status_code=404, detail="Discount not found")
+        return discount
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching discount: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/discounts/{discount_id}", response_model=Discount)
+async def update_discount(
+    discount_id: str,
+    discount_update: DiscountUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update a discount"""
+    try:
+        # Build update dict
+        update_data = {k: v for k, v in discount_update.dict(exclude_unset=True).items() if v is not None}
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        # Convert datetime fields
+        for field in ['start_date', 'end_date']:
+            if field in update_data and isinstance(update_data[field], datetime):
+                update_data[field] = update_data[field].isoformat()
+        
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.discounts.update_one(
+            {"id": discount_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Discount not found")
+        
+        # Return updated discount
+        updated_discount = await db.discounts.find_one({"id": discount_id}, {"_id": 0})
+        return updated_discount
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating discount: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/discounts/{discount_id}")
+async def delete_discount(
+    discount_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a discount"""
+    try:
+        result = await db.discounts.delete_one({"id": discount_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Discount not found")
+        return {"message": "Discount deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting discount: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/discounts/validate")
+async def validate_discount(validation: DiscountValidation):
+    """Validate a discount code for a purchase"""
+    try:
+        # Find discount by code
+        discount = await db.discounts.find_one({"code": validation.code.upper()}, {"_id": 0})
+        if not discount:
+            raise HTTPException(status_code=404, detail="Invalid discount code")
+        
+        # Check if active
+        if not discount['is_active']:
+            raise HTTPException(status_code=400, detail="Discount is not active")
+        
+        # Check dates
+        now = datetime.now(timezone.utc)
+        start_date = datetime.fromisoformat(discount['start_date'])
+        end_date = datetime.fromisoformat(discount['end_date'])
+        
+        if now < start_date:
+            raise HTTPException(status_code=400, detail="Discount not yet valid")
+        if now > end_date:
+            raise HTTPException(status_code=400, detail="Discount has expired")
+        
+        # Check usage limit
+        if discount.get('usage_limit') and discount['usage_count'] >= discount['usage_limit']:
+            raise HTTPException(status_code=400, detail="Discount usage limit reached")
+        
+        # Check minimum purchase
+        if discount.get('minimum_purchase') and validation.subtotal < discount['minimum_purchase']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Minimum purchase of {discount['minimum_purchase']} {discount['currency']} required"
+            )
+        
+        # Calculate discount amount
+        if discount['discount_type'] == 'percentage':
+            discount_amount = validation.subtotal * (discount['discount_value'] / 100)
+        else:  # fixed_amount
+            discount_amount = discount['discount_value']
+        
+        # Cap discount at subtotal
+        discount_amount = min(discount_amount, validation.subtotal)
+        
+        return {
+            "valid": True,
+            "discount": discount,
+            "discount_amount": discount_amount,
+            "final_amount": validation.subtotal - discount_amount
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error validating discount: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
+# REFERRAL SYSTEM ROUTES
+# ========================
+
+@api_router.post("/referrals", response_model=Referral)
+async def create_referral(
+    referral: ReferralCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new referral invitation"""
+    try:
+        # Check if referral already exists for this email
+        existing = await db.referrals.find_one({
+            "referrer_id": current_user.id,
+            "referred_email": referral.referred_email
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="Referral already exists for this email")
+        
+        # Get user's existing referral code or generate new one
+        user_referrals = await db.referrals.find_one({"referrer_id": current_user.id})
+        referral_code = user_referrals.get('referral_code') if user_referrals else str(uuid.uuid4())[:8].upper()
+        
+        # Create referral
+        new_referral = Referral(
+            **referral.dict(),
+            referrer_id=current_user.id,
+            referrer_name=current_user.name,
+            referrer_email=current_user.email,
+            referral_code=referral_code
+        )
+        
+        referral_dict = new_referral.dict()
+        referral_dict['created_at'] = referral_dict['created_at'].isoformat()
+        referral_dict['expires_at'] = referral_dict['expires_at'].isoformat()
+        
+        await db.referrals.insert_one(referral_dict)
+        
+        # TODO: Send referral invitation email
+        logger.info(f"Referral created: {current_user.email} -> {referral.referred_email}")
+        
+        return new_referral
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating referral: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/referrals/my-referrals", response_model=List[Referral])
+async def get_my_referrals(current_user: User = Depends(get_current_user)):
+    """Get current user's referrals"""
+    try:
+        referrals = await db.referrals.find(
+            {"referrer_id": current_user.id},
+            {"_id": 0}
+        ).to_list(length=None)
+        return referrals
+    except Exception as e:
+        logger.error(f"Error fetching referrals: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/referrals/stats", response_model=ReferralStats)
+async def get_referral_stats(current_user: User = Depends(get_current_user)):
+    """Get referral statistics for current user"""
+    try:
+        referrals = await db.referrals.find(
+            {"referrer_id": current_user.id},
+            {"_id": 0}
+        ).to_list(length=None)
+        
+        # Get or generate referral code
+        referral_code = ""
+        if referrals:
+            referral_code = referrals[0].get('referral_code', '')
+        else:
+            referral_code = str(uuid.uuid4())[:8].upper()
+        
+        total = len(referrals)
+        pending = len([r for r in referrals if r['status'] == 'pending'])
+        completed = len([r for r in referrals if r['status'] == 'completed'])
+        
+        # Calculate total rewards (only from completed referrals where reward was applied)
+        total_rewards = sum(
+            r.get('referrer_reward_value', 0) 
+            for r in referrals 
+            if r.get('status') == 'completed' and r.get('referrer_reward_applied')
+        )
+        
+        return ReferralStats(
+            total_referrals=total,
+            pending_referrals=pending,
+            completed_referrals=completed,
+            total_rewards_earned=total_rewards,
+            referral_code=referral_code
+        )
+    except Exception as e:
+        logger.error(f"Error fetching referral stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/referrals/{referral_id}/complete")
+async def complete_referral(
+    referral_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Mark a referral as completed (admin only or automated)"""
+    try:
+        # Update referral status
+        result = await db.referrals.update_one(
+            {"id": referral_id},
+            {
+                "$set": {
+                    "status": "completed",
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
+                    "referrer_reward_applied": True,
+                    "referred_reward_applied": True
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Referral not found")
+        
+        # TODO: Apply rewards (create discount codes or credits)
+        
+        updated_referral = await db.referrals.find_one({"id": referral_id}, {"_id": 0})
+        return updated_referral
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error completing referral: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
+# AD CHAT ROUTES
+# ========================
+
+@api_router.post("/ad-chat/start", response_model=AdChat)
+async def start_ad_chat(chat_start: AdChatStart):
+    """Start a new chat conversation from an advertisement (public endpoint)"""
+    try:
+        # Create initial message
+        initial_message = AdChatMessage(
+            sender="visitor",
+            content=chat_start.initial_message
+        )
+        
+        # Create chat session
+        new_chat = AdChat(
+            ad_id=chat_start.ad_id,
+            ad_platform=chat_start.ad_platform,
+            ad_campaign_name=chat_start.ad_campaign_name,
+            visitor_name=chat_start.visitor_name,
+            visitor_email=chat_start.visitor_email,
+            visitor_phone=chat_start.visitor_phone,
+            messages=[initial_message]
+        )
+        
+        chat_dict = new_chat.dict()
+        chat_dict['created_at'] = chat_dict['created_at'].isoformat()
+        chat_dict['last_message_at'] = chat_dict['last_message_at'].isoformat()
+        
+        # Convert messages
+        for msg in chat_dict['messages']:
+            msg['timestamp'] = msg['timestamp'].isoformat()
+        
+        await db.ad_chats.insert_one(chat_dict)
+        
+        logger.info(f"Ad chat started: {new_chat.id} from {chat_start.ad_platform}")
+        return new_chat
+    except Exception as e:
+        logger.error(f"Error starting ad chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ad-chat/{chat_id}/message", response_model=AdChat)
+async def send_ad_chat_message(
+    chat_id: str,
+    message: AdChatMessageCreate
+):
+    """Send a message in an ad chat (public/agent endpoint)"""
+    try:
+        # Find chat
+        chat = await db.ad_chats.find_one({"id": chat_id}, {"_id": 0})
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        
+        # Create new message
+        new_message = AdChatMessage(
+            sender=message.sender,
+            content=message.content
+        )
+        
+        message_dict = new_message.dict()
+        message_dict['timestamp'] = message_dict['timestamp'].isoformat()
+        
+        # Update chat
+        await db.ad_chats.update_one(
+            {"id": chat_id},
+            {
+                "$push": {"messages": message_dict},
+                "$set": {"last_message_at": datetime.now(timezone.utc).isoformat()}
+            }
+        )
+        
+        # Return updated chat
+        updated_chat = await db.ad_chats.find_one({"id": chat_id}, {"_id": 0})
+        return updated_chat
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending message: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/ad-chat", response_model=List[AdChat])
+async def get_ad_chats(
+    status: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Get all ad chats (admin/agent only)"""
+    try:
+        query = {}
+        if status:
+            query['status'] = status
+        
+        chats = await db.ad_chats.find(query, {"_id": 0}).sort("last_message_at", -1).to_list(length=100)
+        return chats
+    except Exception as e:
+        logger.error(f"Error fetching ad chats: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/ad-chat/{chat_id}", response_model=AdChat)
+async def get_ad_chat(
+    chat_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get specific ad chat by ID"""
+    try:
+        chat = await db.ad_chats.find_one({"id": chat_id}, {"_id": 0})
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        return chat
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching ad chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/ad-chat/{chat_id}", response_model=AdChat)
+async def update_ad_chat(
+    chat_id: str,
+    chat_update: AdChatUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update ad chat details (admin/agent only)"""
+    try:
+        update_data = {k: v for k, v in chat_update.dict(exclude_unset=True).items() if v is not None}
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        
+        result = await db.ad_chats.update_one(
+            {"id": chat_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        
+        updated_chat = await db.ad_chats.find_one({"id": chat_id}, {"_id": 0})
+        return updated_chat
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating ad chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/ad-chat/{chat_id}/convert")
+async def convert_ad_chat_to_contact(
+    chat_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Convert ad chat visitor to contact"""
+    try:
+        # Find chat
+        chat = await db.ad_chats.find_one({"id": chat_id}, {"_id": 0})
+        if not chat:
+            raise HTTPException(status_code=404, detail="Chat not found")
+        
+        if not chat.get('visitor_email'):
+            raise HTTPException(status_code=400, detail="Visitor email required for conversion")
+        
+        # Check if contact already exists
+        existing_contact = await db.contacts.find_one({"email": chat['visitor_email']})
+        if existing_contact:
+            contact_id = existing_contact['id']
+        else:
+            # Create new contact
+            new_contact = Contact(
+                name=chat.get('visitor_name', 'Ad Lead'),
+                email=chat['visitor_email'],
+                phone=chat.get('visitor_phone'),
+                tags=["ad-lead", chat['ad_platform']],
+                notes=f"Converted from ad chat on {chat['ad_platform']}"
+            )
+            
+            contact_dict = new_contact.dict()
+            contact_dict['created_at'] = contact_dict['created_at'].isoformat()
+            
+            await db.contacts.insert_one(contact_dict)
+            contact_id = new_contact.id
+        
+        # Update chat
+        await db.ad_chats.update_one(
+            {"id": chat_id},
+            {
+                "$set": {
+                    "converted_to_contact": True,
+                    "converted_contact_id": contact_id,
+                    "status": "converted"
+                }
+            }
+        )
+        
+        return {
+            "message": "Chat converted to contact successfully",
+            "contact_id": contact_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error converting chat to contact: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 app.include_router(api_router)
 
 app.add_middleware(

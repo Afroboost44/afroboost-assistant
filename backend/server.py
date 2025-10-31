@@ -4149,7 +4149,8 @@ async def redeem_gift_card(
         
         # Handle partial or full redemption
         amount_to_use = redemption.amount_to_use or gift_card['amount']
-        remaining = gift_card.get('remaining_balance', gift_card['amount']) - amount_to_use
+        current_balance = gift_card.get('remaining_balance') or gift_card['amount']
+        remaining = current_balance - amount_to_use
         
         if remaining < 0:
             raise HTTPException(status_code=400, detail="Insufficient balance")

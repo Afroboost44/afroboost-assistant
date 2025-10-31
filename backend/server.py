@@ -4423,7 +4423,7 @@ async def get_referral_stats(current_user: User = Depends(get_current_user)):
     """Get referral statistics for current user"""
     try:
         referrals = await db.referrals.find(
-            {"referrer_id": current_user.id},
+            {"referrer_id": current_user["id"]},
             {"_id": 0}
         ).to_list(length=None)
         

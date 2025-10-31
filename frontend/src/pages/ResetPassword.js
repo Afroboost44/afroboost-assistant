@@ -104,7 +104,7 @@ const ResetPassword = () => {
               <Sparkles className="h-12 w-12 text-primary" />
             </div>
             <h1 className="text-4xl font-bold">
-              <span className="text-gradient">Afroboost</span> Mailer
+              <span className="text-gradient">BoostTribe</span>
             </h1>
           </div>
 

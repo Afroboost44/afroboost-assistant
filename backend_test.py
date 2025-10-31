@@ -2378,13 +2378,13 @@ class RemindersAutomationTestSuite:
             headers_auth = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
             rule = self.automation_rules[0]
             
-            # Toggle the rule (disable it)
-            toggle_data = {"is_active": False}
+            # API expects query parameter, not JSON body
+            params = {"is_active": False}
             
             response = self.session.patch(
                 f"{BASE_URL}/automation/rules/{rule['id']}",
                 headers=headers_auth,
-                json=toggle_data
+                params=params
             )
             
             if response.status_code == 200:

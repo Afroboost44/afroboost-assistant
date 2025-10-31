@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import AIAssistantWidget from '@/components/AIAssistantWidget';
+import InstallPrompt from '@/components/InstallPrompt';
 
 const Layout = ({ children }) => {
   const { t, i18n } = useTranslation();

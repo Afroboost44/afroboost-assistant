@@ -4383,9 +4383,9 @@ async def create_referral(
         # Create referral
         new_referral = Referral(
             **referral.dict(),
-            referrer_id=current_user.id,
-            referrer_name=current_user.name,
-            referrer_email=current_user.email,
+            referrer_id=current_user["id"],
+            referrer_name=current_user["name"],
+            referrer_email=current_user["email"],
             referral_code=referral_code
         )
         

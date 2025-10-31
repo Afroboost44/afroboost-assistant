@@ -2478,36 +2478,6 @@ async def create_payment_link(
     }
 
 
-# ========================
-# ROUTES - AI CONVERSATION MEMORY
-# ========================
-            model="gpt-4-turbo",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": request.message}
-            ],
-            temperature=0.7,
-            max_tokens=300
-        )
-        
-        ai_response = response.choices[0].message.content
-        
-        # Add AI response to memory
-        await ai_memory.add_message(
-            contact_id=request.contact_id,
-            role="assistant",
-            content=ai_response
-        )
-        
-        return AIConversationResponse(
-            response=ai_response,
-            context_used=context
-        )
-        
-    except Exception as e:
-        logger.error(f"Error in AI conversation: {e}")
-        raise HTTPException(status_code=500, detail=f"Error generating response: {str(e)}")
-
 @api_router.get("/ai/conversation/{contact_id}/history")
 async def get_conversation_history(contact_id: str):
     """Get conversation history for a contact"""

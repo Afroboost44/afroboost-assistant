@@ -35,6 +35,7 @@ const Layout = ({ children }) => {
     { name: t('nav.calendar'), href: '/calendar', icon: Calendar },
     { name: '📦 Catalogue', href: '/catalog', icon: Package },
     { name: '🎫 Réservations', href: '/reservations', icon: Calendar },
+    { name: '🔔 Rappels', href: '/reminders', icon: Calendar },
     { name: 'Profil', href: '/profile', icon: User },
     { name: t('nav.admin'), href: '/admin', icon: Settings, adminOnly: true },
   ];

@@ -812,24 +812,54 @@ class CatalogReservationTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                self.catalog_items.append(data)
                 
-                if (data.get("category") == "product" and 
-                    data.get("stock_quantity") == 50 and
-                    "id" in data):
-                    
-                    self.log_test(
-                        "Create Catalog Product",
-                        True,
-                        f"Successfully created product: {data['title']}",
-                        {"product_id": data["id"], "stock": data["stock_quantity"]}
-                    )
-                    return True
+                # The API returns {message, id} format, so we need to fetch the created item
+                if "id" in data:
+                    # Fetch the created item to verify it
+                    item_response = self.session.get(f"{BASE_URL}/catalog", headers=headers)
+                    if item_response.status_code == 200:
+                        catalog_items = item_response.json()
+                        created_item = next((item for item in catalog_items if item.get("id") == data["id"]), None)
+                        
+                        if created_item:
+                            self.catalog_items.append(created_item)
+                            
+                            if (created_item.get("category") == "product" and 
+                                created_item.get("stock_quantity") == 50):
+                                
+                                self.log_test(
+                                    "Create Catalog Product",
+                                    True,
+                                    f"Successfully created product: {created_item['title']}",
+                                    {"product_id": created_item["id"], "stock": created_item["stock_quantity"]}
+                                )
+                                return True
+                            else:
+                                self.log_test(
+                                    "Create Catalog Product",
+                                    False,
+                                    "Product created but data incorrect",
+                                    {"created_item": created_item}
+                                )
+                        else:
+                            self.log_test(
+                                "Create Catalog Product",
+                                False,
+                                "Product created but not found in catalog list",
+                                {"response": data}
+                            )
+                    else:
+                        self.log_test(
+                            "Create Catalog Product",
+                            False,
+                            "Product created but failed to fetch catalog",
+                            {"response": data}
+                        )
                 else:
                     self.log_test(
                         "Create Catalog Product",
                         False,
-                        "Product created but response data incorrect",
+                        "Product creation response missing ID",
                         {"response": data}
                     )
             else:

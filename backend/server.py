@@ -845,7 +845,6 @@ class GiftCardCreate(BaseModel):
     design_color: str = "#8B5CF6"
 
 class GiftCardRedeem(BaseModel):
-    code: str
     redeemed_by_name: str
     redeemed_by_email: EmailStr
     amount_to_use: Optional[float] = None  # For partial redemption

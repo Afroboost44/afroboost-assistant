@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend Authentication System Test Suite
-Tests all authentication endpoints and JWT functionality
+Backend Test Suite - Authentication, Catalog & Reservations
+Tests all backend endpoints and functionality for MODULE 3
 """
 
 import requests

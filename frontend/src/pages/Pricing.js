@@ -80,7 +80,7 @@ const Pricing = () => {
         a: 'Ja, Sie können Ihren Plan jederzeit upgraden oder downgraden. Änderungen werden sofort wirksam.'
       },
       {
-        q: 'Wie funktioniert Afroboost KI?',
+        q: 'Wie funktioniert BoostTribe KI?',
         a: 'Unsere KI verwendet GPT-4-turbo, um maßgeschneiderte E-Mail- und WhatsApp-Inhalte auf Französisch, Englisch und Deutsch zu generieren. Sie versteht den Kontext Ihrer Kampagnen und passt sich Ihrem Markenton an.'
       },
       {

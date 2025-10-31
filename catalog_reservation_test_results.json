@@ -1,16 +1,16 @@
 {
   "total_tests": 10,
-  "passed": 6,
-  "failed": 4,
-  "success_rate": 60.0,
+  "passed": 8,
+  "failed": 2,
+  "success_rate": 80.0,
   "results": [
     {
       "test": "Setup Admin Authentication",
       "success": true,
       "message": "Admin user created and authenticated",
-      "timestamp": "2025-10-31T04:32:58.038654+00:00",
+      "timestamp": "2025-10-31T04:33:28.466214+00:00",
       "details": {
-        "user_id": "4b7ae573-77ea-49aa-9284-d08d96a33baa",
+        "user_id": "3f8df157-c955-444a-a7df-793c47db7f14",
         "role": "user"
       }
     },
@@ -18,9 +18,9 @@
       "test": "Create Catalog Course",
       "success": true,
       "message": "Successfully created course: Advanced Dance Masterclass",
-      "timestamp": "2025-10-31T04:32:58.060821+00:00",
+      "timestamp": "2025-10-31T04:33:28.491437+00:00",
       "details": {
-        "course_id": "6fb07f35-a7d4-4fa1-b2ca-71db9d3c33a2",
+        "course_id": "dc781588-2b36-46a5-9deb-cecadf492241",
         "max_attendees": 10
       }
     },
@@ -28,49 +28,49 @@
       "test": "Create Catalog Product",
       "success": true,
       "message": "Successfully created product: Afroboost T-Shirt",
-      "timestamp": "2025-10-31T04:32:58.584336+00:00",
+      "timestamp": "2025-10-31T04:33:29.012208+00:00",
       "details": {
-        "product_id": "601b5170-32bb-4582-843a-6a80bc0432d7",
+        "product_id": "f68d715f-5067-4bdd-b55a-1cefc219e936",
         "stock": 50
       }
     },
     {
       "test": "Get Catalog Items",
       "success": true,
-      "message": "Successfully retrieved 4 catalog items",
-      "timestamp": "2025-10-31T04:32:59.093624+00:00",
+      "message": "Successfully retrieved 6 catalog items",
+      "timestamp": "2025-10-31T04:33:29.524069+00:00",
       "details": {
-        "total_items": 4,
+        "total_items": 6,
         "has_course": true,
         "has_product": true
       }
     },
     {
       "test": "Create Reservation Success",
-      "success": false,
-      "message": "Reservation created but data incorrect",
-      "timestamp": "2025-10-31T04:33:00.175122+00:00",
+      "success": true,
+      "message": "Successfully created reservation for Maria Rodriguez",
+      "timestamp": "2025-10-31T04:33:30.300735+00:00",
       "details": {
-        "response": {
-          "message": "Reservation created successfully",
-          "reservation_id": "a48d862c-5123-4f3a-bfcb-1f30c04d9c5c",
-          "total_price": 450.0,
-          "currency": "CHF"
-        }
+        "reservation_id": "21738605-223e-4ce1-a121-3eb13ac60399",
+        "quantity": 3,
+        "total_price": 450.0
       }
     },
     {
       "test": "Create Second Reservation",
-      "success": false,
-      "message": "Exception during second reservation creation: 'customer_name'",
-      "timestamp": "2025-10-31T04:33:00.871217+00:00",
-      "details": {}
+      "success": true,
+      "message": "Successfully created second reservation for Carlos Silva",
+      "timestamp": "2025-10-31T04:33:31.100054+00:00",
+      "details": {
+        "reservation_id": "99d6593c-9644-4c83-9bf5-68c1a2c1fcf8",
+        "quantity": 3
+      }
     },
     {
       "test": "Create Reservation Exceed Capacity",
       "success": true,
       "message": "Correctly rejected reservation exceeding capacity",
-      "timestamp": "2025-10-31T04:33:01.382445+00:00",
+      "timestamp": "2025-10-31T04:33:31.610849+00:00",
       "details": {
         "status_code": 400,
         "message": "Not enough places available"
@@ -80,7 +80,7 @@
       "test": "Get Reservations Authenticated",
       "success": true,
       "message": "Successfully retrieved 2 reservations",
-      "timestamp": "2025-10-31T04:33:01.891219+00:00",
+      "timestamp": "2025-10-31T04:33:32.120599+00:00",
       "details": {
         "total_reservations": 2
       }
@@ -88,17 +88,19 @@
     {
       "test": "Update Reservation Status",
       "success": false,
-      "message": "Exception during status update: 'id'",
-      "timestamp": "2025-10-31T04:33:02.391340+00:00",
-      "details": {}
+      "message": "Failed to update reservation status: 422",
+      "timestamp": "2025-10-31T04:33:32.632895+00:00",
+      "details": {
+        "response": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"status\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+      }
     },
     {
       "test": "Email Confirmation Logs",
       "success": false,
       "message": "No email confirmation activity found in logs",
-      "timestamp": "2025-10-31T04:33:02.896250+00:00",
+      "timestamp": "2025-10-31T04:33:33.137655+00:00",
       "details": {
-        "log_content": "K\nINFO:     10.64.133.249:56334 - \"POST /api/catalog HTTP/1.1\" 200 OK\nINFO:     10.64.139.33:51606 - \"GET /api/catalog HTTP/1.1\" 200 OK\nINFO:     10.64.139.62:58808 - \"GET /api/catalog HTTP/1.1\" 200 OK\nINFO:     10.64.133.254:55918 - \"POST /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.128.73:39838 - \"POST /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.139.62:58808 - \"POST /api/reservations HTTP/1.1\" 400 Bad Request\nINFO:     10.64.133.249:56334 - \"GET /api/reservations HTTP/1.1\" 200 OK\n"
+        "log_content": "O:     10.64.139.62:45102 - \"GET /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.128.73:39210 - \"POST /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.133.249:45546 - \"GET /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.133.254:37270 - \"POST /api/reservations HTTP/1.1\" 400 Bad Request\nINFO:     10.64.139.33:38440 - \"GET /api/reservations HTTP/1.1\" 200 OK\nINFO:     10.64.128.73:39210 - \"PATCH /api/reservations/21738605-223e-4ce1-a121-3eb13ac60399/status HTTP/1.1\" 422 Unprocessable Entity\n"
       }
     }
   ]

@@ -2691,6 +2691,8 @@ async def send_reservation_confirmation_email(
     
     # Simple text email (avoiding HTML complexity issues)
     price_formatted = f"{total_price:.2f} {currency}"
+    res_id_short = reservation_id[:8]
+    
     text_content = f"""
 Bonjour {customer_name},
 
@@ -2708,9 +2710,9 @@ Details:
         text_content += f"- Lieu: {location}\n"
     
     text_content += f"""
-Numero de reservation: {reservation_id[:8]}
+Numero de reservation: {res_id_short}
 
-Si vous avez des questions ou souhaitez modifier votre reservation, n'hesitez pas a nous contacter.
+Si vous avez des questions ou souhaitez modifier votre reservation, contactez-nous.
 
 Merci de votre confiance!
 L'equipe Afroboost

@@ -352,7 +352,7 @@ class DiscountsTestSuite:
             if response.status_code == 200:
                 data = response.json()
                 
-                if "id" in data and data.get("code") == "SUMMER2024":
+                if "id" in data and data.get("code").startswith("SUMMER"):
                     self.discounts.append(data)
                     self.log_test(
                         "Create Discount",

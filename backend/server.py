@@ -4200,7 +4200,7 @@ async def create_discount(
         new_discount = Discount(
             **discount.dict(),
             code=discount.code.upper(),
-            created_by=current_user.id
+            created_by=current_user["id"]
         )
         
         discount_dict = new_discount.dict()

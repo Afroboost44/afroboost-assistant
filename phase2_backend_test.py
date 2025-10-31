@@ -697,7 +697,7 @@ class ReferralsTestSuite:
             headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
             
             referral_data = {
-                "referred_email": "friend@test.com",
+                "referred_email": f"friend{int(time.time())}@test.com",
                 "referred_name": "Friend Test"
             }
             

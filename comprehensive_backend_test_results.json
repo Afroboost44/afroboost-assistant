@@ -1,0 +1,231 @@
+{
+  "Authentication": {
+    "success": false,
+    "summary": {
+      "total_tests": 10,
+      "passed": 6,
+      "failed": 4,
+      "success_rate": 60.0,
+      "results": [
+        {
+          "test": "Register First User (Admin)",
+          "success": false,
+          "message": "Registration failed with status 400",
+          "timestamp": "2025-10-31T12:09:55.423362+00:00",
+          "details": {
+            "response": "{\"detail\":\"Email already registered\"}"
+          }
+        },
+        {
+          "test": "Login Success",
+          "success": true,
+          "message": "Successfully logged in user: Sarah Martinez",
+          "timestamp": "2025-10-31T12:09:56.164442+00:00",
+          "details": {
+            "user_id": "27510c50-6eea-411c-be29-39839fe5dc00",
+            "last_login": "2025-10-30T17:49:30.035832Z"
+          }
+        },
+        {
+          "test": "Get Me Valid Token",
+          "success": false,
+          "message": "No admin token available for testing",
+          "timestamp": "2025-10-31T12:09:56.664558+00:00",
+          "details": {}
+        },
+        {
+          "test": "Register Second User (Regular)",
+          "success": false,
+          "message": "Registration failed with status 400",
+          "timestamp": "2025-10-31T12:09:57.174607+00:00",
+          "details": {
+            "response": "{\"detail\":\"Email already registered\"}"
+          }
+        },
+        {
+          "test": "Duplicate Email Registration",
+          "success": true,
+          "message": "Correctly rejected duplicate email registration",
+          "timestamp": "2025-10-31T12:09:57.685099+00:00",
+          "details": {
+            "status_code": 400,
+            "message": "Email already registered"
+          }
+        },
+        {
+          "test": "Login Wrong Password",
+          "success": true,
+          "message": "Correctly rejected login with wrong password",
+          "timestamp": "2025-10-31T12:09:58.418227+00:00",
+          "details": {
+            "status_code": 401,
+            "message": "Invalid email or password"
+          }
+        },
+        {
+          "test": "Login Nonexistent Email",
+          "success": true,
+          "message": "Correctly rejected login with nonexistent email",
+          "timestamp": "2025-10-31T12:09:58.925622+00:00",
+          "details": {
+            "status_code": 401,
+            "message": "Invalid email or password"
+          }
+        },
+        {
+          "test": "Get Me Invalid Token",
+          "success": true,
+          "message": "Correctly rejected invalid token",
+          "timestamp": "2025-10-31T12:09:59.431487+00:00",
+          "details": {
+            "status_code": 401,
+            "message": "Invalid token"
+          }
+        },
+        {
+          "test": "Get Me No Token",
+          "success": true,
+          "message": "Correctly rejected request without token",
+          "timestamp": "2025-10-31T12:09:59.937042+00:00",
+          "details": {
+            "status_code": 403
+          }
+        },
+        {
+          "test": "JWT Token Structure",
+          "success": false,
+          "message": "No admin token available for testing",
+          "timestamp": "2025-10-31T12:10:00.437149+00:00",
+          "details": {}
+        }
+      ]
+    }
+  },
+  "Contacts Management": {
+    "success": false,
+    "error": "'ContactsTestSuite' object has no attribute 'get_summary'"
+  },
+  "Catalog & Reservations": {
+    "success": true,
+    "summary": {
+      "total_tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "success_rate": 100.0,
+      "results": [
+        {
+          "test": "Setup Admin Authentication",
+          "success": true,
+          "message": "Admin user created and authenticated",
+          "timestamp": "2025-10-31T12:10:03.531599+00:00",
+          "details": {
+            "user_id": "0f05937b-6161-4d0f-8452-c97e3c6a666e",
+            "role": "user"
+          }
+        },
+        {
+          "test": "Create Catalog Course",
+          "success": true,
+          "message": "Successfully created course: Advanced Dance Masterclass",
+          "timestamp": "2025-10-31T12:10:03.553838+00:00",
+          "details": {
+            "course_id": "65984faa-08f8-4b0b-8ec8-7ea3fe5c1b60",
+            "max_attendees": 10
+          }
+        },
+        {
+          "test": "Create Catalog Product",
+          "success": true,
+          "message": "Successfully created product: Afroboost T-Shirt",
+          "timestamp": "2025-10-31T12:10:04.071897+00:00",
+          "details": {
+            "product_id": "53dc38ab-f219-478f-b407-bf6eb7d21867",
+            "stock": 50
+          }
+        },
+        {
+          "test": "Get Catalog Items",
+          "success": true,
+          "message": "Successfully retrieved 11 catalog items",
+          "timestamp": "2025-10-31T12:10:04.579127+00:00",
+          "details": {
+            "total_items": 11,
+            "has_course": true,
+            "has_product": true
+          }
+        },
+        {
+          "test": "Create Reservation Success",
+          "success": true,
+          "message": "Successfully created reservation for Maria Rodriguez",
+          "timestamp": "2025-10-31T12:10:05.377504+00:00",
+          "details": {
+            "reservation_id": "910ca3d4-b4d7-403c-a381-172df5e2ef9d",
+            "quantity": 3,
+            "total_price": 450.0
+          }
+        },
+        {
+          "test": "Create Second Reservation",
+          "success": true,
+          "message": "Successfully created second reservation for Carlos Silva",
+          "timestamp": "2025-10-31T12:10:06.099214+00:00",
+          "details": {
+            "reservation_id": "49c860e6-5f72-44f7-8aa8-787d69b5ffc1",
+            "quantity": 3
+          }
+        },
+        {
+          "test": "Create Reservation Exceed Capacity",
+          "success": true,
+          "message": "Correctly rejected reservation exceeding capacity",
+          "timestamp": "2025-10-31T12:10:06.609079+00:00",
+          "details": {
+            "status_code": 400,
+            "message": "Not enough places available"
+          }
+        },
+        {
+          "test": "Get Reservations Authenticated",
+          "success": true,
+          "message": "Successfully retrieved 2 reservations",
+          "timestamp": "2025-10-31T12:10:07.118561+00:00",
+          "details": {
+            "total_reservations": 2
+          }
+        },
+        {
+          "test": "Update Reservation Status",
+          "success": true,
+          "message": "Successfully updated reservation status to confirmed",
+          "timestamp": "2025-10-31T12:10:07.636141+00:00",
+          "details": {
+            "reservation_id": "910ca3d4-b4d7-403c-a381-172df5e2ef9d",
+            "new_status": "confirmed"
+          }
+        },
+        {
+          "test": "Email Confirmation Logs",
+          "success": true,
+          "message": "Email system active - Resend API activity detected",
+          "timestamp": "2025-10-31T12:10:08.145230+00:00",
+          "details": {
+            "log_check": "Resend API activity found in logs"
+          }
+        }
+      ]
+    }
+  },
+  "WhatsApp Advanced Campaigns": {
+    "success": false,
+    "error": "'WhatsAppTestSuite' object has no attribute 'get_summary'"
+  },
+  "AI Assistant": {
+    "success": false,
+    "error": "'AIAssistantTestSuite' object has no attribute 'get_summary'"
+  },
+  "Reminders & Automation": {
+    "success": false,
+    "error": "'RemindersAutomationTestSuite' object has no attribute 'get_summary'"
+  }
+}

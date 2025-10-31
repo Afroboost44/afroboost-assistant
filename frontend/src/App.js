@@ -14,7 +14,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import Dashboard from '@/pages/Dashboard';
 import Contacts from '@/pages/Contacts';
 import Campaigns from '@/pages/Campaigns';
-import WhatsAppCampaigns from '@/pages/WhatsAppCampaigns';
+import WhatsAppCampaigns from '@/pages/WhatsAppCampaignsAdvanced';
 import Analytics from '@/pages/Analytics';
 import Calendar from '@/pages/Calendar';
 import Admin from '@/pages/Admin';

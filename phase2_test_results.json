@@ -1,0 +1,238 @@
+{
+  "gift_cards": {
+    "total_tests": 4,
+    "passed": 0,
+    "failed": 4,
+    "success_rate": 0.0,
+    "results": [
+      {
+        "test": "Create Gift Card",
+        "success": false,
+        "message": "Failed to create gift card: 500",
+        "timestamp": "2025-10-31T15:53:31.232194+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      },
+      {
+        "test": "List Gift Cards",
+        "success": false,
+        "message": "Failed to list gift cards: 500",
+        "timestamp": "2025-10-31T15:53:31.746165+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      },
+      {
+        "test": "Validate Gift Card",
+        "success": false,
+        "message": "No gift cards available to validate",
+        "timestamp": "2025-10-31T15:53:32.246282+00:00",
+        "details": {}
+      },
+      {
+        "test": "Redeem Gift Card",
+        "success": false,
+        "message": "No gift cards available to redeem",
+        "timestamp": "2025-10-31T15:53:32.746403+00:00",
+        "details": {}
+      }
+    ]
+  },
+  "discounts": {
+    "total_tests": 7,
+    "passed": 1,
+    "failed": 6,
+    "success_rate": 14.285714285714285,
+    "results": [
+      {
+        "test": "Create Discount",
+        "success": false,
+        "message": "Failed to create discount: 500",
+        "timestamp": "2025-10-31T15:53:33.558360+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      },
+      {
+        "test": "List Discounts",
+        "success": true,
+        "message": "Successfully retrieved 0 discounts",
+        "timestamp": "2025-10-31T15:53:34.070659+00:00",
+        "details": {
+          "total_discounts": 0
+        }
+      },
+      {
+        "test": "Get Specific Discount",
+        "success": false,
+        "message": "No discounts available",
+        "timestamp": "2025-10-31T15:53:34.570773+00:00",
+        "details": {}
+      },
+      {
+        "test": "Update Discount",
+        "success": false,
+        "message": "No discounts available",
+        "timestamp": "2025-10-31T15:53:35.070887+00:00",
+        "details": {}
+      },
+      {
+        "test": "Validate Discount Code",
+        "success": false,
+        "message": "No discounts available",
+        "timestamp": "2025-10-31T15:53:35.571001+00:00",
+        "details": {}
+      },
+      {
+        "test": "Delete Discount",
+        "success": false,
+        "message": "No discounts available",
+        "timestamp": "2025-10-31T15:53:36.071120+00:00",
+        "details": {}
+      },
+      {
+        "test": "Create Fixed Discount",
+        "success": false,
+        "message": "Failed to create fixed discount: 500",
+        "timestamp": "2025-10-31T15:53:36.579999+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      }
+    ]
+  },
+  "referrals": {
+    "total_tests": 4,
+    "passed": 0,
+    "failed": 4,
+    "success_rate": 0.0,
+    "results": [
+      {
+        "test": "Create Referral",
+        "success": false,
+        "message": "Failed to create referral: 500",
+        "timestamp": "2025-10-31T15:53:37.380022+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      },
+      {
+        "test": "List My Referrals",
+        "success": false,
+        "message": "Failed to list referrals: 500",
+        "timestamp": "2025-10-31T15:53:37.892936+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      },
+      {
+        "test": "Get Referral Stats",
+        "success": false,
+        "message": "Failed to get referral stats: 500",
+        "timestamp": "2025-10-31T15:53:38.405314+00:00",
+        "details": {
+          "response": "{\"detail\":\"'dict' object has no attribute 'id'\"}"
+        }
+      },
+      {
+        "test": "Complete Referral",
+        "success": false,
+        "message": "No referrals available",
+        "timestamp": "2025-10-31T15:53:38.905401+00:00",
+        "details": {}
+      }
+    ]
+  },
+  "ad_chat": {
+    "total_tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "success_rate": 100.0,
+    "results": [
+      {
+        "test": "Start Ad Chat",
+        "success": true,
+        "message": "Successfully started ad chat with session: 6288866b-afbd-473f-b44b-2b46441a07ba",
+        "timestamp": "2025-10-31T15:53:39.677420+00:00",
+        "details": {
+          "chat_id": "be19ed1e-9a77-4632-a884-7851e751812b",
+          "ad_platform": "facebook",
+          "visitor_name": "John Visitor"
+        }
+      },
+      {
+        "test": "Send Visitor Message",
+        "success": true,
+        "message": "Successfully sent visitor message",
+        "timestamp": "2025-10-31T15:53:40.186576+00:00",
+        "details": {
+          "chat_id": "be19ed1e-9a77-4632-a884-7851e751812b",
+          "sender": "visitor"
+        }
+      },
+      {
+        "test": "Send Agent Message",
+        "success": true,
+        "message": "Successfully sent agent message",
+        "timestamp": "2025-10-31T15:53:40.694488+00:00",
+        "details": {
+          "chat_id": "be19ed1e-9a77-4632-a884-7851e751812b",
+          "sender": "agent"
+        }
+      },
+      {
+        "test": "List Chats",
+        "success": true,
+        "message": "Successfully retrieved 1 chats",
+        "timestamp": "2025-10-31T15:53:41.202332+00:00",
+        "details": {
+          "total_chats": 1
+        }
+      },
+      {
+        "test": "Filter Chats by Status",
+        "success": true,
+        "message": "Successfully filtered chats by status: 1 active chats",
+        "timestamp": "2025-10-31T15:53:41.709720+00:00",
+        "details": {
+          "active_chats": 1
+        }
+      },
+      {
+        "test": "Get Specific Chat",
+        "success": true,
+        "message": "Successfully retrieved chat with messages",
+        "timestamp": "2025-10-31T15:53:42.217436+00:00",
+        "details": {
+          "chat_id": "be19ed1e-9a77-4632-a884-7851e751812b",
+          "message_count": 3
+        }
+      },
+      {
+        "test": "Update Chat",
+        "success": true,
+        "message": "Successfully updated chat",
+        "timestamp": "2025-10-31T15:53:42.726260+00:00",
+        "details": {
+          "chat_id": "be19ed1e-9a77-4632-a884-7851e751812b",
+          "new_status": "resolved",
+          "lead_score": 85
+        }
+      },
+      {
+        "test": "Convert Chat to Contact",
+        "success": true,
+        "message": "Successfully converted chat to contact",
+        "timestamp": "2025-10-31T15:53:43.239307+00:00",
+        "details": {
+          "chat_id": "be19ed1e-9a77-4632-a884-7851e751812b",
+          "response": {
+            "message": "Chat converted to contact successfully",
+            "contact_id": "7fc718fb-578f-4531-bea6-a47ee4fcade4"
+          }
+        }
+      }
+    ]
+  }
+}

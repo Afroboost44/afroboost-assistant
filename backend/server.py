@@ -2722,7 +2722,7 @@ async def send_reservation_confirmation_email(
         '</table></div>'
         f'{access_badge}'
         f'<p style="color: #d1d5db; margin-bottom: 10px;"><strong>Numero de reservation:</strong> <code style="background-color: #2a2a2a; padding: 4px 8px; border-radius: 4px; color: #6366f1;">{reservation_id[:8]}</code></p>'
-        '<p style="color: #d1d5db; margin-top: 30px;">Si vous avez des questions ou souhaitez modifier votre reservation, n hesitez pas a nous contacter.</p>'
+        "<p style=\"color: #d1d5db; margin-top: 30px;\">Si vous avez des questions ou souhaitez modifier votre reservation, n'hesitez pas a nous contacter.</p>"
         '</div>'
         '<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a2a2a;">'
         '<p style="color: #6366f1; font-size: 18px; font-weight: bold; margin-bottom: 5px;">Merci de votre confiance !</p>'

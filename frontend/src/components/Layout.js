@@ -36,6 +36,10 @@ const Layout = ({ children }) => {
     { name: '📦 Catalogue', href: '/catalog', icon: Package },
     { name: '🎫 Réservations', href: '/reservations', icon: Calendar },
     { name: '🔔 Rappels', href: '/reminders', icon: Calendar },
+    { name: '🎁 Cartes Cadeaux', href: '/gift-cards', icon: Gift },
+    { name: '💰 Réductions', href: '/discounts', icon: TrendingDown },
+    { name: '🤝 Parrainage', href: '/referrals', icon: UserPlus },
+    { name: '💬 Chat Publicités', href: '/ad-chat', icon: MessageSquare },
     { name: 'Profil', href: '/profile', icon: User },
     { name: t('nav.admin'), href: '/admin', icon: Settings, adminOnly: true },
   ];

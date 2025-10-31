@@ -245,6 +245,9 @@ const Layout = ({ children }) => {
 
       {/* AI Assistant Widget - accessible everywhere */}
       <AIAssistantWidget />
+
+      {/* Install Prompt for PWA */}
+      <InstallPrompt />
     </div>
   );
 };

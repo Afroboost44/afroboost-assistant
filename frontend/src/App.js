@@ -95,6 +95,28 @@ function App() {
               </ProtectedRoute>
             } />
 
+            {/* New Phase 2 routes */}
+            <Route path="/gift-cards" element={
+              <ProtectedRoute>
+                <Layout><GiftCards /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/discounts" element={
+              <ProtectedRoute>
+                <Layout><Discounts /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/referrals" element={
+              <ProtectedRoute>
+                <Layout><Referrals /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/ad-chat" element={
+              <ProtectedRoute>
+                <Layout><AdChat /></Layout>
+              </ProtectedRoute>
+            } />
+
             {/* Admin-only routes */}
             <Route path="/admin" element={
               <ProtectedRoute requireAdmin={true}>

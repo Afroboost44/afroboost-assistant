@@ -11,7 +11,7 @@
           "test": "Register First User (Admin)",
           "success": false,
           "message": "Registration failed with status 400",
-          "timestamp": "2025-10-31T12:12:31.366456+00:00",
+          "timestamp": "2025-10-31T12:13:30.428661+00:00",
           "details": {
             "response": "{\"detail\":\"Email already registered\"}"
           }
@@ -20,24 +20,24 @@
           "test": "Login Success",
           "success": true,
           "message": "Successfully logged in user: Sarah Martinez",
-          "timestamp": "2025-10-31T12:12:32.103320+00:00",
+          "timestamp": "2025-10-31T12:13:31.162434+00:00",
           "details": {
             "user_id": "27510c50-6eea-411c-be29-39839fe5dc00",
-            "last_login": "2025-10-31T12:09:56.153096Z"
+            "last_login": "2025-10-31T12:12:32.099086Z"
           }
         },
         {
           "test": "Get Me Valid Token",
           "success": false,
           "message": "No admin token available for testing",
-          "timestamp": "2025-10-31T12:12:32.603434+00:00",
+          "timestamp": "2025-10-31T12:13:31.662548+00:00",
           "details": {}
         },
         {
           "test": "Register Second User (Regular)",
           "success": false,
           "message": "Registration failed with status 400",
-          "timestamp": "2025-10-31T12:12:33.111191+00:00",
+          "timestamp": "2025-10-31T12:13:32.170517+00:00",
           "details": {
             "response": "{\"detail\":\"Email already registered\"}"
           }
@@ -46,7 +46,7 @@
           "test": "Duplicate Email Registration",
           "success": true,
           "message": "Correctly rejected duplicate email registration",
-          "timestamp": "2025-10-31T12:12:33.625341+00:00",
+          "timestamp": "2025-10-31T12:13:32.678741+00:00",
           "details": {
             "status_code": 400,
             "message": "Email already registered"
@@ -56,7 +56,7 @@
           "test": "Login Wrong Password",
           "success": true,
           "message": "Correctly rejected login with wrong password",
-          "timestamp": "2025-10-31T12:12:34.356315+00:00",
+          "timestamp": "2025-10-31T12:13:33.410192+00:00",
           "details": {
             "status_code": 401,
             "message": "Invalid email or password"
@@ -66,7 +66,7 @@
           "test": "Login Nonexistent Email",
           "success": true,
           "message": "Correctly rejected login with nonexistent email",
-          "timestamp": "2025-10-31T12:12:34.865416+00:00",
+          "timestamp": "2025-10-31T12:13:33.917973+00:00",
           "details": {
             "status_code": 401,
             "message": "Invalid email or password"
@@ -76,7 +76,7 @@
           "test": "Get Me Invalid Token",
           "success": true,
           "message": "Correctly rejected invalid token",
-          "timestamp": "2025-10-31T12:12:35.372897+00:00",
+          "timestamp": "2025-10-31T12:13:34.424781+00:00",
           "details": {
             "status_code": 401,
             "message": "Invalid token"
@@ -86,7 +86,7 @@
           "test": "Get Me No Token",
           "success": true,
           "message": "Correctly rejected request without token",
-          "timestamp": "2025-10-31T12:12:35.881026+00:00",
+          "timestamp": "2025-10-31T12:13:34.931335+00:00",
           "details": {
             "status_code": 403
           }
@@ -95,7 +95,7 @@
           "test": "JWT Token Structure",
           "success": false,
           "message": "No admin token available for testing",
-          "timestamp": "2025-10-31T12:12:36.381136+00:00",
+          "timestamp": "2025-10-31T12:13:35.431450+00:00",
           "details": {}
         }
       ]
@@ -113,7 +113,7 @@
           "test": "Create Contact",
           "success": false,
           "message": "Failed to create contact: 400",
-          "timestamp": "2025-10-31T12:12:37.161651+00:00",
+          "timestamp": "2025-10-31T12:13:36.238213+00:00",
           "details": {
             "response": "{\"detail\":\"Contact with this email already exists\"}"
           }
@@ -122,7 +122,7 @@
           "test": "Get Contacts",
           "success": true,
           "message": "Successfully retrieved 2 contacts",
-          "timestamp": "2025-10-31T12:12:37.668657+00:00",
+          "timestamp": "2025-10-31T12:13:36.748147+00:00",
           "details": {
             "total_contacts": 2
           }
@@ -131,14 +131,14 @@
           "test": "Update Contact",
           "success": false,
           "message": "No contacts available to update",
-          "timestamp": "2025-10-31T12:12:38.168779+00:00",
+          "timestamp": "2025-10-31T12:13:37.248256+00:00",
           "details": {}
         },
         {
           "test": "Bulk Message",
           "success": false,
           "message": "No contacts available for bulk message",
-          "timestamp": "2025-10-31T12:12:38.670022+00:00",
+          "timestamp": "2025-10-31T12:13:37.748377+00:00",
           "details": {}
         }
       ]
@@ -156,9 +156,9 @@
           "test": "Setup Admin Authentication",
           "success": true,
           "message": "Admin user created and authenticated",
-          "timestamp": "2025-10-31T12:12:39.435940+00:00",
+          "timestamp": "2025-10-31T12:13:38.509318+00:00",
           "details": {
-            "user_id": "d19afabf-3fa5-4168-8d05-010cb03feb21",
+            "user_id": "ce8b30f8-c549-4ca7-b401-128e1284b376",
             "role": "user"
           }
         },
@@ -166,9 +166,9 @@
           "test": "Create Catalog Course",
           "success": true,
           "message": "Successfully created course: Advanced Dance Masterclass",
-          "timestamp": "2025-10-31T12:12:39.456100+00:00",
+          "timestamp": "2025-10-31T12:13:38.567579+00:00",
           "details": {
-            "course_id": "bfb77335-2bd4-4eca-8ea3-294653d47bae",
+            "course_id": "1df0107d-12a3-43ee-ba3f-516f500033e0",
             "max_attendees": 10
           }
         },
@@ -176,19 +176,19 @@
           "test": "Create Catalog Product",
           "success": true,
           "message": "Successfully created product: Afroboost T-Shirt",
-          "timestamp": "2025-10-31T12:12:39.977190+00:00",
+          "timestamp": "2025-10-31T12:13:39.087562+00:00",
           "details": {
-            "product_id": "1e8ecaf0-acfc-4381-9792-aacfc67122f1",
+            "product_id": "fe81d662-eea1-42c1-baa4-1cf0be93c5a8",
             "stock": 50
           }
         },
         {
           "test": "Get Catalog Items",
           "success": true,
-          "message": "Successfully retrieved 13 catalog items",
-          "timestamp": "2025-10-31T12:12:40.485731+00:00",
+          "message": "Successfully retrieved 15 catalog items",
+          "timestamp": "2025-10-31T12:13:39.595077+00:00",
           "details": {
-            "total_items": 13,
+            "total_items": 15,
             "has_course": true,
             "has_product": true
           }
@@ -197,9 +197,9 @@
           "test": "Create Reservation Success",
           "success": true,
           "message": "Successfully created reservation for Maria Rodriguez",
-          "timestamp": "2025-10-31T12:12:41.464196+00:00",
+          "timestamp": "2025-10-31T12:13:40.397421+00:00",
           "details": {
-            "reservation_id": "de091160-5593-47ef-98bc-6203bfc11134",
+            "reservation_id": "9cc08cc0-d23a-4e81-bb9f-5c5bd6af197a",
             "quantity": 3,
             "total_price": 450.0
           }
@@ -208,9 +208,9 @@
           "test": "Create Second Reservation",
           "success": true,
           "message": "Successfully created second reservation for Carlos Silva",
-          "timestamp": "2025-10-31T12:12:42.210318+00:00",
+          "timestamp": "2025-10-31T12:13:41.134266+00:00",
           "details": {
-            "reservation_id": "fd7be580-e466-4ba5-81f1-ce2d875f2f01",
+            "reservation_id": "5ac5d30e-9562-489c-a2ae-98426c6c305f",
             "quantity": 3
           }
         },
@@ -218,7 +218,7 @@
           "test": "Create Reservation Exceed Capacity",
           "success": true,
           "message": "Correctly rejected reservation exceeding capacity",
-          "timestamp": "2025-10-31T12:12:42.732564+00:00",
+          "timestamp": "2025-10-31T12:13:41.641741+00:00",
           "details": {
             "status_code": 400,
             "message": "Not enough places available"
@@ -228,7 +228,7 @@
           "test": "Get Reservations Authenticated",
           "success": true,
           "message": "Successfully retrieved 2 reservations",
-          "timestamp": "2025-10-31T12:12:43.240861+00:00",
+          "timestamp": "2025-10-31T12:13:42.149699+00:00",
           "details": {
             "total_reservations": 2
           }
@@ -237,9 +237,9 @@
           "test": "Update Reservation Status",
           "success": true,
           "message": "Successfully updated reservation status to confirmed",
-          "timestamp": "2025-10-31T12:12:43.800665+00:00",
+          "timestamp": "2025-10-31T12:13:42.665026+00:00",
           "details": {
-            "reservation_id": "de091160-5593-47ef-98bc-6203bfc11134",
+            "reservation_id": "9cc08cc0-d23a-4e81-bb9f-5c5bd6af197a",
             "new_status": "confirmed"
           }
         },
@@ -247,7 +247,7 @@
           "test": "Email Confirmation Logs",
           "success": true,
           "message": "Email system active - Resend API activity detected",
-          "timestamp": "2025-10-31T12:12:44.308646+00:00",
+          "timestamp": "2025-10-31T12:13:43.172411+00:00",
           "details": {
             "log_check": "Resend API activity found in logs"
           }
@@ -267,9 +267,9 @@
           "test": "Create Template",
           "success": true,
           "message": "Successfully created template: Welcome Message",
-          "timestamp": "2025-10-31T12:12:45.096283+00:00",
+          "timestamp": "2025-10-31T12:13:43.970023+00:00",
           "details": {
-            "template_id": "490eb169-1208-4460-8865-9200b2783aab",
+            "template_id": "3a5164d1-977c-4d21-b28a-843e5cc9860c",
             "variables": [
               "nom"
             ]
@@ -279,7 +279,7 @@
           "test": "Get Templates",
           "success": true,
           "message": "Successfully retrieved 1 templates",
-          "timestamp": "2025-10-31T12:12:45.606911+00:00",
+          "timestamp": "2025-10-31T12:13:44.481440+00:00",
           "details": {
             "total_templates": 1
           }
@@ -288,9 +288,9 @@
           "test": "Create Advanced Campaign",
           "success": true,
           "message": "Successfully created campaign: Nouvelle Session de Danse",
-          "timestamp": "2025-10-31T12:12:46.116709+00:00",
+          "timestamp": "2025-10-31T12:13:44.992180+00:00",
           "details": {
-            "campaign_id": "b18a226e-23da-49f7-8a6a-df2b0b023a8d",
+            "campaign_id": "f99ca2a5-07d1-436a-8ad3-8d4d72411fc0",
             "status": "draft"
           }
         },
@@ -298,9 +298,9 @@
           "test": "Send Campaign",
           "success": true,
           "message": "Campaign send initiated successfully",
-          "timestamp": "2025-10-31T12:12:46.627543+00:00",
+          "timestamp": "2025-10-31T12:13:45.502851+00:00",
           "details": {
-            "campaign_id": "b18a226e-23da-49f7-8a6a-df2b0b023a8d",
+            "campaign_id": "f99ca2a5-07d1-436a-8ad3-8d4d72411fc0",
             "message": "Campaign sent successfully (SIMULATION MODE)"
           }
         },
@@ -308,9 +308,9 @@
           "test": "Get Campaign Analytics",
           "success": true,
           "message": "Successfully retrieved campaign analytics",
-          "timestamp": "2025-10-31T12:12:47.137365+00:00",
+          "timestamp": "2025-10-31T12:13:46.014478+00:00",
           "details": {
-            "campaign_id": "b18a226e-23da-49f7-8a6a-df2b0b023a8d",
+            "campaign_id": "f99ca2a5-07d1-436a-8ad3-8d4d72411fc0",
             "summary": {
               "total": 1,
               "sent": 1,
@@ -326,20 +326,20 @@
     }
   },
   "AI Assistant": {
-    "success": false,
+    "success": true,
     "summary": {
       "total_tests": 3,
-      "passed": 2,
-      "failed": 1,
-      "success_rate": 66.66666666666666,
+      "passed": 3,
+      "failed": 0,
+      "success_rate": 100.0,
       "results": [
         {
           "test": "AI Chat",
           "success": true,
           "message": "AI chat successful - received response",
-          "timestamp": "2025-10-31T12:12:58.538297+00:00",
+          "timestamp": "2025-10-31T12:13:53.776983+00:00",
           "details": {
-            "session_id": "e996b949-76f9-493f-8271-0bb7c25c530c",
+            "session_id": "ed229402-0090-41c6-9291-14434ba81aa6",
             "has_suggestions": true
           }
         },
@@ -347,46 +347,19 @@
           "test": "Get Sessions",
           "success": true,
           "message": "Successfully retrieved 1 AI sessions",
-          "timestamp": "2025-10-31T12:12:59.048927+00:00",
+          "timestamp": "2025-10-31T12:13:54.285063+00:00",
           "details": {
             "total_sessions": 1
           }
         },
         {
           "test": "Get Conversation History",
-          "success": false,
-          "message": "Invalid history response format",
-          "timestamp": "2025-10-31T12:12:59.559532+00:00",
+          "success": true,
+          "message": "Successfully retrieved conversation history with 2 messages",
+          "timestamp": "2025-10-31T12:13:54.793522+00:00",
           "details": {
-            "response": {
-              "session_id": "e996b949-76f9-493f-8271-0bb7c25c530c",
-              "messages": [
-                {
-                  "id": "5d7bdb66-33cb-4ed2-8fac-b0703b672c45",
-                  "user_id": "65481317-c7cc-4df8-8c4a-1485c01871ed",
-                  "session_id": "e996b949-76f9-493f-8271-0bb7c25c530c",
-                  "role": "user",
-                  "content": "Bonjour! Peux-tu m'aider \u00e0 cr\u00e9er une campagne de marketing pour mes cours de danse?",
-                  "context": {
-                    "business_type": "dance_studio",
-                    "target_audience": "young_adults"
-                  },
-                  "created_at": "2025-10-31T12:12:58.532212+00:00"
-                },
-                {
-                  "id": "3f742357-209b-4172-b062-c3c0da6f2609",
-                  "user_id": "65481317-c7cc-4df8-8c4a-1485c01871ed",
-                  "session_id": "e996b949-76f9-493f-8271-0bb7c25c530c",
-                  "role": "assistant",
-                  "content": "Bien s\u00fbr ! Voici un plan pour cr\u00e9er une campagne marketing engageante pour promouvoir vos cours de danse aupr\u00e8s des jeunes adultes :\n\n### 1. Structure des emails et messages WhatsApp\n\n#### Sujet de l'Email/Message :\n- \"Dansez comme jamais ! Rejoignez nos cours d\u00e8s maintenant \ud83d\udd7a\ud83d\udc83\"\n\n#### Introduction :\n- Accroche engageante : \"Vous cherchez une fa\u00e7on de vous exprimer, de vous amuser et de rester en forme ? D\u00e9couvrez notre studio de danse, o\u00f9 le rythme et la passion se rencontrent !\"\n  \n#### Corps du message :\n- **Pr\u00e9sentation des cours** : \"Nous proposons une vari\u00e9t\u00e9 de cours allant du hip-hop \u00e0 la danse contemporaine, adapt\u00e9s \u00e0 tous les niveaux.\"\n- **Avantages** : \"Renforcez votre confiance, apprenez de nouveaux mouvements, et rencontrez des amis partageant la m\u00eame passion pour la danse !\"\n- **T\u00e9moignage** : Inclure une citation d\u2019un \u00e9l\u00e8ve satisfait : \u00ab J\u2019ai d\u00e9couvert une v\u00e9ritable passion pour la danse ici ! \u00bb\n\n#### Appel \u00e0 l'action :\n- **Inscription** : \"R\u00e9servez votre place d\u00e8s aujourd'hui et b\u00e9n\u00e9ficiez de 10% de r\u00e9duction sur votre premier cours !\"\n- **Lien vers le site web** ou **num\u00e9ro de t\u00e9l\u00e9phone pour plus d'infos** : \"Cliquez ici pour vous inscrire \ud83d\udc49 [lien] ou appelez-nous au [num\u00e9ro].\"\n\n### 2. Appels \u00e0 l'action efficaces\n- \"Ne manquez pas votre chance ! Inscrivez-vous maintenant !\"\n- \"Pr\u00eat \u00e0 bouger ? Contactez-nous pour plus d'infos !\"\n- \"Transformez votre passion en expertise, rejoignez-nous !\"\n\n### 3. Tonalit\u00e9\n- Gardez un ton amical, dynamique et motivant. Utilisez des emojis pour rendre le message plus visuel et engageant. Par exemple : \ud83c\udf89, \ud83d\ude80, ou \u2764\ufe0f selon le contexte.\n\n### 4. Message WhatsApp\nUn message plus bref et percutant pourrait \u00eatre :\n\n\"Salut [Pr\u00e9nom] ! \ud83c\udf89 Pr\u00eat \u00e0 faire bouger ton corps ? Inscris-toi \u00e0 nos cours de danse et d\u00e9couvre un nouveau monde de mouvements ! Profite de 10% de r\u00e9duction sur ton premier cours. \ud83d\udd7a\ud83d\udc83 Clique ici pour plus d'infos ou pour t'inscrire : [lien]. On se voit sur la piste ! \ud83d\udcab\"\n\n### 5. Fr\u00e9quence d'envoi \n- Envisagez d'envoyer des rappels hebdomadaires et de partager des moments forts ou des vid\u00e9os des cours pour maintenir l'engagement.\n\n### 6. Conclusion\nN'oubliez pas d'ajouter une note personnalis\u00e9e ou une question \u00e0 la fin pour inciter \u00e0 la r\u00e9ponse. Cela peut aider \u00e0 cr\u00e9er un lien plus fort avec votre audience.\n\nSi vous avez besoin de pr\u00e9cisions ou d'ajustements, n'h\u00e9sitez pas \u00e0 demander !",
-                  "context": {
-                    "business_type": "dance_studio",
-                    "target_audience": "young_adults"
-                  },
-                  "created_at": "2025-10-31T12:12:58.534294+00:00"
-                }
-              ]
-            }
+            "session_id": "ed229402-0090-41c6-9291-14434ba81aa6",
+            "message_count": 2
           }
         }
       ]
@@ -404,9 +377,9 @@
           "test": "Create Reminder",
           "success": true,
           "message": "Successfully created reminder: Rappel Session de Danse",
-          "timestamp": "2025-10-31T12:13:00.369699+00:00",
+          "timestamp": "2025-10-31T12:13:55.582609+00:00",
           "details": {
-            "reminder_id": "2afd5e07-3eb6-4b6d-ab4c-2b24ae251460",
+            "reminder_id": "70773cb2-0a41-4193-b9d1-517eac7a54af",
             "channels": [
               "email",
               "whatsapp"
@@ -417,7 +390,7 @@
           "test": "Get Reminders",
           "success": true,
           "message": "Successfully retrieved 1 reminders",
-          "timestamp": "2025-10-31T12:13:00.879728+00:00",
+          "timestamp": "2025-10-31T12:13:56.090224+00:00",
           "details": {
             "total_reminders": 1
           }
@@ -426,9 +399,9 @@
           "test": "Create Automation Rule",
           "success": true,
           "message": "Successfully created automation rule: Bienvenue Nouveau Contact",
-          "timestamp": "2025-10-31T12:13:01.390344+00:00",
+          "timestamp": "2025-10-31T12:13:56.598078+00:00",
           "details": {
-            "rule_id": "3a8dc1dc-4105-4b19-a145-154bf0ebfdd1",
+            "rule_id": "bdf97dde-8803-4918-972d-bffdd731f8ca",
             "trigger": "new_contact"
           }
         },
@@ -436,7 +409,7 @@
           "test": "Get Automation Rules",
           "success": true,
           "message": "Successfully retrieved 1 automation rules",
-          "timestamp": "2025-10-31T12:13:01.899926+00:00",
+          "timestamp": "2025-10-31T12:13:57.106150+00:00",
           "details": {
             "total_rules": 1
           }
@@ -445,9 +418,9 @@
           "test": "Toggle Automation Rule",
           "success": true,
           "message": "Successfully toggled automation rule",
-          "timestamp": "2025-10-31T12:13:02.409307+00:00",
+          "timestamp": "2025-10-31T12:13:57.613444+00:00",
           "details": {
-            "rule_id": "3a8dc1dc-4105-4b19-a145-154bf0ebfdd1",
+            "rule_id": "bdf97dde-8803-4918-972d-bffdd731f8ca",
             "new_status": "disabled"
           }
         }

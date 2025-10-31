@@ -783,7 +783,7 @@ const WhatsAppCampaignsAdvanced = () => {
               <Textarea
                 value={templateForm.content}
                 onChange={(e) => setTemplateForm({...templateForm, content: e.target.value})}
-                placeholder="Bonjour {{nom}}, bienvenue chez Afroboost!"
+                placeholder="Bonjour {{nom}}, bienvenue chez BoostTribe!"
                 rows={5}
               />
             </div>

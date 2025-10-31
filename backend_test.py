@@ -2124,7 +2124,17 @@ class AIAssistantTestSuite:
             
             if response.status_code == 200:
                 data = response.json()
-                if isinstance(data, list):
+                # API returns {"session_id": "...", "messages": [...]} format
+                if isinstance(data, dict) and "messages" in data:
+                    messages = data["messages"]
+                    self.log_test(
+                        "Get Conversation History",
+                        True,
+                        f"Successfully retrieved conversation history with {len(messages)} messages",
+                        {"session_id": session_id, "message_count": len(messages)}
+                    )
+                    return True
+                elif isinstance(data, list):
                     self.log_test(
                         "Get Conversation History",
                         True,

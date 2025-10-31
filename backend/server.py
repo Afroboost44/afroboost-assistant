@@ -2154,6 +2154,37 @@ async def ai_conversation(request: AIConversationRequest):
         system_prompt = f"""Tu es l'assistant IA d'Afroboost, une entreprise de danse et fitness.
 Tu réponds aux messages de manière professionnelle, amicale et énergique en {request.language}.
 
+Contexte de la conversation:
+{context}
+
+Réponds de manière naturelle et personnalisée."""
+
+        # Generate AI response
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": request.message}
+            ]
+        )
+        
+        ai_response = response.choices[0].message.content
+        
+        # Add AI response to memory
+        await ai_memory.add_message(
+            contact_id=request.contact_id,
+            role="assistant",
+            content=ai_response
+        )
+        
+        return AIConversationResponse(
+            response=ai_response,
+            context_used=context
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in AI conversation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ========================

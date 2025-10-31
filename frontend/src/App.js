@@ -85,6 +85,11 @@ function App() {
                 <Layout><Reservations /></Layout>
               </ProtectedRoute>
             } />
+            <Route path="/reminders" element={
+              <ProtectedRoute>
+                <Layout><Reminders /></Layout>
+              </ProtectedRoute>
+            } />
 
             {/* Admin-only routes */}
             <Route path="/admin" element={

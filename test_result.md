@@ -502,18 +502,18 @@ frontend:
 
   - task: "MODULE 9 - Direct Chat from Ads Backend"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-  - agent: "main"
-    message: "✅ BOOSTTRIBE PHASE 2 COMPLETE - All 4 new feature modules fully implemented: 1) BACKEND: 21 new API routes across 4 modules (Gift Cards: 4 routes, Discounts: 7 routes, Referrals: 4 routes, Ad Chat: 6 routes). Added ~300 lines of Pydantic models with proper validation, datetime handling, and MongoDB serialization. 2) FRONTEND: Created 4 complete pages (GiftCards.js, Discounts.js, Referrals.js, AdChat.js) with full CRUD interfaces, real-time features, stats dashboards, and responsive design. 3) INTEGRATION: Added 4 routes to App.js, 4 navigation links with icons to Layout.js. Both services restarted successfully. Ready for comprehensive backend testing of new modules."
-
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "✅ IMPLEMENTED - Ad Chat system backend complete: 1) AdChat and AdChatMessage models with visitor info, session tracking, 2) Routes: POST /api/ad-chat/start (public - start chat), POST /api/ad-chat/{id}/message (send message), GET /api/ad-chat (list chats), PATCH /api/ad-chat/{id} (update), POST /api/ad-chat/{id}/convert (convert to contact), 3) Features: Multi-platform support (Facebook/Instagram/Google/LinkedIn), lead scoring, status management, automatic contact conversion. Ready for testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - All 8 Ad Chat tests successful (100% success rate): 1) POST /api/ad-chat/start creates new chats with session IDs and stores initial messages (PUBLIC endpoint working), 2) POST /api/ad-chat/{id}/message sends visitor messages (PUBLIC) and agent messages (AUTH required) successfully, 3) GET /api/ad-chat lists all chats sorted by last_message_at, 4) GET /api/ad-chat?status=active filters chats by status correctly, 5) GET /api/ad-chat/{id} retrieves specific chats with full message history, 6) PATCH /api/ad-chat/{id} updates chat details (status, priority, lead_score), 7) POST /api/ad-chat/{id}/convert successfully converts chats to contacts and updates chat status. Multi-platform support (Facebook/Instagram/Google/LinkedIn) and lead scoring working correctly. Ad Chat system fully functional."
 
 
 

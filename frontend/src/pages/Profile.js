@@ -177,7 +177,7 @@ const Profile = () => {
             </div>
             <div>
               <Label className="text-gray-400">{labels.email}</Label>
-              <p className="text-lg font-medium text-white">contact@afroboost.com</p>
+              <p className="text-lg font-medium text-white">contact@boosttribe.com</p>
             </div>
             <div>
               <Label className="text-gray-400">{labels.plan}</Label>

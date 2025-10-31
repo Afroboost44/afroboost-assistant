@@ -789,6 +789,280 @@ class SubscriptionCreate(BaseModel):
 
 
 
+
+# ========================
+# GIFT CARDS MODELS
+# ========================
+
+class GiftCard(BaseModel):
+    """Gift card model for offering services/products"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str = Field(default_factory=lambda: str(uuid.uuid4())[:8].upper())
+    
+    # Value
+    amount: float
+    currency: str = "CHF"
+    
+    # Recipient
+    recipient_name: str
+    recipient_email: EmailStr
+    personal_message: Optional[str] = None
+    
+    # Sender
+    sender_name: str
+    sender_email: EmailStr
+    sender_id: str  # User ID who created the card
+    
+    # Validity
+    expires_at: datetime
+    is_active: bool = True
+    
+    # Usage
+    status: str = "active"  # active, used, expired, cancelled
+    used_at: Optional[datetime] = None
+    used_by: Optional[str] = None  # Contact or user who redeemed
+    remaining_balance: Optional[float] = None  # For partial redemptions
+    
+    # Design
+    design_template: str = "default"  # default, birthday, christmas, custom
+    design_color: str = "#8B5CF6"
+    
+    # Metadata
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    sent_at: Optional[datetime] = None
+    
+class GiftCardCreate(BaseModel):
+    amount: float
+    currency: str = "CHF"
+    recipient_name: str
+    recipient_email: EmailStr
+    personal_message: Optional[str] = None
+    sender_name: str
+    sender_email: EmailStr
+    expires_at: datetime
+    design_template: str = "default"
+    design_color: str = "#8B5CF6"
+
+class GiftCardRedeem(BaseModel):
+    code: str
+    redeemed_by_name: str
+    redeemed_by_email: EmailStr
+    amount_to_use: Optional[float] = None  # For partial redemption
+
+
+# ========================
+# CLIENT DISCOUNTS MODELS
+# ========================
+
+class Discount(BaseModel):
+    """Discount/promo code model"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    code: str  # Unique promo code (e.g., SUMMER2024)
+    
+    # Discount details
+    discount_type: str  # percentage, fixed_amount
+    discount_value: float  # Percentage (e.g., 20) or fixed amount (e.g., 50)
+    currency: str = "CHF"
+    
+    # Description
+    name: str
+    description: Optional[str] = None
+    
+    # Validity
+    start_date: datetime
+    end_date: datetime
+    is_active: bool = True
+    
+    # Usage limits
+    usage_limit: Optional[int] = None  # Total times it can be used
+    usage_count: int = 0  # Times it has been used
+    per_user_limit: int = 1  # Times per user
+    
+    # Applicability
+    applicable_to: List[str] = []  # empty = all, or specific catalog_item IDs
+    minimum_purchase: Optional[float] = None
+    
+    # Target audience
+    target_contacts: List[str] = []  # empty = all contacts
+    target_tags: List[str] = []  # empty = all, or specific tags
+    
+    # Metadata
+    created_by: str  # Admin user ID
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DiscountCreate(BaseModel):
+    code: str
+    discount_type: str
+    discount_value: float
+    currency: str = "CHF"
+    name: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: datetime
+    usage_limit: Optional[int] = None
+    per_user_limit: int = 1
+    applicable_to: List[str] = []
+    minimum_purchase: Optional[float] = None
+    target_contacts: List[str] = []
+    target_tags: List[str] = []
+
+class DiscountUpdate(BaseModel):
+    code: Optional[str] = None
+    discount_type: Optional[str] = None
+    discount_value: Optional[float] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    is_active: Optional[bool] = None
+    usage_limit: Optional[int] = None
+    applicable_to: Optional[List[str]] = None
+    minimum_purchase: Optional[float] = None
+
+class DiscountValidation(BaseModel):
+    """Validate discount code for a purchase"""
+    code: str
+    contact_email: EmailStr
+    items: List[str]  # Catalog item IDs
+    subtotal: float
+
+
+# ========================
+# REFERRAL SYSTEM MODELS
+# ========================
+
+class Referral(BaseModel):
+    """Referral/parrainage model"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    
+    # Referrer (person who refers)
+    referrer_id: str  # User ID
+    referrer_name: str
+    referrer_email: EmailStr
+    referral_code: str = Field(default_factory=lambda: str(uuid.uuid4())[:8].upper())
+    
+    # Referred (person being referred)
+    referred_email: EmailStr
+    referred_name: Optional[str] = None
+    referred_id: Optional[str] = None  # Set when they sign up
+    
+    # Status
+    status: str = "pending"  # pending, signed_up, completed, expired
+    
+    # Rewards
+    referrer_reward_type: str = "discount"  # discount, credit, free_month
+    referrer_reward_value: float = 10.0  # 10% or 10 CHF
+    referrer_reward_applied: bool = False
+    
+    referred_reward_type: str = "discount"
+    referred_reward_value: float = 10.0
+    referred_reward_applied: bool = False
+    
+    # Completion criteria
+    completion_criteria: str = "first_purchase"  # signup, first_purchase, subscription
+    completed_at: Optional[datetime] = None
+    
+    # Metadata
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=90))
+    
+class ReferralCreate(BaseModel):
+    referred_email: EmailStr
+    referred_name: Optional[str] = None
+    referrer_reward_type: str = "discount"
+    referrer_reward_value: float = 10.0
+    referred_reward_type: str = "discount"
+    referred_reward_value: float = 10.0
+    completion_criteria: str = "first_purchase"
+
+class ReferralStats(BaseModel):
+    """Statistics for user's referral program"""
+    total_referrals: int
+    pending_referrals: int
+    completed_referrals: int
+    total_rewards_earned: float
+    referral_code: str
+
+
+# ========================
+# DIRECT CHAT FROM ADS MODELS
+# ========================
+
+class AdChatMessage(BaseModel):
+    """Individual message in ad chat"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    sender: str  # visitor, agent
+    content: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    read: bool = False
+
+class AdChat(BaseModel):
+    """Chat conversation from advertisement"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    
+    # Ad source
+    ad_id: str  # ID of the ad that generated this chat
+    ad_platform: str  # facebook, instagram, google, linkedin
+    ad_campaign_name: Optional[str] = None
+    
+    # Visitor info
+    visitor_name: Optional[str] = None
+    visitor_email: Optional[EmailStr] = None
+    visitor_phone: Optional[str] = None
+    visitor_whatsapp: Optional[str] = None
+    
+    # Session
+    session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    messages: List[AdChatMessage] = []
+    
+    # Status
+    status: str = "active"  # active, resolved, archived, converted
+    assigned_to: Optional[str] = None  # User ID of assigned agent
+    priority: str = "normal"  # low, normal, high, urgent
+    
+    # Lead quality
+    lead_score: Optional[int] = None  # 0-100
+    tags: List[str] = []
+    
+    # Conversion
+    converted_to_contact: bool = False
+    converted_contact_id: Optional[str] = None
+    conversion_value: Optional[float] = None
+    
+    # Metadata
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_message_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    closed_at: Optional[datetime] = None
+
+class AdChatStart(BaseModel):
+    ad_id: str
+    ad_platform: str
+    ad_campaign_name: Optional[str] = None
+    visitor_name: Optional[str] = None
+    visitor_email: Optional[EmailStr] = None
+    visitor_phone: Optional[str] = None
+    initial_message: str
+
+class AdChatMessageCreate(BaseModel):
+    sender: str  # visitor or agent
+    content: str
+
+class AdChatUpdate(BaseModel):
+    status: Optional[str] = None
+    assigned_to: Optional[str] = None
+    priority: Optional[str] = None
+    tags: Optional[List[str]] = None
+    lead_score: Optional[int] = None
+    visitor_name: Optional[str] = None
+    visitor_email: Optional[EmailStr] = None
+    visitor_phone: Optional[str] = None
+
 # ========================
 # HELPER FUNCTIONS
 # ========================

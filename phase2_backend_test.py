@@ -334,7 +334,7 @@ class DiscountsTestSuite:
             end_date = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
             
             discount_data = {
-                "code": "SUMMER2024",
+                "code": f"SUMMER{int(time.time())}",
                 "discount_type": "percentage",
                 "discount_value": 20,
                 "name": "Summer Sale",

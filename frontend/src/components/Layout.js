@@ -236,6 +236,9 @@ const Layout = ({ children }) => {
           </div>
         </main>
       </div>
+
+      {/* AI Assistant Widget - accessible everywhere */}
+      <AIAssistantWidget />
     </div>
   );
 };

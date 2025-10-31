@@ -607,6 +607,111 @@ class PaymentLinkCreate(BaseModel):
     contact_email: Optional[str] = None
 
 
+
+# ========================
+# REMINDERS & AUTOMATION MODELS
+# ========================
+
+class Reminder(BaseModel):
+    """Reminder/notification model"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    title: str
+    description: Optional[str] = None
+    reminder_type: str  # event, payment, renewal, followup, custom
+    
+    # Target
+    target_id: Optional[str] = None  # ID of related item (event, booking, contact)
+    target_contacts: List[str] = []  # Specific contacts to notify
+    
+    # Timing
+    scheduled_at: datetime
+    timezone: str = "Europe/Zurich"
+    
+    # Channels
+    channels: List[str] = ["email"]  # email, whatsapp, in-app
+    
+    # Content
+    message_template: Optional[str] = None
+    message_variables: Dict[str, Any] = {}
+    
+    # Status
+    status: str = "pending"  # pending, sent, failed, cancelled
+    sent_at: Optional[datetime] = None
+    
+    # Metadata
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ReminderCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    reminder_type: str
+    target_id: Optional[str] = None
+    target_contacts: List[str] = []
+    scheduled_at: str  # ISO format
+    channels: List[str] = ["email"]
+    message_template: Optional[str] = None
+    message_variables: Dict[str, Any] = {}
+
+class AutomationRule(BaseModel):
+    """Automation rule for triggered actions"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    description: Optional[str] = None
+    
+    # Trigger
+    trigger_event: str  # new_contact, booking_created, payment_received, inactive_contact, etc.
+    trigger_conditions: Dict[str, Any] = {}  # Additional conditions
+    
+    # Action
+    action_type: str  # send_email, send_whatsapp, create_reminder, update_contact
+    action_config: Dict[str, Any] = {}
+    
+    # Timing
+    delay_minutes: int = 0  # Delay before executing action
+    
+    # Status
+    is_active: bool = True
+    execution_count: int = 0
+    last_executed: Optional[datetime] = None
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AutomationRuleCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    trigger_event: str
+    trigger_conditions: Dict[str, Any] = {}
+    action_type: str
+    action_config: Dict[str, Any] = {}
+    delay_minutes: int = 0
+    is_active: bool = True
+
+class ReminderTemplate(BaseModel):
+    """Template for common reminder messages"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    name: str
+    reminder_type: str
+    message_content: str
+    variables: List[str] = []  # List of available variables
+    default_channels: List[str] = ["email"]
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ReminderTemplateCreate(BaseModel):
+    name: str
+    reminder_type: str
+    message_content: str
+    variables: List[str] = []
+    default_channels: List[str] = ["email"]
+
+
 # Stripe/Payment Models
 class PricingPlan(BaseModel):
     model_config = ConfigDict(extra="ignore")

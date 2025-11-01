@@ -3037,8 +3037,9 @@ async def send_advanced_campaign(
     if not campaign:
         raise HTTPException(status_code=404, detail="Campaign not found")
     
-    # Get target contacts
-    query = {}
+    # Get target contacts - FILTERED BY USER_ID
+    query = {"user_id": current_user["id"]}  # CRITICAL: Only user's own contacts
+    
     if campaign.get("target_contacts"):
         query["id"] = {"$in": campaign["target_contacts"]}
     if campaign.get("target_tags"):
@@ -3046,7 +3047,10 @@ async def send_advanced_campaign(
     if campaign.get("target_status"):
         query["status"] = campaign["target_status"]
     
+    logger.info(f"WhatsApp campaign query: {query}")
     contacts = await db.contacts.find(query, {"_id": 0}).to_list(length=None)
+    
+    logger.info(f"Found {len(contacts)} contacts for WhatsApp campaign")
     
     if not contacts:
         raise HTTPException(status_code=400, detail="No contacts match the targeting criteria")

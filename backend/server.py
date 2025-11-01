@@ -52,8 +52,8 @@ ai_memory = AIMemoryService(db)
 
 # Initialize Chat AI Service
 from chat_ai_service import ChatAIService
-EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
-chat_ai = ChatAIService(db, EMERGENT_LLM_KEY) if EMERGENT_LLM_KEY else None
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+chat_ai = ChatAIService(db, OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')

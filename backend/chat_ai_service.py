@@ -11,9 +11,9 @@ from datetime import datetime, timezone
 class ChatAIService:
     """Service IA pour le chat publicitaire intelligent"""
     
-    def __init__(self, db, emergent_llm_key: str):
+    def __init__(self, db, openai_api_key: str):
         self.db = db
-        self.llm_key = emergent_llm_key
+        self.api_key = openai_api_key
         self.system_prompt = """Tu es un assistant virtuel BoostTribe, expert en marketing et vente.
 Tu connais parfaitement le catalogue de produits, cours, événements, cartes cadeaux et réductions.
 Tu es amical, professionnel et tu aides les clients à trouver ce qu'ils recherchent.

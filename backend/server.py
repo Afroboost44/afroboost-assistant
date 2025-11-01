@@ -5020,6 +5020,318 @@ async def convert_ad_chat_to_contact(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# ========================
+# PUBLIC COACH CHAT ROUTES
+# ========================
+
+@api_router.post("/coach-chat/config", response_model=CoachChatConfig)
+async def create_coach_chat_config(
+    config_data: CoachChatConfigCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create or update coach chat configuration"""
+    try:
+        # Check if config already exists for this user
+        existing = await db.coach_chat_configs.find_one({"user_id": current_user["id"]})
+        
+        if existing:
+            # Update existing
+            await db.coach_chat_configs.update_one(
+                {"user_id": current_user["id"]},
+                {
+                    "$set": {
+                        **config_data.dict(),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            config = await db.coach_chat_configs.find_one({"user_id": current_user["id"]}, {"_id": 0})
+        else:
+            # Create new
+            new_config = CoachChatConfig(
+                user_id=current_user["id"],
+                **config_data.dict()
+            )
+            
+            config_dict = new_config.dict()
+            config_dict['created_at'] = config_dict['created_at'].isoformat()
+            config_dict['updated_at'] = config_dict['updated_at'].isoformat()
+            
+            await db.coach_chat_configs.insert_one(config_dict)
+            config = config_dict
+        
+        return config
+    except Exception as e:
+        logger.error(f"Error creating coach chat config: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/coach-chat/config", response_model=CoachChatConfig)
+async def get_coach_chat_config(current_user: Dict = Depends(get_current_user)):
+    """Get current user's coach chat configuration"""
+    try:
+        config = await db.coach_chat_configs.find_one({"user_id": current_user["id"]}, {"_id": 0})
+        
+        if not config:
+            # Create default config
+            default_config = CoachChatConfig(
+                user_id=current_user["id"],
+                chat_slug=current_user["id"][:8],  # Use first 8 chars of user ID
+                display_name=current_user["name"]
+            )
+            
+            config_dict = default_config.dict()
+            config_dict['created_at'] = config_dict['created_at'].isoformat()
+            config_dict['updated_at'] = config_dict['updated_at'].isoformat()
+            
+            await db.coach_chat_configs.insert_one(config_dict)
+            config = config_dict
+        
+        return config
+    except Exception as e:
+        logger.error(f"Error fetching coach chat config: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/coach-chat/public/{chat_slug}")
+async def get_public_coach_chat_config(chat_slug: str):
+    """Get coach chat config by slug (public, no auth)"""
+    try:
+        config = await db.coach_chat_configs.find_one(
+            {"chat_slug": chat_slug, "is_active": True},
+            {"_id": 0}
+        )
+        
+        if not config:
+            raise HTTPException(status_code=404, detail="Coach chat not found")
+        
+        return config
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching public coach chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
+# HEADSET RESERVATION ROUTES
+# ========================
+
+@api_router.post("/headset-reservations", response_model=HeadsetReservation)
+async def create_headset_reservation(
+    reservation_data: HeadsetReservationCreate
+):
+    """Create headset reservation (public endpoint)"""
+    try:
+        # Get catalog item (course/event)
+        item = await db.catalog_items.find_one({"id": reservation_data.catalog_item_id}, {"_id": 0})
+        
+        if not item:
+            raise HTTPException(status_code=404, detail="Course not found")
+        
+        if not item.get('event_date'):
+            raise HTTPException(status_code=400, detail="This item is not a scheduled event")
+        
+        # Check if already reserved
+        existing = await db.headset_reservations.find_one({
+            "catalog_item_id": reservation_data.catalog_item_id,
+            "customer_email": reservation_data.customer_email,
+            "status": {"$ne": "cancelled"}
+        })
+        
+        if existing:
+            raise HTTPException(status_code=400, detail="You already have a reservation for this course")
+        
+        # Create reservation
+        new_reservation = HeadsetReservation(
+            catalog_item_id=reservation_data.catalog_item_id,
+            catalog_item_title=item['title'],
+            event_date=datetime.fromisoformat(item['event_date']) if isinstance(item['event_date'], str) else item['event_date'],
+            coach_id=item['user_id'],
+            coach_name=item.get('coach_name', 'Coach'),
+            customer_name=reservation_data.customer_name,
+            customer_email=reservation_data.customer_email,
+            customer_phone=reservation_data.customer_phone,
+            chat_id=reservation_data.chat_id
+        )
+        
+        reservation_dict = new_reservation.dict()
+        reservation_dict['created_at'] = reservation_dict['created_at'].isoformat()
+        reservation_dict['updated_at'] = reservation_dict['updated_at'].isoformat()
+        reservation_dict['event_date'] = reservation_dict['event_date'].isoformat()
+        
+        await db.headset_reservations.insert_one(reservation_dict)
+        
+        # Create attendance record
+        attendance = AttendanceRecord(
+            reservation_id=new_reservation.id,
+            catalog_item_id=reservation_data.catalog_item_id,
+            coach_id=item['user_id'],
+            status="pending"
+        )
+        
+        attendance_dict = attendance.dict()
+        attendance_dict['created_at'] = attendance_dict['created_at'].isoformat()
+        
+        await db.attendance_records.insert_one(attendance_dict)
+        
+        logger.info(f"Headset reservation created: {new_reservation.id}")
+        
+        return new_reservation
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating headset reservation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/headset-reservations")
+async def get_headset_reservations(
+    catalog_item_id: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Get headset reservations for coach"""
+    try:
+        query = {"coach_id": current_user["id"]}
+        
+        if catalog_item_id:
+            query["catalog_item_id"] = catalog_item_id
+        
+        reservations = await db.headset_reservations.find(query, {"_id": 0}).to_list(length=1000)
+        
+        return reservations
+    except Exception as e:
+        logger.error(f"Error fetching reservations: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/headset-reservations/{reservation_id}")
+async def update_headset_reservation(
+    reservation_id: str,
+    status: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update headset reservation status"""
+    try:
+        result = await db.headset_reservations.update_one(
+            {"id": reservation_id, "coach_id": current_user["id"]},
+            {
+                "$set": {
+                    "status": status,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Reservation not found")
+        
+        # Update attendance if present
+        if status == "present":
+            await db.attendance_records.update_one(
+                {"reservation_id": reservation_id},
+                {
+                    "$set": {
+                        "status": "present",
+                        "checked_in_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+        
+        return {"message": "Reservation updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating reservation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
+# ATTENDANCE ROUTES
+# ========================
+
+@api_router.get("/attendance")
+async def get_attendance_records(
+    catalog_item_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Get attendance records for a course"""
+    try:
+        # Get reservations with attendance
+        reservations = await db.headset_reservations.find(
+            {
+                "catalog_item_id": catalog_item_id,
+                "coach_id": current_user["id"]
+            },
+            {"_id": 0}
+        ).to_list(length=1000)
+        
+        # Get attendance records
+        attendance_records = await db.attendance_records.find(
+            {
+                "catalog_item_id": catalog_item_id,
+                "coach_id": current_user["id"]
+            },
+            {"_id": 0}
+        ).to_list(length=1000)
+        
+        # Merge data
+        result = []
+        for reservation in reservations:
+            attendance = next(
+                (a for a in attendance_records if a['reservation_id'] == reservation['id']),
+                None
+            )
+            result.append({
+                "reservation": reservation,
+                "attendance": attendance
+            })
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error fetching attendance: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/attendance/{reservation_id}")
+async def update_attendance(
+    reservation_id: str,
+    attendance_update: AttendanceUpdate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update attendance status"""
+    try:
+        update_data = {
+            "status": attendance_update.status,
+            **({} if not attendance_update.notes else {"notes": attendance_update.notes})
+        }
+        
+        if attendance_update.status == "present":
+            update_data["checked_in_at"] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.attendance_records.update_one(
+            {
+                "reservation_id": reservation_id,
+                "coach_id": current_user["id"]
+            },
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Attendance record not found")
+        
+        # Also update reservation
+        await db.headset_reservations.update_one(
+            {"id": reservation_id},
+            {"$set": {"status": attendance_update.status}}
+        )
+        
+        return {"message": "Attendance updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating attendance: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 app.include_router(api_router)
 
 app.add_middleware(

@@ -1690,7 +1690,10 @@ async def delete_contact(contact_id: str, current_user: Dict = Depends(get_curre
     return {"message": "Contact deleted successfully"}
 
 @api_router.post("/contacts/import")
-async def import_contacts(file: UploadFile = File(...)):
+async def import_contacts(
+    file: UploadFile = File(...),
+    current_user: Dict = Depends(get_current_user)
+):
     """Import contacts from CSV/Excel file"""
     try:
         contents = await file.read()
@@ -1699,33 +1702,87 @@ async def import_contacts(file: UploadFile = File(...)):
         try:
             df = pd.read_excel(io.BytesIO(contents))
         except:
-            # Fall back to CSV
-            df = pd.read_csv(io.BytesIO(contents))
+            # Fall back to CSV with UTF-8 encoding
+            try:
+                df = pd.read_csv(io.BytesIO(contents), encoding='utf-8')
+            except:
+                df = pd.read_csv(io.BytesIO(contents), encoding='latin-1')
+        
+        # Normalize column names (handle French/English, case-insensitive)
+        df.columns = df.columns.str.strip().str.lower()
+        
+        # Map French columns to English
+        column_mapping = {
+            'nom': 'name',
+            'prénom': 'firstname',
+            'email': 'email',
+            'téléphone': 'phone',
+            'telephone': 'phone',
+            'phone': 'phone',
+            'tags': 'tags',
+            'groupe': 'group',
+            'group': 'group'
+        }
+        
+        df.rename(columns=column_mapping, inplace=True)
+        
+        # Combine firstname and name if both exist
+        if 'firstname' in df.columns and 'name' in df.columns:
+            df['name'] = df['firstname'].fillna('') + ' ' + df['name'].fillna('')
+            df['name'] = df['name'].str.strip()
+        elif 'firstname' in df.columns:
+            df['name'] = df['firstname']
         
         # Validate required columns
-        required_cols = ['name', 'email']
-        for col in required_cols:
-            if col not in df.columns:
-                raise HTTPException(status_code=400, detail=f"Missing required column: {col}")
+        if 'name' not in df.columns:
+            raise HTTPException(status_code=400, detail="Colonne 'Nom' ou 'Name' manquante")
+        
+        # Email is optional, phone can be primary identifier
         
         imported = 0
         duplicates = 0
         errors = 0
+        error_details = []
         
-        for _, row in df.iterrows():
+        for idx, row in df.iterrows():
             try:
-                # Check if email exists
-                existing = await db.contacts.find_one({"email": row['email']}, {"_id": 0})
+                # Skip empty rows
+                if pd.isna(row.get('name')) or str(row.get('name')).strip() == '':
+                    continue
+                
+                name = str(row['name']).strip()
+                email = str(row.get('email', '')).strip() if pd.notna(row.get('email')) else None
+                phone = str(row.get('phone', '')).strip() if pd.notna(row.get('phone')) else None
+                
+                # Skip if both email and phone are empty
+                if not email and not phone:
+                    errors += 1
+                    error_details.append(f"Ligne {idx+2}: Nom={name}, email et téléphone manquants")
+                    continue
+                
+                # Use email as primary, phone as fallback
+                if not email and phone:
+                    # Generate a placeholder email from phone
+                    email = f"{phone.replace('+', '').replace(' ', '')}@imported.contact"
+                
+                # Check if contact exists FOR THIS USER
+                existing = await db.contacts.find_one({
+                    "email": email,
+                    "user_id": current_user["id"]
+                }, {"_id": 0})
+                
                 if existing:
                     duplicates += 1
                     continue
                 
                 contact = Contact(
-                    name=str(row['name']),
-                    email=str(row['email']),
+                    user_id=current_user["id"],
+                    name=name,
+                    email=email,
+                    phone=phone,
                     tags=str(row.get('tags', '')).split(',') if pd.notna(row.get('tags')) else [],
-                    group=str(row.get('group', 'general')),
-                    active=bool(row.get('active', True))
+                    group=str(row.get('group', 'imported')),
+                    active=True
                 )
                 
                 doc = contact.model_dump()
@@ -1734,19 +1791,23 @@ async def import_contacts(file: UploadFile = File(...)):
                 await db.contacts.insert_one(doc)
                 imported += 1
             except Exception as e:
-                logger.error(f"Error importing contact: {e}")
+                logger.error(f"Error importing contact at row {idx+2}: {e}")
                 errors += 1
+                error_details.append(f"Ligne {idx+2}: {str(e)}")
+        
+        logger.info(f"User {current_user['email']} imported {imported} contacts, {duplicates} duplicates, {errors} errors")
         
         return {
             "imported": imported,
             "duplicates": duplicates,
             "errors": errors,
-            "total": len(df)
+            "total": len(df),
+            "error_details": error_details[:10]  # Return first 10 errors only
         }
     
     except Exception as e:
         logger.error(f"Error importing file: {e}")
-        raise HTTPException(status_code=400, detail=f"Error processing file: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Erreur lors du traitement du fichier: {str(e)}")
 
 @api_router.get("/contacts/export/csv")
 async def export_contacts_csv():

@@ -4656,13 +4656,39 @@ async def complete_referral(
 
 @api_router.post("/ad-chat/start", response_model=AdChat)
 async def start_ad_chat(chat_start: AdChatStart):
-    """Start a new chat conversation from an advertisement (public endpoint)"""
+    """Start a new chat conversation from an advertisement (public endpoint with AI)"""
     try:
-        # Create initial message
+        # Create initial message from visitor
         initial_message = AdChatMessage(
             sender="visitor",
             content=chat_start.initial_message
         )
+        
+        messages = [initial_message]
+        
+        # Generate AI response if service available
+        if chat_ai:
+            try:
+                ai_result = await chat_ai.generate_response(
+                    message=chat_start.initial_message,
+                    visitor_email=chat_start.visitor_email,
+                    chat_id=None
+                )
+                
+                # Add AI response
+                ai_message = AdChatMessage(
+                    sender="agent",
+                    content=ai_result["response"]
+                )
+                messages.append(ai_message)
+                
+                # Check if needs human escalation
+                needs_escalation = ai_result.get("needs_human_escalation", False)
+            except Exception as e:
+                logger.error(f"AI response error: {e}")
+                needs_escalation = False
+        else:
+            needs_escalation = False
         
         # Create chat session
         new_chat = AdChat(
@@ -4672,7 +4698,8 @@ async def start_ad_chat(chat_start: AdChatStart):
             visitor_name=chat_start.visitor_name,
             visitor_email=chat_start.visitor_email,
             visitor_phone=chat_start.visitor_phone,
-            messages=[initial_message]
+            messages=messages,
+            priority="high" if needs_escalation else "normal"
         )
         
         chat_dict = new_chat.dict()
@@ -4685,7 +4712,7 @@ async def start_ad_chat(chat_start: AdChatStart):
         
         await db.ad_chats.insert_one(chat_dict)
         
-        logger.info(f"Ad chat started: {new_chat.id} from {chat_start.ad_platform}")
+        logger.info(f"Ad chat started with AI: {new_chat.id} from {chat_start.ad_platform}")
         return new_chat
     except Exception as e:
         logger.error(f"Error starting ad chat: {str(e)}")

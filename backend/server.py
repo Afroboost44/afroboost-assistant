@@ -1065,6 +1065,21 @@ class AdChatUpdate(BaseModel):
 
 # ========================
 # HELPER FUNCTIONS
+
+def generate_slug(title: str) -> str:
+    """Generate URL-friendly slug from title"""
+    import unicodedata
+    # Normalize unicode characters
+    slug = unicodedata.normalize('NFKD', title).encode('ascii', 'ignore').decode('ascii')
+    # Convert to lowercase and replace spaces/special chars with hyphens
+    slug = re.sub(r'[^a-z0-9]+', '-', slug.lower())
+    # Remove leading/trailing hyphens
+    slug = slug.strip('-')
+    # Add timestamp to ensure uniqueness
+    slug = f"{slug}-{str(uuid.uuid4())[:8]}"
+    return slug
+
+
 # ========================
 
 async def get_settings():

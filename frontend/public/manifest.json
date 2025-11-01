@@ -2,6 +2,7 @@
   "short_name": "BoostTribe",
   "name": "BoostTribe - Marketing Multicanal Intelligent",
   "description": "Plateforme de marketing email, WhatsApp et SMS avec IA pour coachs, vendeurs et créateurs",
+  "version": "2.0.0",
   "icons": [
     {
       "src": "favicon.ico",

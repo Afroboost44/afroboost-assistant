@@ -170,7 +170,7 @@ class OpenAIAdChatTestSuite:
                 # The API returns the full chat object, not just IDs
                 # Verify response structure - should have id and session_id
                 if "id" in data and "session_id" in data:
-                    chat_id = data["chat_id"]
+                    chat_id = data["id"]  # Use 'id' not 'chat_id'
                     session_id = data["session_id"]
                     
                     # Fetch the created chat to verify AI response

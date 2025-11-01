@@ -137,22 +137,34 @@ const Catalog = () => {
   };
 
   const handleDelete = async (id) => {
+    console.log('handleDelete called with id:', id);
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return;
 
     try {
+      console.log('Attempting to delete:', `${API}/catalog/${id}`);
       const response = await fetch(`${API}/catalog/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      console.log('Delete response:', response.status, response.ok);
+
       if (response.ok) {
         toast({ title: "✅ Article supprimé" });
         fetchItems();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Delete failed:', errorData);
+        toast({
+          title: "❌ Erreur",
+          description: errorData.detail || "Impossible de supprimer l'article",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error deleting item:', error);
       toast({
-        title: "Erreur",
+        title: "❌ Erreur",
         description: "Impossible de supprimer l'article",
         variant: "destructive"
       });

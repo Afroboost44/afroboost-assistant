@@ -167,8 +167,9 @@ class OpenAIAdChatTestSuite:
             if response.status_code == 200:
                 data = response.json()
                 
-                # Verify response structure
-                if "chat_id" in data and "session_id" in data:
+                # The API returns the full chat object, not just IDs
+                # Verify response structure - should have id and session_id
+                if "id" in data and "session_id" in data:
                     chat_id = data["chat_id"]
                     session_id = data["session_id"]
                     

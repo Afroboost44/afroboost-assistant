@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   MessageCircle, Plus, Send, Sparkles, Edit, Trash2, 
   Calendar, Target, BarChart3, Image, Link as LinkIcon,
-  Smile, Bold, Italic, ChevronDown, ChevronUp
+  Smile, Bold, Italic, ChevronDown, ChevronUp, ShoppingCart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

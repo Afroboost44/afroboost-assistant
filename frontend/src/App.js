@@ -45,6 +45,11 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pricing" element={<Pricing />} />
+            
+            {/* Public catalog routes */}
+            <Route path="/catalog/public" element={<PublicCatalog />} />
+            <Route path="/p/:slug" element={<ProductPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
 
             {/* Protected routes */}
             <Route path="/dashboard" element={

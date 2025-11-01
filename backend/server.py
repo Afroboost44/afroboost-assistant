@@ -5281,6 +5281,264 @@ async def get_public_coach_chat_config(chat_slug: str):
 
 
 # ========================
+# STRIPE PAYMENT ROUTES
+# ========================
+
+# Initialize Stripe Checkout
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
+
+@api_router.post("/reservations/checkout")
+async def create_reservation_checkout(
+    catalog_item_id: str,
+    quantity: int,
+    customer_name: str,
+    customer_email: EmailStr,
+    customer_phone: Optional[str] = None,
+    origin_url: str = None,
+    notes: Optional[str] = None,
+    request: Request = None
+):
+    """Create Stripe checkout session for reservation"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    # Get catalog item
+    item = await db.catalog_items.find_one({"id": catalog_item_id}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    if not item.get("is_active") or not item.get("is_published"):
+        raise HTTPException(status_code=400, detail="Item is not available")
+    
+    # Check availability
+    if item.get("max_attendees"):
+        if item.get("current_attendees", 0) + quantity > item["max_attendees"]:
+            raise HTTPException(status_code=400, detail="Not enough places available")
+    
+    # Calculate amount (BACKEND DEFINED - SECURITY)
+    amount = float(item["price"] * quantity)
+    currency = item.get("currency", "CHF").lower()
+    
+    # Get origin URL from request if not provided
+    if not origin_url:
+        origin_url = str(request.base_url).rstrip('/')
+    
+    # Initialize Stripe
+    host_url = origin_url
+    webhook_url = f"{host_url}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    
+    # Create URLs
+    success_url = f"{origin_url}/reservation-success?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{origin_url}/catalog"
+    
+    # Metadata for tracking
+    metadata = {
+        "entity_type": "reservation",
+        "catalog_item_id": catalog_item_id,
+        "customer_name": customer_name,
+        "customer_email": customer_email,
+        "customer_phone": customer_phone or "",
+        "quantity": str(quantity),
+        "user_id": item["user_id"],
+        "notes": notes or ""
+    }
+    
+    # Create checkout session
+    checkout_request = CheckoutSessionRequest(
+        amount=amount,
+        currency=currency,
+        success_url=success_url,
+        cancel_url=cancel_url,
+        metadata=metadata
+    )
+    
+    session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+    
+    # MANDATORY: Create payment transaction record
+    payment_transaction = PaymentTransaction(
+        session_id=session.session_id,
+        user_id=item["user_id"],
+        customer_email=customer_email,
+        amount=amount,
+        currency=currency.upper(),
+        payment_status="pending",
+        status="initiated",
+        entity_type="reservation",
+        entity_id=catalog_item_id,
+        metadata=metadata
+    )
+    
+    trans_dict = payment_transaction.model_dump()
+    trans_dict["created_at"] = trans_dict["created_at"].isoformat()
+    trans_dict["updated_at"] = trans_dict["updated_at"].isoformat()
+    
+    await db.payment_transactions.insert_one(trans_dict)
+    
+    logger.info(f"Checkout session created: {session.session_id} for item {catalog_item_id}")
+    
+    return {
+        "url": session.url,
+        "session_id": session.session_id
+    }
+
+
+@api_router.get("/payments/status/{session_id}")
+async def get_payment_status(session_id: str):
+    """Check payment status and create reservation if paid"""
+    if not STRIPE_API_KEY:
+        raise HTTPException(status_code=500, detail="Stripe not configured")
+    
+    # Get transaction from DB
+    transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # If already processed, return cached status
+    if transaction["status"] == "completed" and transaction["payment_status"] == "paid":
+        return {
+            "status": "completed",
+            "payment_status": "paid",
+            "amount_total": int(transaction["amount"] * 100),
+            "currency": transaction["currency"],
+            "metadata": transaction["metadata"]
+        }
+    
+    # Check with Stripe
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+    
+    try:
+        checkout_status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Update transaction in DB
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {
+                "$set": {
+                    "payment_status": checkout_status.payment_status,
+                    "status": "completed" if checkout_status.payment_status == "paid" else checkout_status.status,
+                    "payment_id": checkout_status.metadata.get("payment_intent_id", ""),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        # If paid and not yet processed, create reservation
+        if checkout_status.payment_status == "paid":
+            # Check if reservation already created (prevent duplicates)
+            existing_reservation = await db.reservations.find_one({
+                "payment_intent_id": session_id
+            }, {"_id": 0})
+            
+            if not existing_reservation:
+                # Create reservation from metadata
+                metadata = checkout_status.metadata
+                item = await db.catalog_items.find_one({"id": metadata["catalog_item_id"]}, {"_id": 0})
+                
+                if item:
+                    reservation = Reservation(
+                        catalog_item_id=metadata["catalog_item_id"],
+                        user_id=metadata["user_id"],
+                        customer_name=metadata["customer_name"],
+                        customer_email=metadata["customer_email"],
+                        customer_phone=metadata.get("customer_phone"),
+                        quantity=int(metadata["quantity"]),
+                        total_price=checkout_status.amount_total / 100,
+                        currency=checkout_status.currency.upper(),
+                        payment_method="stripe",
+                        payment_status="completed",
+                        payment_intent_id=session_id,
+                        status="confirmed",
+                        notes=metadata.get("notes")
+                    )
+                    
+                    res_dict = reservation.model_dump()
+                    res_dict["reservation_date"] = res_dict["reservation_date"].isoformat()
+                    res_dict["created_at"] = res_dict["created_at"].isoformat()
+                    res_dict["updated_at"] = res_dict["updated_at"].isoformat()
+                    
+                    await db.reservations.insert_one(res_dict)
+                    
+                    # Update availability
+                    if item.get("max_attendees"):
+                        await db.catalog_items.update_one(
+                            {"id": metadata["catalog_item_id"]},
+                            {"$inc": {"current_attendees": int(metadata["quantity"])}}
+                        )
+                    
+                    if item.get("stock_quantity") is not None:
+                        await db.catalog_items.update_one(
+                            {"id": metadata["catalog_item_id"]},
+                            {"$inc": {"stock_quantity": -int(metadata["quantity"])}}
+                        )
+                    
+                    # Send confirmation email
+                    try:
+                        await send_reservation_confirmation_email(
+                            customer_name=reservation.customer_name,
+                            customer_email=reservation.customer_email,
+                            item_title=item["title"],
+                            item_category=item["category"],
+                            quantity=reservation.quantity,
+                            total_price=reservation.total_price,
+                            currency=reservation.currency,
+                            event_date=item.get("event_date"),
+                            location=item.get("location"),
+                            reservation_id=reservation.id
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send confirmation email: {e}")
+                    
+                    logger.info(f"Reservation created from payment: {reservation.id}")
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "amount_total": checkout_status.amount_total,
+            "currency": checkout_status.currency,
+            "metadata": checkout_status.metadata
+        }
+    
+    except Exception as e:
+        logger.error(f"Error checking payment status: {e}")
+        raise HTTPException(status_code=500, detail=f"Error checking payment: {str(e)}")
+
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    if not STRIPE_API_KEY:
+        return JSONResponse({"status": "error", "message": "Stripe not configured"}, status_code=500)
+    
+    try:
+        body = await request.body()
+        stripe_signature = request.headers.get("Stripe-Signature")
+        
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+        webhook_response = await stripe_checkout.handle_webhook(body, stripe_signature)
+        
+        logger.info(f"Stripe webhook received: {webhook_response.event_type}")
+        
+        # Update transaction based on webhook
+        if webhook_response.session_id:
+            await db.payment_transactions.update_one(
+                {"session_id": webhook_response.session_id},
+                {
+                    "$set": {
+                        "payment_status": webhook_response.payment_status,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+        
+        return JSONResponse({"status": "success"})
+    
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=400)
+
+
+# ========================
 # HEADSET RESERVATION ROUTES
 # ========================
 

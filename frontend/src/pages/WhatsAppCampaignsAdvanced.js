@@ -620,6 +620,15 @@ const WhatsAppCampaignsAdvanced = () => {
                   </div>
                 )}
 
+                {showProductSelector && (
+                  <div className="mt-2 p-4 rounded-lg bg-background border border-primary/20">
+                    <ProductLinkSelector
+                      onSelectProduct={handleProductSelect}
+                      onClose={() => setShowProductSelector(false)}
+                    />
+                  </div>
+                )}
+
                 <p className="text-xs text-gray-500 mt-2">
                   💡 Utilisez {'{{nom}}'}, {'{{prenom}}'} pour personnaliser vos messages
                 </p>

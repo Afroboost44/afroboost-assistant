@@ -19,6 +19,13 @@ ADMIN_CREDENTIALS = {
     "password": "Admin123!"
 }
 
+# Backup admin credentials for testing
+BACKUP_ADMIN = {
+    "name": "Test Admin OpenAI",
+    "email": f"testadmin{int(time.time())}@boosttribe.com",
+    "password": "TestAdmin123!"
+}
+
 class OpenAIAdChatTestSuite:
     def __init__(self):
         self.session = requests.Session()

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Plus, Edit, Trash2, Eye, Package, Calendar, DollarSign } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Package, Calendar, DollarSign, Share2, Copy, Mail, MessageCircle, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

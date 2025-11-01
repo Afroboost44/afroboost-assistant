@@ -369,6 +369,16 @@ const Contacts = () => {
             <Download className="mr-2 h-4 w-4" />
             {t('contacts.exportContacts')}
           </Button>
+          <Button
+            onClick={handleBulkDelete}
+            variant="destructive"
+            disabled={contacts.length === 0}
+            className="text-red-500 hover:bg-red-500/10"
+            data-testid="bulk-delete-contacts-button"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Supprimer tous
+          </Button>
           <input
             ref={fileInputRef}
             type="file"

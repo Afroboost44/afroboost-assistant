@@ -246,6 +246,7 @@ class AdminSettingsUpdate(BaseModel):
 class Contact(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # CRITICAL: Owner of this contact
     name: str
     email: EmailStr
     phone: Optional[str] = None  # Nouveau : numéro de téléphone

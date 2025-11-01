@@ -3575,11 +3575,16 @@ async def delete_catalog_item(
     current_user: Dict = Depends(get_current_user)
 ):
     """Delete a catalog item"""
-    result = await db.catalog_items.delete_one({"id": item_id, "user_id": current_user["id"]})
+    # Admin can delete any item, regular users can only delete their own items
+    if current_user["role"] == "admin":
+        result = await db.catalog_items.delete_one({"id": item_id})
+    else:
+        result = await db.catalog_items.delete_one({"id": item_id, "user_id": current_user["id"]})
     
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Item not found or unauthorized")
     
+    logger.info(f"Catalog item deleted: {item_id} by user {current_user['email']}")
     return {"message": "Item deleted successfully"}
 
 

@@ -28,7 +28,7 @@ const PublicCatalog = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/catalog/public`);
+      const response = await axios.get(`${API_URL}/api/catalog-public/all`);
       setProducts(response.data);
       setFilteredProducts(response.data);
     } catch (error) {

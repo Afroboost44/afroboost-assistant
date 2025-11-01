@@ -31,6 +31,7 @@ import AdChat from '@/pages/AdChat';
 import ProductPage from '@/pages/ProductPage';
 import PublicCatalog from '@/pages/PublicCatalog';
 import CheckoutPage from '@/pages/CheckoutPage';
+import AdChatPublic from '@/pages/AdChatPublic';
 
 function App() {
   return (

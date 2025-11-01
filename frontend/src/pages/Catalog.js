@@ -846,6 +846,151 @@ const Catalog = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Reservation Modal */}
+      <Dialog open={showReservationModal} onOpenChange={setShowReservationModal}>
+        <DialogContent className="glass border-primary/20">
+          <DialogHeader>
+            <DialogTitle>
+              Réserver : {selectedItem?.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {selectedItem && (
+              <div className="bg-primary/10 p-3 rounded-lg border border-primary/30">
+                <p className="text-sm text-gray-300">
+                  <strong>Prix :</strong> {selectedItem.price} {selectedItem.currency}
+                  {selectedItem.price === 0 && ' (Gratuit)'}
+                </p>
+                {selectedItem.max_attendees && (
+                  <p className="text-sm text-gray-300">
+                    <strong>Places disponibles :</strong> {selectedItem.max_attendees - (selectedItem.current_attendees || 0)}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="res_name">Nom complet *</Label>
+              <Input
+                id="res_name"
+                value={reservationForm.customer_name}
+                onChange={(e) => setReservationForm({...reservationForm, customer_name: e.target.value})}
+                placeholder="Jean Dupont"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="res_email">Email *</Label>
+              <Input
+                id="res_email"
+                type="email"
+                value={reservationForm.customer_email}
+                onChange={(e) => setReservationForm({...reservationForm, customer_email: e.target.value})}
+                placeholder="jean@example.com"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="res_phone">Téléphone</Label>
+              <Input
+                id="res_phone"
+                type="tel"
+                value={reservationForm.customer_phone}
+                onChange={(e) => setReservationForm({...reservationForm, customer_phone: e.target.value})}
+                placeholder="+41 79 123 45 67"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="res_quantity">Nombre de places</Label>
+              <Input
+                id="res_quantity"
+                type="number"
+                min="1"
+                max={selectedItem?.max_attendees ? selectedItem.max_attendees - (selectedItem.current_attendees || 0) : 10}
+                value={reservationForm.quantity}
+                onChange={(e) => setReservationForm({...reservationForm, quantity: parseInt(e.target.value)})}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="res_notes">Notes (optionnel)</Label>
+              <textarea
+                id="res_notes"
+                className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white min-h-[80px]"
+                value={reservationForm.notes}
+                onChange={(e) => setReservationForm({...reservationForm, notes: e.target.value})}
+                placeholder="Allergies, besoins spéciaux, etc."
+              />
+            </div>
+
+            {selectedItem && selectedItem.price > 0 && (
+              <div className="space-y-2">
+                <Label>Méthode de paiement</Label>
+                <div className="space-y-2">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="payment_method"
+                      value="stripe"
+                      checked={reservationForm.payment_method === 'stripe'}
+                      onChange={(e) => setReservationForm({...reservationForm, payment_method: e.target.value})}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-white">💳 Payer maintenant (Stripe)</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="payment_method"
+                      value="free"
+                      checked={reservationForm.payment_method === 'free'}
+                      onChange={(e) => setReservationForm({...reservationForm, payment_method: e.target.value})}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="text-white">📝 Réserver sans payer (confirmation requise)</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+              <p className="text-xs text-blue-400">
+                {reservationForm.payment_method === 'stripe' && selectedItem?.price > 0
+                  ? '💳 Vous serez redirigé vers Stripe pour effectuer le paiement sécurisé'
+                  : '📧 Un email de confirmation vous sera envoyé'}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowReservationModal(false)}
+              disabled={isProcessing}
+            >
+              Annuler
+            </Button>
+            <Button
+              onClick={handleReservationSubmit}
+              disabled={isProcessing}
+              className="bg-gradient-to-r from-primary to-purple-600"
+            >
+              {isProcessing ? (
+                <>Traitement...</>
+              ) : (
+                <>
+                  {reservationForm.payment_method === 'stripe' && selectedItem?.price > 0
+                    ? `Payer ${selectedItem.price * reservationForm.quantity} ${selectedItem.currency}`
+                    : 'Confirmer la réservation'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

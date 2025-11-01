@@ -115,6 +115,7 @@ class CatalogItem(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str  # Coach/seller ID
     title: str
+    slug: str  # URL-friendly version of title (e.g., "cours-yoga-debutant")
     description: str
     category: str  # course, event, product
     price: float

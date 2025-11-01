@@ -39,6 +39,8 @@ const RemindersPage = () => {
   const [automationRules, setAutomationRules] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [contacts, setContacts] = useState([]);
+  const [notificationStats, setNotificationStats] = useState(null);
+  const [sendingNotifications, setSendingNotifications] = useState(false);
   const [loading, setLoading] = useState(true);
   
   const [showReminderDialog, setShowReminderDialog] = useState(false);

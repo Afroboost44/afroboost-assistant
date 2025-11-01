@@ -4723,7 +4723,7 @@ async def send_ad_chat_message(
     chat_id: str,
     message: AdChatMessageCreate
 ):
-    """Send a message in an ad chat (public/agent endpoint)"""
+    """Send a message in an ad chat (public/agent endpoint with AI auto-response)"""
     try:
         # Find chat
         chat = await db.ad_chats.find_one({"id": chat_id}, {"_id": 0})
@@ -4739,11 +4739,40 @@ async def send_ad_chat_message(
         message_dict = new_message.dict()
         message_dict['timestamp'] = message_dict['timestamp'].isoformat()
         
-        # Update chat
+        messages_to_add = [message_dict]
+        
+        # If visitor message and AI available, generate automatic response
+        if message.sender == "visitor" and chat_ai and chat.get('status') != 'archived':
+            try:
+                ai_result = await chat_ai.generate_response(
+                    message=message.content,
+                    visitor_email=chat.get('visitor_email'),
+                    chat_id=chat_id
+                )
+                
+                # Add AI response
+                ai_message = AdChatMessage(
+                    sender="agent",
+                    content=ai_result["response"]
+                )
+                ai_message_dict = ai_message.dict()
+                ai_message_dict['timestamp'] = ai_message_dict['timestamp'].isoformat()
+                messages_to_add.append(ai_message_dict)
+                
+                # Update priority if needs human
+                if ai_result.get("needs_human_escalation"):
+                    await db.ad_chats.update_one(
+                        {"id": chat_id},
+                        {"$set": {"priority": "urgent"}}
+                    )
+            except Exception as e:
+                logger.error(f"AI auto-response error: {e}")
+        
+        # Update chat with all messages
         await db.ad_chats.update_one(
             {"id": chat_id},
             {
-                "$push": {"messages": message_dict},
+                "$push": {"messages": {"$each": messages_to_add}},
                 "$set": {"last_message_at": datetime.now(timezone.utc).isoformat()}
             }
         )

@@ -580,8 +580,19 @@ const WhatsAppCampaignsAdvanced = () => {
                       size="sm"
                       variant="ghost"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      title="Ajouter un emoji"
                     >
                       <Smile className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowProductSelector(!showProductSelector)}
+                      className="text-primary"
+                      title="Insérer un lien produit"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
                     </Button>
                     <Button
                       type="button"

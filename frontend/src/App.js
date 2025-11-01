@@ -23,6 +23,7 @@ import Profile from '@/pages/Profile';
 import PricingManagement from '@/pages/PricingManagement';
 import Catalog from '@/pages/Catalog';
 import Reservations from '@/pages/Reservations';
+import ReservationSuccess from '@/pages/ReservationSuccess';
 import Reminders from '@/pages/Reminders';
 import GiftCards from '@/pages/GiftCards';
 import Discounts from '@/pages/Discounts';

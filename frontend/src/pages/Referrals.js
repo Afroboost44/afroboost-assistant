@@ -68,7 +68,10 @@ const Referrals = () => {
     try {
       await axios.post(
         `${API_URL}/api/referrals`,
-        formData,
+        {
+          ...formData,
+          ...rewardConfig
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

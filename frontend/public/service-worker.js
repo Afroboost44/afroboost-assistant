@@ -1,5 +1,5 @@
 // BoostTribe Service Worker for PWA
-const CACHE_NAME = 'boosttribe-v1';
+const CACHE_NAME = 'boosttribe-v2.0.0';
 const urlsToCache = [
   '/',
   '/index.html',

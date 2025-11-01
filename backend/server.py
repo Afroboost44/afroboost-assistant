@@ -1477,7 +1477,7 @@ async def forgot_password(request: ForgotPasswordRequest):
                         <p><strong>L'équipe BoostTribe</strong></p>
                     </div>
                     <div class="footer">
-                        <p>© 2025 BoostTribe – propulsé par Afroboost Studio</p>
+                        <p>© 2025 BoostTribe</p>
                     </div>
                 </div>
             </body>

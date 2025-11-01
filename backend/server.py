@@ -3532,6 +3532,54 @@ async def get_stripe_config():
 # RESERVATION EMAIL HELPER
 # ========================
 
+async def send_welcome_email(contact: Contact, coach_user: Dict):
+    """Send welcome email to new contact"""
+    resend_api_key = os.environ.get('RESEND_API_KEY')
+    
+    if not resend_api_key:
+        logger.warning("RESEND_API_KEY not configured, skipping welcome email")
+        return
+    
+    resend.api_key = resend_api_key
+    
+    # Get coach name
+    coach_name = coach_user.get('name', 'Votre coach BoostTribe')
+    
+    text_content = f"""
+Bonjour {contact.name},
+
+Bienvenue dans la communauté de {coach_name} ! 🎉
+
+Nous sommes ravis de vous compter parmi nous. Vous recevrez désormais nos actualités, cours, événements et offres exclusives.
+
+Ce que vous pouvez attendre de nous :
+✅ Informations sur nos cours et événements
+✅ Offres spéciales et promotions
+✅ Conseils et astuces
+✅ Actualités de la communauté
+
+Vous pouvez vous désabonner à tout moment en nous contactant.
+
+À très bientôt !
+{coach_name}
+
+---
+Propulsé par BoostTribe
+"""
+    
+    try:
+        resend.Emails.send({
+            "from": "BoostTribe <onboarding@resend.dev>",
+            "to": [contact.email],
+            "subject": f"Bienvenue dans la communauté de {coach_name} ! 🎉",
+            "text": text_content
+        })
+        logger.info(f"Welcome email sent to {contact.email}")
+    except Exception as e:
+        logger.error(f"Error sending welcome email: {str(e)}")
+        raise
+
+
 async def send_reservation_confirmation_email(
     customer_name: str,
     customer_email: str,

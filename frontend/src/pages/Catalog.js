@@ -33,6 +33,17 @@ const Catalog = () => {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [reservationForm, setReservationForm] = useState({
+    customer_name: '',
+    customer_email: '',
+    customer_phone: '',
+    quantity: 1,
+    notes: '',
+    payment_method: 'stripe' // 'stripe' or 'free'
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
   const [filterCategory, setFilterCategory] = useState('all');
   
   const [formData, setFormData] = useState({

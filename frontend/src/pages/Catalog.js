@@ -565,6 +565,78 @@ const Catalog = () => {
                     placeholder="Adresse ou Zoom/En ligne"
                   />
                 </div>
+
+                {/* Recurring Course Option */}
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <input
+                      type="checkbox"
+                      id="is_recurring"
+                      checked={formData.is_recurring}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        is_recurring: e.target.checked,
+                        event_date: e.target.checked ? '' : formData.event_date
+                      })}
+                      className="w-4 h-4 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary"
+                    />
+                    <Label htmlFor="is_recurring" className="cursor-pointer">
+                      🔄 Cours récurrent (hebdomadaire)
+                    </Label>
+                  </div>
+
+                  {formData.is_recurring && (
+                    <div className="space-y-4 bg-blue-500/10 p-4 rounded-lg border border-blue-500/30">
+                      <p className="text-sm text-blue-400">
+                        ℹ️ Les cours récurrents n'expirent pas et se répètent chaque semaine
+                      </p>
+
+                      <div>
+                        <Label>Jours de la semaine</Label>
+                        <div className="grid grid-cols-7 gap-2 mt-2">
+                          {[
+                            { key: 'monday', label: 'Lun' },
+                            { key: 'tuesday', label: 'Mar' },
+                            { key: 'wednesday', label: 'Mer' },
+                            { key: 'thursday', label: 'Jeu' },
+                            { key: 'friday', label: 'Ven' },
+                            { key: 'saturday', label: 'Sam' },
+                            { key: 'sunday', label: 'Dim' }
+                          ].map(day => (
+                            <button
+                              key={day.key}
+                              type="button"
+                              onClick={() => {
+                                const days = formData.recurrence_days.includes(day.key)
+                                  ? formData.recurrence_days.filter(d => d !== day.key)
+                                  : [...formData.recurrence_days, day.key];
+                                setFormData({ ...formData, recurrence_days: days });
+                              }}
+                              className={`p-2 rounded text-sm font-medium transition-colors ${
+                                formData.recurrence_days.includes(day.key)
+                                  ? 'bg-primary text-white'
+                                  : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                              }`}
+                            >
+                              {day.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="recurrence_time">Heure du cours</Label>
+                        <Input
+                          id="recurrence_time"
+                          type="time"
+                          value={formData.recurrence_time}
+                          onChange={(e) => setFormData({ ...formData, recurrence_time: e.target.value })}
+                          placeholder="19:00"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </>
             )}
 

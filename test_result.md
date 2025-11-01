@@ -579,6 +579,8 @@ test_plan:
 
 agent_communication:
   - agent: "main"
+    message: "✅ OPENAI INTEGRATION & FOOTER FIX COMPLETE - Switched ad-chat AI system to OpenAI GPT-3.5-turbo: 1) Added user's OPENAI_API_KEY to backend/.env, 2) Modified chat_ai_service.py to use openai SDK directly (removed emergentintegrations), 3) Changed model from gpt-4o-mini to gpt-3.5-turbo, 4) Updated server.py to use OPENAI_API_KEY instead of EMERGENT_LLM_KEY, 5) Footer rebranding complete (removed '– propulsé par Afroboost Studio', now just '© 2025 BoostTribe' in server.py and index.html). Backend restarted successfully. Ready for testing ad-chat with OpenAI integration."
+  - agent: "main"
     message: "Phase 1 backend auth implementation complete. Created User models, JWT utilities, and 3 auth endpoints (/register, /login, /me). First user will be admin, subsequent users will be regular users. Backend restarted successfully. Ready for backend testing before moving to Phase 2 (frontend)."
   - agent: "testing"
     message: "✅ BACKEND AUTHENTICATION TESTING COMPLETE - All 10 authentication tests PASSED (100% success rate). Comprehensive testing performed: 1) Registration flow (admin/user roles, duplicate prevention), 2) Login flow (success/failure scenarios), 3) JWT authentication (/me endpoint with valid/invalid tokens), 4) JWT utilities (token structure, bcrypt hashing). Authentication system is fully functional and ready for frontend integration. Test results saved to /app/auth_test_results.json."

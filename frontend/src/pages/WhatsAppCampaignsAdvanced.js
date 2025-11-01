@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import EmojiPicker from 'emoji-picker-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import ProductLinkSelector from '@/components/ProductLinkSelector';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;

@@ -55,6 +55,11 @@ from chat_ai_service import ChatAIService
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 chat_ai = ChatAIService(db, OPENAI_API_KEY) if OPENAI_API_KEY else None
 
+# Initialize Notifications Service
+from notifications_service import NotificationsService
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+notifications_service = NotificationsService(db, RESEND_API_KEY) if RESEND_API_KEY else None
+
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = "HS256"

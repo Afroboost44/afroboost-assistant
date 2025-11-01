@@ -1374,9 +1374,9 @@ async def forgot_password(request: ForgotPasswordRequest):
             """
             
             resend.Emails.send({
-                "from": "Afroboost Mailer <onboarding@resend.dev>",
+                "from": "BoostTribe <onboarding@resend.dev>",
                 "to": request.email,
-                "subject": "🔐 Réinitialisation de votre mot de passe",
+                "subject": "Réinitialisation de ton mot de passe BoostTribe",
                 "html": email_html
             })
             

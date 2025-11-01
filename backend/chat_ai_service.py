@@ -170,13 +170,13 @@ Les clients peuvent offrir des cartes cadeaux personnalisées:
             # Message actuel
             messages.append({"role": "user", "content": message})
             
-            # Appel à l'IA (OpenAI compatible via Emergent)
+            # Appel à l'IA (OpenAI direct)
             try:
-                from emergentintegrations import OpenAI
-                client = OpenAI(api_key=self.llm_key)
+                from openai import OpenAI
+                client = OpenAI(api_key=self.api_key)
                 
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-3.5-turbo",
                     messages=messages,
                     temperature=0.7,
                     max_tokens=500

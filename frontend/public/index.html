@@ -168,5 +168,31 @@
                 person_profiles: "identified_only",
             });
         </script>
+        
+        <!-- Force cache refresh for v2.0.0 -->
+        <script>
+            // Check version and clear old cache if needed
+            const APP_VERSION = '2.0.0';
+            const storedVersion = localStorage.getItem('boosttribe_version');
+            
+            if (storedVersion !== APP_VERSION) {
+                console.log('BoostTribe: New version detected, clearing cache...');
+                
+                // Clear service worker caches
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        for (let name of names) {
+                            if (name.startsWith('boosttribe-') && name !== 'boosttribe-v2.0.0') {
+                                caches.delete(name);
+                            }
+                        }
+                    });
+                }
+                
+                // Update stored version
+                localStorage.setItem('boosttribe_version', APP_VERSION);
+                console.log('BoostTribe: Cache cleared, version updated to ' + APP_VERSION);
+            }
+        </script>
     </body>
 </html>

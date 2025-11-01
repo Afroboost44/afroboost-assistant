@@ -235,7 +235,104 @@ const Referrals = () => {
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <Gift className="h-4 w-4" />
-              <span>Vous et votre ami recevrez chacun 10% de réduction sur votre prochain achat</span>
+              <span>
+                Vous recevrez {getRewardText(rewardConfig.referrer_reward_type, rewardConfig.referrer_reward_value)} 
+                {' '}et votre ami recevra {getRewardText(rewardConfig.referred_reward_type, rewardConfig.referred_reward_value)}
+              </span>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowRewardConfig(!showRewardConfig)}
+              className="w-full"
+            >
+              {showRewardConfig ? 'Masquer' : 'Configurer'} les récompenses
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Reward Configuration */}
+      {showRewardConfig && (
+        <Card className="glass border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="h-5 w-5" />
+              Configuration des Récompenses
+            </CardTitle>
+            <CardDescription>
+              Définissez les récompenses pour vous et vos filleuls
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Referrer Rewards */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-white">🎯 Votre récompense</h3>
+                <div>
+                  <Label>Type de récompense</Label>
+                  <select
+                    value={rewardConfig.referrer_reward_type}
+                    onChange={(e) => setRewardConfig({...rewardConfig, referrer_reward_type: e.target.value})}
+                    className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white"
+                  >
+                    <option value="discount">% de réduction</option>
+                    <option value="credit">Crédit CHF</option>
+                    <option value="free_month">Mois gratuit</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Valeur</Label>
+                  <Input
+                    type="number"
+                    value={rewardConfig.referrer_reward_value}
+                    onChange={(e) => setRewardConfig({...rewardConfig, referrer_reward_value: parseFloat(e.target.value)})}
+                    min="0"
+                    step="0.1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {getRewardText(rewardConfig.referrer_reward_type, rewardConfig.referrer_reward_value)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Referred Rewards */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-white">👥 Récompense de votre filleul</h3>
+                <div>
+                  <Label>Type de récompense</Label>
+                  <select
+                    value={rewardConfig.referred_reward_type}
+                    onChange={(e) => setRewardConfig({...rewardConfig, referred_reward_type: e.target.value})}
+                    className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white"
+                  >
+                    <option value="discount">% de réduction</option>
+                    <option value="credit">Crédit CHF</option>
+                    <option value="free_month">Mois gratuit</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Valeur</Label>
+                  <Input
+                    type="number"
+                    value={rewardConfig.referred_reward_value}
+                    onChange={(e) => setRewardConfig({...rewardConfig, referred_reward_value: parseFloat(e.target.value)})}
+                    min="0"
+                    step="0.1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {getRewardText(rewardConfig.referred_reward_type, rewardConfig.referred_reward_value)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+              <p className="text-sm text-blue-400">
+                💡 <strong>Aperçu :</strong> Lorsqu'un ami s'inscrit via votre lien, vous recevrez{' '}
+                <strong>{getRewardText(rewardConfig.referrer_reward_type, rewardConfig.referrer_reward_value)}</strong>
+                {' '}et il recevra <strong>{getRewardText(rewardConfig.referred_reward_type, rewardConfig.referred_reward_value)}</strong>
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -51,6 +51,7 @@ function App() {
             <Route path="/catalog/public" element={<PublicCatalog />} />
             <Route path="/p/:slug" element={<ProductPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/chat-public" element={<AdChatPublic />} />
 
             {/* Protected routes */}
             <Route path="/dashboard" element={

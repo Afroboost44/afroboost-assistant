@@ -531,6 +531,17 @@ const Catalog = () => {
                     </Button>
                   </div>
 
+                  {/* Reserve button (prominent) */}
+                  {(item.category === 'course' || item.category === 'event') && (
+                    <Button
+                      className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 mt-3"
+                      onClick={() => handleReserve(item)}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Réserver {item.price > 0 ? `(${item.price} ${item.currency})` : '(Gratuit)'}
+                    </Button>
+                  )}
+
                   {/* Share buttons */}
                   <div className="flex gap-2 pt-2 border-t border-gray-700">
                     <Button

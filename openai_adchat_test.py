@@ -173,81 +173,60 @@ class OpenAIAdChatTestSuite:
                     chat_id = data["id"]  # Use 'id' not 'chat_id'
                     session_id = data["session_id"]
                     
-                    # Fetch the created chat to verify AI response
-                    if self.admin_token:
-                        auth_headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
-                        chat_response = self.session.get(f"{BASE_URL}/ad-chat/{chat_id}", headers=auth_headers)
+                    # The response already contains the full chat with messages
+                    messages = data.get("messages", [])
+                    
+                    # Should have at least 2 messages: visitor + AI response
+                    if len(messages) >= 2:
+                        visitor_msg = messages[0]
+                        ai_msg = messages[1]
                         
-                        if chat_response.status_code == 200:
-                            chat_details = chat_response.json()
-                            messages = chat_details.get("messages", [])
+                        # Verify visitor message
+                        visitor_correct = (visitor_msg.get("sender") == "visitor" and 
+                                         visitor_msg.get("content") == chat_data["initial_message"])
+                        
+                        # Verify AI response
+                        ai_correct = (ai_msg.get("sender") == "agent" and 
+                                    len(ai_msg.get("content", "")) > 10)  # AI should give substantial response
+                        
+                        if visitor_correct and ai_correct:
+                            self.chat_sessions.append({
+                                "chat_id": chat_id,
+                                "session_id": session_id,
+                                "visitor_email": chat_data["visitor_email"]
+                            })
                             
-                            # Should have at least 2 messages: visitor + AI response
-                            if len(messages) >= 2:
-                                visitor_msg = messages[0]
-                                ai_msg = messages[1]
-                                
-                                # Verify visitor message
-                                visitor_correct = (visitor_msg.get("sender") == "visitor" and 
-                                                 visitor_msg.get("content") == chat_data["initial_message"])
-                                
-                                # Verify AI response
-                                ai_correct = (ai_msg.get("sender") == "agent" and 
-                                            len(ai_msg.get("content", "")) > 10)  # AI should give substantial response
-                                
-                                if visitor_correct and ai_correct:
-                                    self.chat_sessions.append({
-                                        "chat_id": chat_id,
-                                        "session_id": session_id,
-                                        "visitor_email": chat_data["visitor_email"]
-                                    })
-                                    
-                                    self.log_test(
-                                        "Start Ad Chat with AI Response",
-                                        True,
-                                        f"Successfully started chat with AI auto-response",
-                                        {
-                                            "chat_id": chat_id,
-                                            "messages_count": len(messages),
-                                            "ai_response_length": len(ai_msg.get("content", "")),
-                                            "ai_response_preview": ai_msg.get("content", "")[:100] + "..."
-                                        }
-                                    )
-                                    return True
-                                else:
-                                    self.log_test(
-                                        "Start Ad Chat with AI Response",
-                                        False,
-                                        "Chat created but message structure incorrect",
-                                        {
-                                            "messages": messages,
-                                            "visitor_correct": visitor_correct,
-                                            "ai_correct": ai_correct
-                                        }
-                                    )
-                            else:
-                                self.log_test(
-                                    "Start Ad Chat with AI Response",
-                                    False,
-                                    f"Expected at least 2 messages but got {len(messages)}",
-                                    {"messages": messages}
-                                )
+                            self.log_test(
+                                "Start Ad Chat with AI Response",
+                                True,
+                                f"Successfully started chat with AI auto-response",
+                                {
+                                    "chat_id": chat_id,
+                                    "messages_count": len(messages),
+                                    "ai_response_length": len(ai_msg.get("content", "")),
+                                    "ai_response_preview": ai_msg.get("content", "")[:100] + "...",
+                                    "ai_mentions_catalog": "cours" in ai_msg.get("content", "").lower()
+                                }
+                            )
+                            return True
                         else:
                             self.log_test(
                                 "Start Ad Chat with AI Response",
                                 False,
-                                f"Chat created but failed to fetch details: {chat_response.status_code}",
-                                {"response": chat_response.text}
+                                "Chat created but message structure incorrect",
+                                {
+                                    "messages": messages,
+                                    "visitor_correct": visitor_correct,
+                                    "ai_correct": ai_correct
+                                }
                             )
                     else:
-                        # If no admin token, just verify the creation response
                         self.log_test(
                             "Start Ad Chat with AI Response",
-                            True,
-                            "Chat started successfully (admin verification skipped)",
-                            {"chat_id": chat_id, "session_id": session_id}
+                            False,
+                            f"Expected at least 2 messages but got {len(messages)}",
+                            {"messages": messages}
                         )
-                        return True
                 else:
                     self.log_test(
                         "Start Ad Chat with AI Response",

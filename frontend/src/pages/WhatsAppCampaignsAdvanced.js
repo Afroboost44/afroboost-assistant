@@ -80,6 +80,7 @@ const WhatsAppCampaignsAdvanced = () => {
   
   // Editor states
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showProductSelector, setShowProductSelector] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   

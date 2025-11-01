@@ -28,6 +28,9 @@ import GiftCards from '@/pages/GiftCards';
 import Discounts from '@/pages/Discounts';
 import Referrals from '@/pages/Referrals';
 import AdChat from '@/pages/AdChat';
+import ProductPage from '@/pages/ProductPage';
+import PublicCatalog from '@/pages/PublicCatalog';
+import CheckoutPage from '@/pages/CheckoutPage';
 
 function App() {
   return (

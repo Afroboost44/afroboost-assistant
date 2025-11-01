@@ -4141,12 +4141,6 @@ async def send_thank_you_manual(
         return {"message": "Thank you email sent successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Reservation not found")
-    
-    return {"message": "Reservation updated successfully"}
 
 
 # ========================

@@ -407,6 +407,10 @@ const RemindersPage = () => {
             <Zap className="h-4 w-4" />
             Automatisations
           </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Send className="h-4 w-4" />
+            Notifications Auto
+          </TabsTrigger>
         </TabsList>
 
         {/* Reminders Tab */}

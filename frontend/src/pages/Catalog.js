@@ -187,11 +187,105 @@ const Catalog = () => {
   };
 
   const handleShareWhatsApp = (item) => {
-    const productUrl = `${window.location.origin}/p/${item.slug}`;
-    const text = `Découvre ${item.title} - ${item.price} ${item.currency}\n${productUrl}`;
+    const url = `${window.location.origin}/p/${item.slug}`;
+    const text = `Découvrez : ${item.title}\n${item.description}\n\nPrix : ${item.price} ${item.currency}\n\nLien : ${url}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(whatsappUrl, '_blank');
-    toast({ title: '✅ Partage WhatsApp ouvert' });
+  };
+
+  const handleReserve = (item) => {
+    setSelectedItem(item);
+    setReservationForm({
+      customer_name: '',
+      customer_email: '',
+      customer_phone: '',
+      quantity: 1,
+      notes: '',
+      payment_method: item.price > 0 ? 'stripe' : 'free'
+    });
+    setShowReservationModal(true);
+  };
+
+  const handleReservationSubmit = async () => {
+    if (!selectedItem) return;
+
+    // Validation
+    if (!reservationForm.customer_name || !reservationForm.customer_email) {
+      toast({
+        title: '❌ Erreur',
+        description: 'Nom et email sont requis',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      if (reservationForm.payment_method === 'stripe' && selectedItem.price > 0) {
+        // Create Stripe checkout session
+        const response = await fetch(`${API}/reservations/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            catalog_item_id: selectedItem.id,
+            quantity: reservationForm.quantity,
+            customer_name: reservationForm.customer_name,
+            customer_email: reservationForm.customer_email,
+            customer_phone: reservationForm.customer_phone,
+            notes: reservationForm.notes,
+            origin_url: window.location.origin
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de la création du paiement');
+        }
+
+        const data = await response.json();
+        
+        // Redirect to Stripe
+        window.location.href = data.url;
+      } else {
+        // Free reservation (no payment)
+        const response = await fetch(`${API}/reservations`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            catalog_item_id: selectedItem.id,
+            customer_name: reservationForm.customer_name,
+            customer_email: reservationForm.customer_email,
+            customer_phone: reservationForm.customer_phone,
+            quantity: reservationForm.quantity,
+            notes: reservationForm.notes,
+            payment_method: 'free'
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Erreur lors de la réservation');
+        }
+
+        toast({
+          title: '✅ Réservation confirmée',
+          description: 'Un email de confirmation vous a été envoyé'
+        });
+
+        setShowReservationModal(false);
+        fetchItems();
+      }
+    } catch (error) {
+      console.error('Reservation error:', error);
+      toast({
+        title: '❌ Erreur',
+        description: error.message || 'Impossible de créer la réservation',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleShareEmail = (item) => {

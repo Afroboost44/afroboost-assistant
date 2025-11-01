@@ -1278,9 +1278,14 @@ def get_resend_client(api_key: str):
         raise HTTPException(status_code=400, detail="Resend API key not configured")
     resend.api_key = api_key
 
-async def get_contacts_by_filters(groups: List[str] = None, tags: List[str] = None, active_only: bool = True):
-    """Get contacts filtered by groups and tags"""
+async def get_contacts_by_filters(groups: List[str] = None, tags: List[str] = None, active_only: bool = True, user_id: str = None):
+    """Get contacts filtered by groups, tags and user_id"""
     query = {}
+    
+    # CRITICAL: Filter by user_id if provided
+    if user_id:
+        query['user_id'] = user_id
+    
     if active_only:
         query['active'] = True
     if groups:
@@ -1288,10 +1293,14 @@ async def get_contacts_by_filters(groups: List[str] = None, tags: List[str] = No
     if tags:
         query['tags'] = {'$in': tags}
     
+    logger.info(f"Fetching contacts with query: {query}")
+    
     contacts = await db.contacts.find(query, {"_id": 0}).to_list(10000)
     for contact in contacts:
         if isinstance(contact.get('created_at'), str):
             contact['created_at'] = datetime.fromisoformat(contact['created_at'])
+    
+    logger.info(f"Found {len(contacts)} contacts")
     return [Contact(**c) for c in contacts]
 
 

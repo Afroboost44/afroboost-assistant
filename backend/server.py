@@ -179,6 +179,13 @@ class CatalogItemUpdate(BaseModel):
     max_attendees: Optional[int] = None
     is_active: Optional[bool] = None
     is_published: Optional[bool] = None
+    event_date: Optional[str] = None
+    event_duration: Optional[int] = None
+    location: Optional[str] = None
+    is_recurring: Optional[bool] = None
+    recurrence_type: Optional[str] = None
+    recurrence_days: Optional[List[str]] = None
+    recurrence_time: Optional[str] = None
 
 class Reservation(BaseModel):
     model_config = ConfigDict(extra="ignore")

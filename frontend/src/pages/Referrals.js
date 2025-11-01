@@ -119,6 +119,17 @@ const Referrals = () => {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
+  const getRewardText = (rewardType, rewardValue) => {
+    if (rewardType === 'discount') {
+      return `${rewardValue}% de réduction`;
+    } else if (rewardType === 'credit') {
+      return `${rewardValue} CHF de crédit`;
+    } else if (rewardType === 'free_month') {
+      return `${Math.floor(rewardValue)} mois gratuit${rewardValue > 1 ? 's' : ''}`;
+    }
+    return `Récompense: ${rewardValue}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}

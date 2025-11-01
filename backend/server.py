@@ -4090,6 +4090,59 @@ async def update_reservation_status(
         {"$set": update_data}
     )
     
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    
+    # If status is "completed", send thank you email
+    if status == "completed":
+        try:
+            reservation = await db.reservations.find_one({"id": reservation_id}, {"_id": 0})
+            if reservation:
+                item = await db.catalog_items.find_one({"id": reservation["catalog_item_id"]}, {"_id": 0})
+                if item:
+                    await send_thank_you_email(
+                        customer_name=reservation["customer_name"],
+                        customer_email=reservation["customer_email"],
+                        item_title=item["title"],
+                        coach_name=current_user.get("name", "Votre coach")
+                    )
+        except Exception as e:
+            logger.error(f"Failed to send thank you email: {e}")
+            # Don't fail the status update if email fails
+    
+    return {"message": "Reservation status updated"}
+
+
+@api_router.post("/reservations/{reservation_id}/send-thank-you")
+async def send_thank_you_manual(
+    reservation_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Manually send thank you email for a reservation"""
+    reservation = await db.reservations.find_one(
+        {"id": reservation_id, "user_id": current_user["id"]},
+        {"_id": 0}
+    )
+    
+    if not reservation:
+        raise HTTPException(status_code=404, detail="Reservation not found")
+    
+    item = await db.catalog_items.find_one({"id": reservation["catalog_item_id"]}, {"_id": 0})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    try:
+        await send_thank_you_email(
+            customer_name=reservation["customer_name"],
+            customer_email=reservation["customer_email"],
+            item_title=item["title"],
+            coach_name=current_user.get("name", "Votre coach")
+        )
+        return {"message": "Thank you email sent successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+    )
+    
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Reservation not found")
     

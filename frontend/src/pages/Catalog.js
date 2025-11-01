@@ -342,7 +342,28 @@ const Catalog = () => {
                   )}
                 </div>
 
-                {item.event_date && (
+                {/* Date display - Recurring or one-time */}
+                {item.is_recurring ? (
+                  <div className="text-sm text-gray-400 mb-4">
+                    🔄 Cours récurrent : {item.recurrence_days && item.recurrence_days.length > 0 ? (
+                      <>
+                        {item.recurrence_days.map(day => {
+                          const dayNames = {
+                            monday: 'Lun',
+                            tuesday: 'Mar',
+                            wednesday: 'Mer',
+                            thursday: 'Jeu',
+                            friday: 'Ven',
+                            saturday: 'Sam',
+                            sunday: 'Dim'
+                          };
+                          return dayNames[day] || day;
+                        }).join(', ')}
+                      </>
+                    ) : 'Non défini'}
+                    {item.recurrence_time && ` à ${item.recurrence_time}`}
+                  </div>
+                ) : item.event_date && (
                   <div className="text-sm text-gray-400 mb-4">
                     📅 {new Date(item.event_date).toLocaleDateString('fr-FR', {
                       day: 'numeric',

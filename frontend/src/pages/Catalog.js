@@ -159,6 +159,35 @@ const Catalog = () => {
     }
   };
 
+  const handleShareWhatsApp = (item) => {
+    const productUrl = `${window.location.origin}/p/${item.slug}`;
+    const text = `Découvre ${item.title} - ${item.price} ${item.currency}\n${productUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, '_blank');
+    toast({ title: '✅ Partage WhatsApp ouvert' });
+  };
+
+  const handleShareEmail = (item) => {
+    const productUrl = `${window.location.origin}/p/${item.slug}`;
+    const subject = `Découvre ${item.title}`;
+    const body = `Bonjour,\n\nJe voulais partager avec toi:\n\n${item.title}\nPrix: ${item.price} ${item.currency}\n\n${item.description}\n\nLien: ${productUrl}`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    toast({ title: '✅ Email ouvert' });
+  };
+
+  const handleCopyLink = (item) => {
+    const productUrl = `${window.location.origin}/p/${item.slug}`;
+    navigator.clipboard.writeText(productUrl);
+    toast({ title: '✅ Lien copié', description: 'Lien du produit copié dans le presse-papiers' });
+  };
+
+  const handleViewPublic = (item) => {
+    window.open(`/p/${item.slug}`, '_blank');
+  };
+
+
+
   const resetForm = () => {
     setFormData({
       title: '',

@@ -111,12 +111,15 @@ const ResetPassword = () => {
           <Card className="glass border-primary/20">
             <CardContent className="py-12 text-center">
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Mot de passe réinitialisé ! 🎉</h2>
-              <p className="text-gray-400 mb-6">
-                Votre mot de passe a été changé avec succès.
+              <h2 className="text-2xl font-bold mb-2">✅ Mot de passe réinitialisé !</h2>
+              <p className="text-gray-300 mb-4">
+                Ton mot de passe a été réinitialisé avec succès.
               </p>
-              <p className="text-sm text-gray-500 mb-6">
-                Redirection vers la page de connexion...
+              <p className="text-primary font-semibold mb-6">
+                Tu peux maintenant te connecter avec ton nouveau mot de passe.
+              </p>
+              <p className="text-sm text-gray-500">
+                Redirection automatique vers la page de connexion...
               </p>
             </CardContent>
           </Card>

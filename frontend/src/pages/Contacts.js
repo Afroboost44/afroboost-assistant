@@ -657,12 +657,20 @@ const Contacts = () => {
               </div>
               <div>
                 <Label htmlFor="group">{t('contacts.group')}</Label>
-                <Input
+                <select
                   id="group"
                   value={formData.group}
                   onChange={(e) => setFormData({ ...formData, group: e.target.value })}
-                  data-testid="add-group-input"
-                />
+                  className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white"
+                  data-testid="add-group-select"
+                >
+                  <option value="general">Général</option>
+                  <option value="imported">Importé</option>
+                  <option value="vip">VIP</option>
+                  <option value="members">Membres</option>
+                  <option value="prospects">Prospects</option>
+                  <option value="inactive">Inactifs</option>
+                </select>
               </div>
               <div>
                 <Label htmlFor="tags">{t('contacts.tags')} (séparés par virgule)</Label>

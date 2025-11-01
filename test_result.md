@@ -571,8 +571,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "BoostTribe Phase 2 Complete - All 4 new modules integrated"
-    - "Ready for comprehensive backend testing"
+    - "OpenAI Integration for Ad Chat - Test with GPT-3.5-turbo"
+    - "Footer rebranding verification"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

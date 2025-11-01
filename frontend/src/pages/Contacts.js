@@ -170,14 +170,45 @@ const Contacts = () => {
     formData.append('file', file);
 
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.post(`${API}/contacts/import`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
+        }
       });
-      toast.success(`${response.data.imported} contacts importés, ${response.data.duplicates} dupliqués ignorés`);
+      toast.success(`${response.data.imported} contacts importés, ${response.data.duplicates} dupliqués ignorés, ${response.data.errors} erreurs`);
       fetchContacts();
+      fetchContactsStats();
     } catch (error) {
       console.error('Error importing contacts:', error);
-      toast.error('Erreur lors de l\'importation');
+      toast.error(error.response?.data?.detail || 'Erreur lors de l\'importation');
+    }
+    // Reset file input
+    e.target.value = '';
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm('⚠️ ATTENTION : Êtes-vous sûr de vouloir supprimer TOUS vos contacts ? Cette action est irréversible !')) {
+      return;
+    }
+    
+    // Double confirmation
+    if (!window.confirm('Dernière confirmation : Tous vos contacts seront définitivement supprimés. Continuer ?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.delete(`${API}/contacts/bulk-delete`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(response.data.message);
+      fetchContacts();
+      fetchContactsStats();
+    } catch (error) {
+      console.error('Error deleting contacts:', error);
+      toast.error('Erreur lors de la suppression');
     }
   };
 

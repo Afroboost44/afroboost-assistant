@@ -19,11 +19,19 @@ const Referrals = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showInviteForm, setShowInviteForm] = useState(false);
+  const [showRewardConfig, setShowRewardConfig] = useState(false);
   const [copied, setCopied] = useState(false);
   
   const [formData, setFormData] = useState({
     referred_email: '',
     referred_name: ''
+  });
+
+  const [rewardConfig, setRewardConfig] = useState({
+    referrer_reward_type: 'discount',
+    referrer_reward_value: 10.0,
+    referred_reward_type: 'discount',
+    referred_reward_value: 10.0
   });
 
   useEffect(() => {

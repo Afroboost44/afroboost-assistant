@@ -24,6 +24,7 @@ import jwt
 from whatsapp_service import WhatsAppService
 from ai_memory_service import AIMemoryService
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 
 
 ROOT_DIR = Path(__file__).parent

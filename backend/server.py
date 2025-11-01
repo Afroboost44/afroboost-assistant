@@ -227,6 +227,31 @@ class ReservationCreate(BaseModel):
     payment_method: str = "stripe"
     notes: Optional[str] = None
 
+class PaymentTransaction(BaseModel):
+    """Model for tracking all payment transactions"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    session_id: str  # Stripe session ID
+    payment_id: Optional[str] = None  # Stripe payment intent ID
+    user_id: str  # Coach/seller who receives payment
+    customer_email: Optional[str] = None  # Buyer email
+    
+    # Payment details
+    amount: float
+    currency: str = "CHF"
+    payment_status: str = "pending"  # pending, paid, failed, canceled, expired
+    status: str = "initiated"  # initiated, completed, failed, refunded
+    
+    # Related entity
+    entity_type: Optional[str] = None  # reservation, product, gift_card
+    entity_id: Optional[str] = None  # ID of related entity
+    
+    # Metadata
+    metadata: Dict[str, str] = {}
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 class AdminSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

@@ -372,7 +372,10 @@ const Catalog = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
                       className="text-red-500 hover:text-red-600"
                     >
                       <Trash2 className="h-3 w-3" />

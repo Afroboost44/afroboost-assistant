@@ -3580,6 +3580,58 @@ Propulsé par BoostTribe
         raise
 
 
+async def send_thank_you_email(
+    customer_name: str,
+    customer_email: str,
+    item_title: str,
+    coach_name: str = "Votre coach"
+):
+    """Send thank you email after course completion"""
+    resend_api_key = os.environ.get('RESEND_API_KEY')
+    
+    if not resend_api_key:
+        logger.warning("RESEND_API_KEY not configured, skipping thank you email")
+        return
+    
+    resend.api_key = resend_api_key
+    
+    text_content = f"""
+Bonjour {customer_name},
+
+Merci d'avoir participé à {item_title} ! 🙏
+
+Nous espérons que vous avez apprécié cette expérience et que vous avez atteint vos objectifs.
+
+Votre avis compte :
+Nous serions ravis de connaître votre expérience. N'hésitez pas à nous contacter pour partager vos commentaires.
+
+Restez connecté :
+- Découvrez nos prochains cours et événements
+- Rejoignez notre communauté
+- Profitez d'offres exclusives pour nos membres fidèles
+
+À très bientôt pour de nouvelles aventures !
+
+{coach_name}
+L'équipe BoostTribe
+
+---
+Propulsé par BoostTribe
+"""
+    
+    try:
+        resend.Emails.send({
+            "from": "BoostTribe <onboarding@resend.dev>",
+            "to": [customer_email],
+            "subject": f"Merci d'avoir participé à {item_title} ! 🙏",
+            "text": text_content
+        })
+        logger.info(f"Thank you email sent to {customer_email}")
+    except Exception as e:
+        logger.error(f"Error sending thank you email: {str(e)}")
+        raise
+
+
 async def send_reservation_confirmation_email(
     customer_name: str,
     customer_email: str,

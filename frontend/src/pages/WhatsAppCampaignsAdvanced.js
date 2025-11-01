@@ -150,6 +150,23 @@ const WhatsAppCampaignsAdvanced = () => {
     setShowEmojiPicker(false);
   };
 
+  const handleProductSelect = (productText, product) => {
+    setCampaignForm(prev => ({
+      ...prev,
+      message_content: prev.message_content + '\n\n' + productText,
+      payment_links: [...prev.payment_links, {
+        product_id: product.id,
+        product_slug: product.slug,
+        product_title: product.title
+      }]
+    }));
+    setShowProductSelector(false);
+    toast({
+      title: '✅ Produit ajouté',
+      description: `Lien vers "${product.title}" inséré dans le message`
+    });
+  };
+
   const addButton = () => {
     if (!currentButton.text) {
       toast({

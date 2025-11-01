@@ -302,12 +302,31 @@ const Catalog = () => {
           {filteredItems.map((item) => (
             <Card key={item.id} className="glass border-primary/20 overflow-hidden">
               {item.image_url && (
-                <div className="h-48 bg-muted overflow-hidden">
-                  <img 
-                    src={item.image_url} 
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="h-48 bg-muted overflow-hidden relative">
+                  {item.image_url.includes('youtube.com') || item.image_url.includes('youtu.be') ? (
+                    <div className="w-full h-full flex items-center justify-center bg-black">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🎥</div>
+                        <p className="text-sm text-gray-400">Vidéo YouTube</p>
+                      </div>
+                    </div>
+                  ) : item.image_url.includes('vimeo.com') ? (
+                    <div className="w-full h-full flex items-center justify-center bg-black">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🎥</div>
+                        <p className="text-sm text-gray-400">Vidéo Vimeo</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <img 
+                      src={item.image_url} 
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  )}
                 </div>
               )}
               <CardHeader>

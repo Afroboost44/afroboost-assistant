@@ -137,9 +137,15 @@ class CatalogItem(BaseModel):
     current_attendees: int = 0
     
     # Event/Course specific fields
-    event_date: Optional[datetime] = None
+    event_date: Optional[datetime] = None  # For one-time events
     event_duration: Optional[int] = None  # Duration in minutes
     location: Optional[str] = None
+    
+    # Recurring events (weekly courses)
+    is_recurring: bool = False  # True for weekly/recurring courses
+    recurrence_type: Optional[str] = None  # "weekly", "monthly", None
+    recurrence_days: List[str] = []  # ["monday", "wednesday", "friday"]
+    recurrence_time: Optional[str] = None  # "19:00" for display
     
     # Status
     is_active: bool = True
@@ -160,6 +166,10 @@ class CatalogItemCreate(BaseModel):
     event_date: Optional[str] = None
     event_duration: Optional[int] = None
     location: Optional[str] = None
+    is_recurring: bool = False
+    recurrence_type: Optional[str] = None
+    recurrence_days: List[str] = []
+    recurrence_time: Optional[str] = None
 
 class CatalogItemUpdate(BaseModel):
     title: Optional[str] = None

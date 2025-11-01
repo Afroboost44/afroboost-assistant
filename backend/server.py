@@ -1809,6 +1809,17 @@ async def import_contacts(
         logger.error(f"Error importing file: {e}")
         raise HTTPException(status_code=400, detail=f"Erreur lors du traitement du fichier: {str(e)}")
 
+
+@api_router.delete("/contacts/bulk-delete")
+async def bulk_delete_contacts(current_user: Dict = Depends(get_current_user)):
+    """Delete ALL contacts for current user (requires confirmation)"""
+    result = await db.contacts.delete_many({"user_id": current_user["id"]})
+    logger.warning(f"User {current_user['email']} deleted ALL {result.deleted_count} contacts")
+    return {
+        "message": f"{result.deleted_count} contact(s) supprimé(s)",
+        "deleted_count": result.deleted_count
+    }
+
 @api_router.get("/contacts/export/csv")
 async def export_contacts_csv():
     """Export contacts as CSV"""

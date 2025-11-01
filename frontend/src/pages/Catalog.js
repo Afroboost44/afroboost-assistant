@@ -46,7 +46,11 @@ const Catalog = () => {
     max_attendees: '',
     event_date: '',
     event_duration: '',
-    location: ''
+    location: '',
+    is_recurring: false,
+    recurrence_type: 'weekly',
+    recurrence_days: [],
+    recurrence_time: ''
   });
 
   useEffect(() => {

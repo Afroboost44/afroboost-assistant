@@ -717,13 +717,47 @@ const Contacts = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-group">{t('contacts.group')}</Label>
+                <Label htmlFor="edit-phone">Téléphone</Label>
                 <Input
+                  id="edit-phone"
+                  type="tel"
+                  value={formData.phone || ''}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+41 79 123 45 67"
+                  data-testid="edit-phone-input"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-group">{t('contacts.group')}</Label>
+                <select
                   id="edit-group"
                   value={formData.group}
                   onChange={(e) => setFormData({ ...formData, group: e.target.value })}
-                  data-testid="edit-group-input"
-                />
+                  className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white"
+                  data-testid="edit-group-select"
+                >
+                  <option value="general">Général</option>
+                  <option value="imported">Importé</option>
+                  <option value="vip">VIP</option>
+                  <option value="members">Membres</option>
+                  <option value="prospects">Prospects</option>
+                  <option value="inactive">Inactifs</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="edit-subscription-status">Statut d'abonnement</Label>
+                <select
+                  id="edit-subscription-status"
+                  value={formData.subscription_status || 'non-subscriber'}
+                  onChange={(e) => setFormData({ ...formData, subscription_status: e.target.value })}
+                  className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white"
+                  data-testid="edit-subscription-status-select"
+                >
+                  <option value="non-subscriber">Non abonné</option>
+                  <option value="active">Abonné actif</option>
+                  <option value="trial">Essai gratuit</option>
+                  <option value="expired">Expiré</option>
+                </select>
               </div>
               <div>
                 <Label htmlFor="edit-tags">{t('contacts.tags')} (séparés par virgule)</Label>

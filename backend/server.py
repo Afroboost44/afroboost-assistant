@@ -1609,9 +1609,15 @@ async def get_whatsapp_config(current_user: Dict = Depends(get_current_user)):
 # ========================
 
 @api_router.get("/contacts", response_model=List[Contact])
-async def get_contacts(group: Optional[str] = None, active: Optional[bool] = None):
-    """Get all contacts with optional filters"""
-    query = {}
+async def get_contacts(
+    group: Optional[str] = None,
+    active: Optional[bool] = None,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Get all contacts for current user ONLY"""
+    # CRITICAL: Each user sees only their own contacts
+    query = {"user_id": current_user["id"]}
+    
     if group:
         query['group'] = group
     if active is not None:
@@ -1621,12 +1627,14 @@ async def get_contacts(group: Optional[str] = None, active: Optional[bool] = Non
     for contact in contacts:
         if isinstance(contact.get('created_at'), str):
             contact['created_at'] = datetime.fromisoformat(contact['created_at'])
+    
+    logger.info(f"User {current_user['email']} retrieved {len(contacts)} contacts")
     return contacts
 
 @api_router.get("/contacts/{contact_id}", response_model=Contact)
-async def get_contact(contact_id: str):
-    """Get a specific contact"""
-    contact = await db.contacts.find_one({"id": contact_id}, {"_id": 0})
+async def get_contact(contact_id: str, current_user: Dict = Depends(get_current_user)):
+    """Get a specific contact (user's own contact only)"""
+    contact = await db.contacts.find_one({"id": contact_id, "user_id": current_user["id"]}, {"_id": 0})
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
     if isinstance(contact.get('created_at'), str):
@@ -1634,18 +1642,19 @@ async def get_contact(contact_id: str):
     return contact
 
 @api_router.post("/contacts", response_model=Contact)
-async def create_contact(contact_data: ContactCreate):
+async def create_contact(contact_data: ContactCreate, current_user: Dict = Depends(get_current_user)):
     """Create a new contact"""
-    # Check if email already exists
-    existing = await db.contacts.find_one({"email": contact_data.email}, {"_id": 0})
+    # Check if email already exists FOR THIS USER
+    existing = await db.contacts.find_one({"email": contact_data.email, "user_id": current_user["id"]}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Contact with this email already exists")
     
-    contact = Contact(**contact_data.model_dump())
+    contact = Contact(user_id=current_user["id"], **contact_data.model_dump())
     doc = contact.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     
     await db.contacts.insert_one(doc)
+    logger.info(f"User {current_user['email']} created contact: {contact.email}")
     return contact
 
 @api_router.put("/contacts/{contact_id}", response_model=Contact)

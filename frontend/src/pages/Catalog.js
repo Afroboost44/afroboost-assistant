@@ -338,24 +338,65 @@ const Catalog = () => {
                   </div>
                 )}
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(item)}
-                    className="flex-1"
-                  >
-                    <Edit className="mr-1 h-3 w-3" />
-                    Modifier
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(item.id)}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+                <div className="space-y-2">
+                  {/* Action buttons */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(item)}
+                      className="flex-1"
+                    >
+                      <Edit className="mr-1 h-3 w-3" />
+                      Modifier
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewPublic(item)}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(item.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+
+                  {/* Share buttons */}
+                  <div className="flex gap-2 pt-2 border-t border-gray-700">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleShareWhatsApp(item)}
+                      className="flex-1 text-xs"
+                    >
+                      <MessageCircle className="mr-1 h-3 w-3" />
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleShareEmail(item)}
+                      className="flex-1 text-xs"
+                    >
+                      <Mail className="mr-1 h-3 w-3" />
+                      Email
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopyLink(item)}
+                      className="flex-1 text-xs"
+                    >
+                      <Copy className="mr-1 h-3 w-3" />
+                      Lien
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

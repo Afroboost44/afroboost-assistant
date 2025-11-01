@@ -1351,21 +1351,22 @@ async def forgot_password(request: ForgotPasswordRequest):
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🔐 Réinitialisation de mot de passe</h1>
+                        <h1>🔐 Réinitialisation de ton mot de passe BoostTribe</h1>
                     </div>
                     <div class="content">
                         <p>Bonjour,</p>
-                        <p>Vous avez demandé à réinitialiser votre mot de passe pour votre compte Afroboost Mailer.</p>
+                        <p>Vous avez demandé à réinitialiser votre mot de passe pour votre compte <strong>BoostTribe</strong>.</p>
                         <p>Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
                         <p style="text-align: center;">
-                            <a href="{reset_link}" class="button">Réinitialiser mon mot de passe</a>
+                            <a href="{reset_link}" class="button">🔒 Réinitialiser mon mot de passe</a>
                         </p>
                         <p><strong>Ce lien est valide pendant 1 heure.</strong></p>
                         <p>Si vous n'avez pas demandé cette réinitialisation, ignorez simplement cet email.</p>
-                        <p>Cordialement,<br>L'équipe Afroboost</p>
+                        <p>Merci et à très vite sur BoostTribe 🌍</p>
+                        <p><strong>L'équipe BoostTribe</strong></p>
                     </div>
                     <div class="footer">
-                        <p>Afroboost Mailer - Marketing intelligent multicanal</p>
+                        <p>© 2025 BoostTribe – propulsé par Afroboost Studio</p>
                     </div>
                 </div>
             </body>

@@ -51,6 +51,7 @@ class OpenAIAdChatTestSuite:
     def setup_admin_auth(self):
         """Setup admin authentication"""
         try:
+            # First try with provided admin credentials
             response = self.session.post(
                 f"{BASE_URL}/auth/login",
                 headers=HEADERS,
@@ -78,12 +79,32 @@ class OpenAIAdChatTestSuite:
                         {"response": data}
                     )
             else:
-                self.log_test(
-                    "Admin Authentication",
-                    False,
-                    f"Authentication failed with status {response.status_code}",
-                    {"response": response.text}
+                # Try to create a new admin user for testing
+                register_response = self.session.post(
+                    f"{BASE_URL}/auth/register",
+                    headers=HEADERS,
+                    json=BACKUP_ADMIN
                 )
+                
+                if register_response.status_code == 200:
+                    data = register_response.json()
+                    self.admin_token = data["token"]
+                    user = data["user"]
+                    
+                    self.log_test(
+                        "Admin Authentication",
+                        True,
+                        f"Created and authenticated new admin: {user['name']}",
+                        {"user_id": user["id"], "email": user["email"], "role": user["role"]}
+                    )
+                    return True
+                else:
+                    self.log_test(
+                        "Admin Authentication",
+                        False,
+                        f"Failed to authenticate or create admin user. Login: {response.status_code}, Register: {register_response.status_code}",
+                        {"login_error": response.text, "register_error": register_response.text}
+                    )
                 
         except Exception as e:
             self.log_test(

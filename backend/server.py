@@ -3349,8 +3349,12 @@ async def create_catalog_item(
     current_user: Dict = Depends(get_current_user)
 ):
     """Create a new catalog item (product/course/event)"""
+    # Generate slug from title
+    slug = generate_slug(item_data.title)
+    
     item = CatalogItem(
         user_id=current_user["id"],
+        slug=slug,
         **item_data.model_dump(exclude={'event_date'})
     )
     
@@ -3366,7 +3370,8 @@ async def create_catalog_item(
     
     await db.catalog_items.insert_one(item_dict)
     
-    return {"message": "Catalog item created", "id": item.id}
+    return {"message": "Catalog item created", "id": item.id, "slug": slug}
+
 
 @api_router.get("/catalog")
 async def get_catalog_items(

@@ -520,14 +520,46 @@ const Catalog = () => {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="image_url">URL de l'image</Label>
+            <div className="space-y-2">
+              <Label htmlFor="image_url">Image ou Vidéo (URL)</Label>
               <Input
                 id="image_url"
                 value={formData.image_url}
                 onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                placeholder="https://..."
+                placeholder="https://example.com/image.jpg ou https://youtube.com/watch?v=..."
               />
+              <p className="text-xs text-gray-500">
+                💡 Formats supportés : Images (JPG, PNG, GIF), Vidéos YouTube, Vimeo
+              </p>
+              
+              {/* Preview */}
+              {formData.image_url && (
+                <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-700">
+                  <p className="text-xs text-gray-400 mb-2">Aperçu :</p>
+                  {formData.image_url.includes('youtube.com') || formData.image_url.includes('youtu.be') ? (
+                    <div className="aspect-video bg-black rounded flex items-center justify-center text-gray-500">
+                      🎥 Vidéo YouTube
+                    </div>
+                  ) : formData.image_url.includes('vimeo.com') ? (
+                    <div className="aspect-video bg-black rounded flex items-center justify-center text-gray-500">
+                      🎥 Vidéo Vimeo
+                    </div>
+                  ) : (
+                    <img 
+                      src={formData.image_url} 
+                      alt="Preview" 
+                      className="w-full h-32 object-cover rounded"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  )}
+                  <div className="hidden w-full h-32 bg-gray-900 rounded items-center justify-center text-gray-500 text-sm">
+                    ⚠️ Impossible de charger l'aperçu
+                  </div>
+                </div>
+              )}
             </div>
 
             {formData.category === 'product' && (

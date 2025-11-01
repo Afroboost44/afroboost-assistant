@@ -634,11 +634,46 @@ const WhatsAppCampaignsAdvanced = () => {
                 </p>
               </div>
 
+              {/* Media URL (Image/Video) */}
+              <div>
+                <Label htmlFor="media_url">Image ou Vidéo (URL)</Label>
+                <Input
+                  id="media_url"
+                  value={campaignForm.media_url}
+                  onChange={(e) => setCampaignForm({...campaignForm, media_url: e.target.value})}
+                  placeholder="https://example.com/image.jpg"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  📷 Ajoutez une image ou vidéo à votre message (optionnel)
+                </p>
+                {campaignForm.media_url && (
+                  <div className="mt-2 p-2 bg-gray-800 rounded border border-gray-700">
+                    <p className="text-xs text-gray-400 mb-1">Aperçu média :</p>
+                    <img 
+                      src={campaignForm.media_url} 
+                      alt="Media preview" 
+                      className="w-32 h-32 object-cover rounded"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
               {/* WhatsApp Preview */}
               {showPreview && campaignForm.message_content && (
                 <div className="p-4 bg-gradient-to-br from-teal-900/20 to-green-900/20 rounded-lg border border-green-500/30">
                   <Label className="text-xs text-gray-400 mb-2 block">📱 Aperçu WhatsApp</Label>
                   <div className="bg-white/10 rounded-lg p-3 backdrop-blur">
+                    {campaignForm.media_url && (
+                      <img 
+                        src={campaignForm.media_url} 
+                        alt="Media" 
+                        className="w-full rounded mb-2"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    )}
                     <div className="text-sm whitespace-pre-wrap">{campaignForm.message_content}</div>
                     {campaignForm.buttons.length > 0 && (
                       <div className="mt-3 space-y-2">

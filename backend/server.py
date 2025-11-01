@@ -4334,6 +4334,42 @@ async def process_due_reminders(current_user: Dict = Depends(get_current_user)):
     }
 
 
+@api_router.post("/notifications/send-course-reminders")
+async def send_course_reminders(current_user: Dict = Depends(require_admin)):
+    """Send automated reminders for courses/events happening in 24-48 hours (Admin only)"""
+    if not notifications_service:
+        return {
+            "success": False,
+            "error": "Notifications service not configured (RESEND_API_KEY missing)"
+        }
+    
+    result = await notifications_service.send_course_reminders()
+    return result
+
+
+@api_router.get("/notifications/stats")
+async def get_notifications_stats(current_user: Dict = Depends(require_admin)):
+    """Get notifications statistics (Admin only)"""
+    try:
+        total_sent = await db.notifications_sent.count_documents({})
+        
+        # Count by type
+        course_reminders = await db.notifications_sent.count_documents({"type": "course_reminder"})
+        
+        # Get recent notifications
+        recent = await db.notifications_sent.find({}, {"_id": 0}).sort("sent_at", -1).limit(10).to_list(length=10)
+        
+        return {
+            "total_sent": total_sent,
+            "by_type": {
+                "course_reminders": course_reminders
+            },
+            "recent": recent
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
 # ========================

@@ -3499,21 +3499,14 @@ async def create_catalog_item(
 @api_router.get("/catalog")
 async def get_catalog_items(
     category: Optional[str] = None,
-    user_id: Optional[str] = None,
-    published_only: bool = True
+    current_user: Dict = Depends(get_current_user)
 ):
-    """Get catalog items (public or filtered by user)"""
-    query = {}
-    
-    if published_only:
-        query["is_published"] = True
-        query["is_active"] = True
+    """Get catalog items for current user ONLY"""
+    # CRITICAL: Each user sees only their own items
+    query = {"user_id": current_user["id"]}
     
     if category:
         query["category"] = category
-    
-    if user_id:
-        query["user_id"] = user_id
     
     items = await db.catalog_items.find(query, {"_id": 0}).to_list(length=None)
     
@@ -3523,9 +3516,10 @@ async def get_catalog_items(
             item['created_at'] = datetime.fromisoformat(item['created_at'])
         if isinstance(item.get('updated_at'), str):
             item['updated_at'] = datetime.fromisoformat(item['updated_at'])
-        if isinstance(item.get('event_date'), str):
+        if isinstance(item.get('event_date'), str) and item.get('event_date'):
             item['event_date'] = datetime.fromisoformat(item['event_date'])
     
+    logger.info(f"User {current_user['email']} retrieved {len(items)} catalog items")
     return items
 
 @api_router.get("/catalog/{item_id}")

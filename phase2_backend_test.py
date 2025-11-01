@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone, timedelta
 
 # Configuration
-BASE_URL = "https://marketing-suite-9.preview.emergentagent.com/api"
+BASE_URL = "https://boosttribe-app.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 class GiftCardsTestSuite:

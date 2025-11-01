@@ -2,7 +2,7 @@
 
 ## Accès à l'Application
 
-**URL**: https://marketing-suite-9.preview.emergentagent.com
+**URL**: https://boosttribe-app.preview.emergentagent.com
 
 ## Première Connexion
 
@@ -59,7 +59,7 @@
 
 **URL publique de réservation**:
 ```
-https://marketing-suite-9.preview.emergentagent.com/reservations/public?item={catalog_item_id}
+https://boosttribe-app.preview.emergentagent.com/reservations/public?item={catalog_item_id}
 ```
 
 ### 🎁 6. Cartes Cadeaux (NOUVEAU)

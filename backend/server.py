@@ -2121,10 +2121,11 @@ async def send_campaign_emails(campaign_id: str):
         campaign_obj = Campaign(**campaign)
         settings = await get_settings()
         
-        # Get target contacts
+        # Get target contacts - FILTERED BY USER_ID
         contacts = await get_contacts_by_filters(
             groups=campaign_obj.target_groups if campaign_obj.target_groups else None,
-            tags=campaign_obj.target_tags if campaign_obj.target_tags else None
+            tags=campaign_obj.target_tags if campaign_obj.target_tags else None,
+            user_id=campaign_obj.user_id  # CRITICAL: Only send to user's own contacts
         )
         
         if not contacts:

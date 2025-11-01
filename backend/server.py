@@ -1069,6 +1069,117 @@ class AdChatUpdate(BaseModel):
     visitor_email: Optional[EmailStr] = None
     visitor_phone: Optional[str] = None
 
+
+
+# ========================
+# PUBLIC COACH CHAT MODELS
+# ========================
+
+class CoachChatConfig(BaseModel):
+    """Configuration du chat publicitaire d'un coach"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # Coach ID
+    
+    # URL configuration
+    chat_slug: str  # URL: /chat/{chat_slug}
+    
+    # Branding
+    display_name: str  # Nom affiché (ex: "Coach Bassi")
+    welcome_message: str = "Bienvenue ! Comment puis-je t'aider aujourd'hui ? 🎧"
+    avatar_url: Optional[str] = None
+    primary_color: str = "#8B5CF6"
+    
+    # Features enabled
+    enable_catalog: bool = True
+    enable_gift_cards: bool = True
+    enable_discounts: bool = True
+    enable_referrals: bool = True
+    enable_reservations: bool = True
+    enable_ai: bool = True
+    
+    # Social sharing
+    share_text: str = "💬 Rejoins mon chat BoostTribe et réserve ton cours directement !"
+    
+    # Status
+    is_active: bool = True
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class HeadsetReservation(BaseModel):
+    """Réservation de casque pour un cours"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    
+    # Course/Event
+    catalog_item_id: str  # Cours concerné
+    catalog_item_title: str
+    event_date: datetime
+    
+    # Coach
+    coach_id: str
+    coach_name: str
+    
+    # Customer
+    customer_name: str
+    customer_email: EmailStr
+    customer_phone: Optional[str] = None
+    
+    # Reservation
+    headset_number: Optional[int] = None  # Numéro du casque attribué
+    status: str = "confirmed"  # confirmed, present, absent, cancelled
+    
+    # From chat
+    chat_id: Optional[str] = None  # ID du chat d'origine
+    reserved_via: str = "public_chat"  # public_chat, admin, direct
+    
+    # Notifications
+    reminder_sent: bool = False
+    confirmation_sent: bool = False
+    
+    # Timestamps
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AttendanceRecord(BaseModel):
+    """Enregistrement de présence à un cours"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    
+    # Link to reservation
+    reservation_id: str
+    catalog_item_id: str
+    
+    # Coach
+    coach_id: str
+    
+    # Attendance
+    status: str  # present, absent, late, excused
+    checked_in_at: Optional[datetime] = None
+    notes: Optional[str] = None
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CoachChatConfigCreate(BaseModel):
+    chat_slug: str
+    display_name: str
+    welcome_message: Optional[str] = "Bienvenue ! Comment puis-je t'aider aujourd'hui ? 🎧"
+    avatar_url: Optional[str] = None
+    primary_color: Optional[str] = "#8B5CF6"
+
+class HeadsetReservationCreate(BaseModel):
+    catalog_item_id: str
+    customer_name: str
+    customer_email: EmailStr
+    customer_phone: Optional[str] = None
+    chat_id: Optional[str] = None
+
+class AttendanceUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+
+
 # ========================
 # HELPER FUNCTIONS
 

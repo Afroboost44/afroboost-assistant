@@ -1658,9 +1658,9 @@ async def create_contact(contact_data: ContactCreate, current_user: Dict = Depen
     return contact
 
 @api_router.put("/contacts/{contact_id}", response_model=Contact)
-async def update_contact(contact_id: str, contact_update: ContactUpdate):
-    """Update a contact"""
-    contact = await db.contacts.find_one({"id": contact_id}, {"_id": 0})
+async def update_contact(contact_id: str, contact_update: ContactUpdate, current_user: Dict = Depends(get_current_user)):
+    """Update a contact (user's own contact only)"""
+    contact = await db.contacts.find_one({"id": contact_id, "user_id": current_user["id"]}, {"_id": 0})
     if not contact:
         raise HTTPException(status_code=404, detail="Contact not found")
     
@@ -1676,15 +1676,17 @@ async def update_contact(contact_id: str, contact_update: ContactUpdate):
     doc = contact_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     
-    await db.contacts.update_one({"id": contact_id}, {"$set": doc})
+    await db.contacts.update_one({"id": contact_id, "user_id": current_user["id"]}, {"$set": doc})
+    logger.info(f"User {current_user['email']} updated contact: {contact_id}")
     return contact_obj
 
 @api_router.delete("/contacts/{contact_id}")
-async def delete_contact(contact_id: str):
-    """Delete a contact"""
-    result = await db.contacts.delete_one({"id": contact_id})
+async def delete_contact(contact_id: str, current_user: Dict = Depends(get_current_user)):
+    """Delete a contact (user's own contact only)"""
+    result = await db.contacts.delete_one({"id": contact_id, "user_id": current_user["id"]})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Contact not found")
+    logger.info(f"User {current_user['email']} deleted contact: {contact_id}")
     return {"message": "Contact deleted successfully"}
 
 @api_router.post("/contacts/import")

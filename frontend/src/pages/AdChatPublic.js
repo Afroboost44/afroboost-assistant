@@ -290,6 +290,7 @@ const AdChatPublic = () => {
 };
 
 export default AdChatPublic;
+
         <Card className="glass border-primary/20 max-w-md w-full">
           <CardHeader>
             <div className="flex items-center justify-center mb-4">

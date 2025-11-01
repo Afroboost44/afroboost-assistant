@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   Bell, Plus, Calendar, Clock, Mail, MessageCircle, Zap,
   Trash2, Power, PowerOff, Edit, CheckCircle, XCircle,
-  AlertCircle, Target, Users
+  AlertCircle, Target, Users, Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

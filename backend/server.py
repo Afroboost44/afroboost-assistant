@@ -3593,12 +3593,12 @@ async def delete_catalog_item(
 # PUBLIC CATALOG ROUTES
 # ========================
 
-@api_router.get("/catalog/public")
+@api_router.get("/catalog-public/all")
 async def get_public_catalog(
     category: Optional[str] = None,
     limit: int = 50
 ):
-    """Get public catalog (no auth required) - for sharing"""
+    """Get public catalog list (no auth required) - for sharing"""
     query = {"is_published": True, "is_active": True}
     if category:
         query["category"] = category
@@ -3614,6 +3614,7 @@ async def get_public_catalog(
         if isinstance(item.get('event_date'), str) and item.get('event_date'):
             item['event_date'] = datetime.fromisoformat(item['event_date'])
     
+    logger.info(f"Public catalog query returned {len(items)} items")
     return items
 
 @api_router.get("/catalog/public/{slug}")

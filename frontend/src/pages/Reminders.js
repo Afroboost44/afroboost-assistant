@@ -570,6 +570,121 @@ const RemindersPage = () => {
             </div>
           )}
         </TabsContent>
+
+        {/* Notifications Auto Tab */}
+        <TabsContent value="notifications" className="space-y-4">
+          <Card className="glass border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5 text-primary" />
+                Rappels Automatiques de Cours
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-400 mb-2">📧 Comment ça marche ?</h3>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  <li>• Scanne automatiquement les cours/événements à venir (24-48h)</li>
+                  <li>• Envoie un email de rappel à tous les participants confirmés</li>
+                  <li>• Évite les doublons (ne renvoie pas si déjà envoyé)</li>
+                  <li>• Affiche la date, lieu, détails complets de l'événement</li>
+                </ul>
+              </div>
+
+              {/* Stats */}
+              {notificationStats && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="glass border-primary/20">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-400">Total envoyé</p>
+                          <p className="text-3xl font-bold text-primary">
+                            {notificationStats.total_sent}
+                          </p>
+                        </div>
+                        <Mail className="h-12 w-12 text-primary/50" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="glass border-primary/20">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-400">Rappels cours</p>
+                          <p className="text-3xl font-bold text-green-500">
+                            {notificationStats.by_type?.course_reminders || 0}
+                          </p>
+                        </div>
+                        <Bell className="h-12 w-12 text-green-500/50" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Action Button */}
+              <div className="flex justify-center">
+                <Button
+                  size="lg"
+                  onClick={sendCourseReminders}
+                  disabled={sendingNotifications}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600"
+                >
+                  {sendingNotifications ? (
+                    <>
+                      <Clock className="mr-2 h-5 w-5 animate-spin" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-5 w-5" />
+                      Envoyer les rappels maintenant
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Recent Notifications */}
+              {notificationStats?.recent && notificationStats.recent.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-white mb-3">📨 Dernières notifications envoyées</h3>
+                  <div className="space-y-2">
+                    {notificationStats.recent.map((notif, idx) => (
+                      <Card key={idx} className="glass border-primary/20">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <CheckCircle className="h-5 w-5 text-green-500" />
+                              <div>
+                                <p className="text-sm font-medium text-white">
+                                  {notif.type === 'course_reminder' ? 'Rappel de cours' : notif.type}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {new Date(notif.sent_at).toLocaleString('fr-FR')}
+                                </p>
+                              </div>
+                            </div>
+                            <Badge className="bg-green-500/20 text-green-400">
+                              Envoyé
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                <p className="text-xs text-yellow-400">
+                  💡 <strong>Astuce :</strong> En production, configurez un cron job pour exécuter cette tâche automatiquement chaque jour.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Create Reminder Dialog */}

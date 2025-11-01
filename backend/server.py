@@ -1707,6 +1707,14 @@ async def create_contact(contact_data: ContactCreate, current_user: Dict = Depen
     
     await db.contacts.insert_one(doc)
     logger.info(f"User {current_user['email']} created contact: {contact.email}")
+    
+    # Send welcome email automatically
+    try:
+        await send_welcome_email(contact, current_user)
+    except Exception as e:
+        logger.error(f"Failed to send welcome email to {contact.email}: {e}")
+        # Don't fail the contact creation if email fails
+    
     return contact
 
 @api_router.put("/contacts/{contact_id}", response_model=Contact)

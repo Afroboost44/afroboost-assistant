@@ -3459,6 +3459,140 @@ async def delete_catalog_item(
     
     return {"message": "Item deleted successfully"}
 
+
+
+# ========================
+# PUBLIC CATALOG ROUTES
+# ========================
+
+@api_router.get("/catalog/public")
+async def get_public_catalog(
+    category: Optional[str] = None,
+    limit: int = 50
+):
+    """Get public catalog (no auth required) - for sharing"""
+    query = {"is_published": True, "is_active": True}
+    if category:
+        query["category"] = category
+    
+    items = await db.catalog_items.find(query, {"_id": 0}).limit(limit).to_list(length=limit)
+    
+    # Parse dates
+    for item in items:
+        if isinstance(item.get('created_at'), str):
+            item['created_at'] = datetime.fromisoformat(item['created_at'])
+        if isinstance(item.get('updated_at'), str):
+            item['updated_at'] = datetime.fromisoformat(item['updated_at'])
+        if isinstance(item.get('event_date'), str) and item.get('event_date'):
+            item['event_date'] = datetime.fromisoformat(item['event_date'])
+    
+    return items
+
+@api_router.get("/catalog/public/{slug}")
+async def get_public_catalog_item(slug: str):
+    """Get single catalog item by slug (public, no auth) - for product pages"""
+    item = await db.catalog_items.find_one({"slug": slug, "is_published": True}, {"_id": 0})
+    
+    if not item:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Parse dates
+    if isinstance(item.get('created_at'), str):
+        item['created_at'] = datetime.fromisoformat(item['created_at'])
+    if isinstance(item.get('updated_at'), str):
+        item['updated_at'] = datetime.fromisoformat(item['updated_at'])
+    if isinstance(item.get('event_date'), str) and item.get('event_date'):
+        item['event_date'] = datetime.fromisoformat(item['event_date'])
+    
+    return item
+
+
+# ========================
+# CHECKOUT ROUTES (SIMULATION MODE)
+# ========================
+
+class CheckoutCreate(BaseModel):
+    product_id: str
+    quantity: int = 1
+    customer_name: str
+    customer_email: EmailStr
+    customer_phone: Optional[str] = None
+
+class CheckoutSession(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    product_id: str
+    product_title: str
+    product_price: float
+    currency: str
+    quantity: int
+    total_amount: float
+    customer_name: str
+    customer_email: str
+    customer_phone: Optional[str] = None
+    payment_method: str = "simulation"  # stripe, twint, simulation
+    status: str = "pending"  # pending, completed, cancelled
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+@api_router.post("/checkout/create")
+async def create_checkout_session(checkout_data: CheckoutCreate):
+    """Create checkout session (simulation mode for now)"""
+    # Get product
+    product = await db.catalog_items.find_one({"id": checkout_data.product_id}, {"_id": 0})
+    
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    if not product.get("is_active") or not product.get("is_published"):
+        raise HTTPException(status_code=400, detail="Product not available")
+    
+    # Check stock
+    if product.get("stock_quantity") is not None:
+        if product["stock_quantity"] < checkout_data.quantity:
+            raise HTTPException(status_code=400, detail="Insufficient stock")
+    
+    # Create checkout session
+    total_amount = product["price"] * checkout_data.quantity
+    
+    session = CheckoutSession(
+        product_id=checkout_data.product_id,
+        product_title=product["title"],
+        product_price=product["price"],
+        currency=product.get("currency", "CHF"),
+        quantity=checkout_data.quantity,
+        total_amount=total_amount,
+        customer_name=checkout_data.customer_name,
+        customer_email=checkout_data.customer_email,
+        customer_phone=checkout_data.customer_phone
+    )
+    
+    session_dict = session.model_dump()
+    session_dict["created_at"] = session_dict["created_at"].isoformat()
+    
+    await db.checkout_sessions.insert_one(session_dict)
+    
+    return {
+        "session_id": session.id,
+        "total_amount": total_amount,
+        "currency": session.currency,
+        "status": "simulation",
+        "message": "Mode simulation - Paiement Stripe/Twint à configurer"
+    }
+
+@api_router.get("/checkout/{session_id}")
+async def get_checkout_session(session_id: str):
+    """Get checkout session details"""
+    session = await db.checkout_sessions.find_one({"id": session_id}, {"_id": 0})
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Checkout session not found")
+    
+    if isinstance(session.get('created_at'), str):
+        session['created_at'] = datetime.fromisoformat(session['created_at'])
+    
+    return session
+
+
 @api_router.post("/reservations")
 async def create_reservation(reservation_data: ReservationCreate):
     """Create a new reservation (public endpoint)"""

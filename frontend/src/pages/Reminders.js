@@ -75,7 +75,8 @@ const RemindersPage = () => {
       await Promise.all([
         fetchReminders(),
         fetchAutomationRules(),
-        fetchContacts()
+        fetchContacts(),
+        fetchNotificationStats()
       ]);
     } finally {
       setLoading(false);
@@ -115,6 +116,53 @@ const RemindersPage = () => {
       setContacts(data);
     } catch (error) {
       console.error('Error fetching contacts:', error);
+    }
+  };
+
+  const fetchNotificationStats = async () => {
+    try {
+      const response = await fetch(`${API}/notifications/stats`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setNotificationStats(data);
+    } catch (error) {
+      console.error('Error fetching notification stats:', error);
+    }
+  };
+
+  const sendCourseReminders = async () => {
+    setSendingNotifications(true);
+    try {
+      const response = await fetch(`${API}/notifications/send-course-reminders`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: '✅ Rappels envoyés',
+          description: data.message || `${data.notifications_sent} notification(s) envoyée(s)`
+        });
+        // Refresh stats
+        await fetchNotificationStats();
+      } else {
+        toast({
+          title: '❌ Erreur',
+          description: data.error || 'Impossible d\'envoyer les rappels',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error sending reminders:', error);
+      toast({
+        title: '❌ Erreur',
+        description: 'Erreur lors de l\'envoi des rappels',
+        variant: 'destructive'
+      });
+    } finally {
+      setSendingNotifications(false);
     }
   };
 

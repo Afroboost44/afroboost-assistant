@@ -353,7 +353,7 @@ class PaymentSystemTestSuite:
             headers = {**HEADERS, "Authorization": f"Bearer {self.admin_token}"}
             
             response = self.session.get(
-                f"{BASE_URL}/admin/settings",
+                f"{BASE_URL}/settings",
                 headers=headers
             )
             

@@ -117,6 +117,7 @@ class PaymentSettingsTestSuite:
     def authenticate_regular_user(self):
         """Authenticate regular user"""
         try:
+            # First try to login
             response = self.session.post(
                 f"{BASE_URL}/auth/login",
                 headers=HEADERS,
@@ -142,11 +143,36 @@ class PaymentSettingsTestSuite:
                         {"response": data}
                     )
             else:
+                # If login fails, try to register the regular user
+                register_data = {
+                    "name": "David Johnson",
+                    "email": REGULAR_USER["email"],
+                    "password": REGULAR_USER["password"]
+                }
+                
+                register_response = self.session.post(
+                    f"{BASE_URL}/auth/register",
+                    headers=HEADERS,
+                    json=register_data
+                )
+                
+                if register_response.status_code == 200:
+                    data = register_response.json()
+                    if "token" in data:
+                        self.user_token = data["token"]
+                        self.log_test(
+                            "Regular User Authentication",
+                            True,
+                            f"Successfully registered and authenticated user: {data['user']['email']}",
+                            {"user_id": data["user"]["id"], "role": data["user"]["role"]}
+                        )
+                        return True
+                
                 self.log_test(
                     "Regular User Authentication",
                     False,
-                    f"Regular user login failed: {response.status_code}",
-                    {"response": response.text}
+                    f"Regular user login failed: {response.status_code}, register failed: {register_response.status_code if 'register_response' in locals() else 'N/A'}",
+                    {"login_response": response.text, "register_response": register_response.text if 'register_response' in locals() else "N/A"}
                 )
         except Exception as e:
             self.log_test(

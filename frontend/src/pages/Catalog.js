@@ -61,7 +61,9 @@ const Catalog = () => {
     is_recurring: false,
     recurrence_type: 'weekly',
     recurrence_days: [],
-    recurrence_time: ''
+    recurrence_time: '',
+    is_published: false,
+    is_active: true
   });
 
   useEffect(() => {

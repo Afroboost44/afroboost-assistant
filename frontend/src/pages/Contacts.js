@@ -80,6 +80,75 @@ const Contacts = () => {
     }
   };
 
+  const fetchCustomGroups = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API}/contact-groups`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCustomGroups(response.data);
+    } catch (error) {
+      console.error('Error fetching custom groups:', error);
+    }
+  };
+
+  const createCustomGroup = async () => {
+    if (!newGroupName.trim()) {
+      toast.error('Le nom du groupe est requis');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${API}/contact-groups`,
+        { name: newGroupName.trim(), color: '#8B5CF6' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Groupe créé avec succès');
+      setNewGroupName('');
+      fetchCustomGroups();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la création du groupe');
+    }
+  };
+
+  const updateCustomGroup = async (groupId, newName) => {
+    if (!newName.trim()) {
+      toast.error('Le nom du groupe est requis');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `${API}/contact-groups/${groupId}`,
+        { name: newName.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success('Groupe renommé avec succès');
+      setEditingGroupId(null);
+      fetchCustomGroups();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la mise à jour du groupe');
+    }
+  };
+
+  const deleteCustomGroup = async (groupId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/contact-groups/${groupId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Groupe supprimé avec succès');
+      fetchCustomGroups();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Erreur lors de la suppression du groupe');
+    }
+  };
+
   const fetchContacts = async () => {
     try {
       const token = localStorage.getItem('token');

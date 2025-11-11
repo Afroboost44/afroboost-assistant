@@ -793,8 +793,8 @@ const Catalog = () => {
                 </div>
 
                 {/* Recurring Course Option */}
-                <div className="border-t pt-4 mt-4">
-                  <div className="flex items-center space-x-2 mb-4">
+                <div className="border-t border-primary/20 pt-4 mt-4">
+                  <div className="flex items-center space-x-3 mb-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/30 hover:bg-blue-500/20 transition-colors cursor-pointer">
                     <input
                       type="checkbox"
                       id="is_recurring"
@@ -804,9 +804,9 @@ const Catalog = () => {
                         is_recurring: e.target.checked,
                         event_date: e.target.checked ? '' : formData.event_date
                       })}
-                      className="w-4 h-4 text-primary bg-gray-700 border-gray-600 rounded focus:ring-primary"
+                      className="w-5 h-5 rounded border-2 border-primary bg-background checked:bg-primary checked:border-primary cursor-pointer accent-primary"
                     />
-                    <Label htmlFor="is_recurring" className="cursor-pointer">
+                    <Label htmlFor="is_recurring" className="cursor-pointer flex-1 font-medium text-white">
                       🔄 Cours récurrent (hebdomadaire)
                     </Label>
                   </div>

@@ -409,17 +409,30 @@ const Catalog = () => {
               {item.image_url && (
                 <div className="h-48 bg-muted overflow-hidden relative">
                   {item.image_url.includes('youtube.com') || item.image_url.includes('youtu.be') ? (
-                    <div className="w-full h-full flex items-center justify-center bg-black">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">🎥</div>
-                        <p className="text-sm text-gray-400">Vidéo YouTube</p>
+                    <div className="w-full h-full relative group">
+                      <img 
+                        src={`https://img.youtube.com/vi/${item.image_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1] || ''}/maxresdefault.jpg`}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = `https://img.youtube.com/vi/${item.image_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/)?.[1] || ''}/hqdefault.jpg`;
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/60 transition-colors">
+                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                          <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
+                        </div>
                       </div>
                     </div>
                   ) : item.image_url.includes('vimeo.com') ? (
-                    <div className="w-full h-full flex items-center justify-center bg-black">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">🎥</div>
-                        <p className="text-sm text-gray-400">Vidéo Vimeo</p>
+                    <div className="w-full h-full relative group bg-black">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
+                          </div>
+                          <p className="text-sm text-gray-300">Vidéo Vimeo</p>
+                        </div>
                       </div>
                     </div>
                   ) : (

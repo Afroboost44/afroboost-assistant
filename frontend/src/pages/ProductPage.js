@@ -132,13 +132,51 @@ const ProductPage = () => {
           {/* Product Image */}
           <Card className="glass border-primary/20">
             <CardContent className="p-6">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.title}
-                  className="w-full h-96 object-cover rounded-lg"
-                />
-              ) : (
+              {product.image_url ? (() => {
+                const url = product.image_url;
+                const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/);
+                const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                
+                if (youtubeMatch) {
+                  const videoId = youtubeMatch[1];
+                  return (
+                    <div className="relative w-full h-96 group cursor-pointer" onClick={() => window.open(url, '_blank')}>
+                      <img 
+                        src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                        alt={product.title}
+                        className="w-full h-full object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/60 transition-colors rounded-lg">
+                        <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center">
+                          <div className="w-0 h-0 border-t-12 border-t-transparent border-l-16 border-l-white border-b-12 border-b-transparent ml-2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                } else if (vimeoMatch) {
+                  return (
+                    <div className="w-full h-96 bg-black rounded-lg flex items-center justify-center cursor-pointer" onClick={() => window.open(url, '_blank')}>
+                      <div className="text-center">
+                        <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <div className="w-0 h-0 border-t-12 border-t-transparent border-l-16 border-l-white border-b-12 border-b-transparent ml-2"></div>
+                        </div>
+                        <p className="text-lg text-gray-300">Vidéo Vimeo</p>
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return (
+                    <img
+                      src={url}
+                      alt={product.title}
+                      className="w-full h-96 object-cover rounded-lg"
+                    />
+                  );
+                }
+              })() : (
                 <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-lg flex items-center justify-center">
                   <ShoppingCart className="h-24 w-24 text-primary/50" />
                 </div>

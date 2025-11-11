@@ -277,7 +277,7 @@ const CheckoutPage = () => {
                     className="w-full"
                     disabled={submitting}
                   >
-                    {submitting ? 'Création...' : `Confirmer (${totalAmount} ${product.currency})`}
+                    {submitting ? 'Redirection vers Stripe...' : `Payer ${totalAmount} ${product.currency}`}
                   </Button>
 
                   <Button

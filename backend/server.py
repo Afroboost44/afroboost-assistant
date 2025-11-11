@@ -5726,9 +5726,6 @@ async def create_reservation_checkout(
     request: Request = None
 ):
     """Create Stripe checkout session for reservation"""
-    if not STRIPE_API_KEY:
-        raise HTTPException(status_code=500, detail="Stripe not configured")
-    
     # Get catalog item
     item = await db.catalog_items.find_one({"id": catalog_item_id}, {"_id": 0})
     if not item:
@@ -5742,6 +5739,20 @@ async def create_reservation_checkout(
         if item.get("current_attendees", 0) + quantity > item["max_attendees"]:
             raise HTTPException(status_code=400, detail="Not enough places available")
     
+    # Get owner's Stripe keys (user who created the product)
+    owner_payment_config = await db.payment_settings.find_one(
+        {"user_id": item["user_id"]},
+        {"_id": 0}
+    )
+    
+    if not owner_payment_config or not owner_payment_config.get("stripe_secret_key"):
+        raise HTTPException(
+            status_code=400, 
+            detail="Le propriétaire de cet article n'a pas configuré ses clés de paiement Stripe"
+        )
+    
+    stripe_key = owner_payment_config["stripe_secret_key"]
+    
     # Calculate amount (BACKEND DEFINED - SECURITY)
     amount = float(item["price"] * quantity)
     currency = item.get("currency", "CHF").lower()
@@ -5750,10 +5761,10 @@ async def create_reservation_checkout(
     if not origin_url:
         origin_url = str(request.base_url).rstrip('/')
     
-    # Initialize Stripe
+    # Initialize Stripe with OWNER's key
     host_url = origin_url
     webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    stripe_checkout = StripeCheckout(api_key=stripe_key, webhook_url=webhook_url)
     
     # Create URLs
     success_url = f"{origin_url}/reservation-success?session_id={{CHECKOUT_SESSION_ID}}"

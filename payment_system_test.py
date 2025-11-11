@@ -601,7 +601,7 @@ def main():
         if not result["success"] and result.get("details"):
             print(f"   → {result['details']}")
     
-    print(f"\n📊 Final Results: {summary['passed']}/{summary['total']} tests passed ({summary['success_rate']:.1f}%)")
+    print(f"\n📊 Final Results: {summary['passed']}/{summary['total_tests']} tests passed ({summary['success_rate']:.1f}%)")
     
     if not success:
         print("\n🚨 PAYMENT SYSTEM ISSUES DETECTED:")

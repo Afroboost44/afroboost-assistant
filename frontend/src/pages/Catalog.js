@@ -836,25 +836,28 @@ const Catalog = () => {
                             { key: 'friday', label: 'Ven' },
                             { key: 'saturday', label: 'Sam' },
                             { key: 'sunday', label: 'Dim' }
-                          ].map(day => (
-                            <button
-                              key={day.key}
-                              type="button"
-                              onClick={() => {
-                                const days = formData.recurrence_days.includes(day.key)
-                                  ? formData.recurrence_days.filter(d => d !== day.key)
-                                  : [...formData.recurrence_days, day.key];
-                                setFormData({ ...formData, recurrence_days: days });
-                              }}
-                              className={`p-2 rounded text-sm font-medium transition-colors ${
-                                formData.recurrence_days.includes(day.key)
-                                  ? 'bg-primary text-white'
-                                  : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-                              }`}
-                            >
-                              {day.label}
-                            </button>
-                          ))}
+                          ].map(day => {
+                            const currentDays = formData.recurrence_days || [];
+                            return (
+                              <button
+                                key={day.key}
+                                type="button"
+                                onClick={() => {
+                                  const days = currentDays.includes(day.key)
+                                    ? currentDays.filter(d => d !== day.key)
+                                    : [...currentDays, day.key];
+                                  setFormData({ ...formData, recurrence_days: days });
+                                }}
+                                className={`p-2 rounded text-sm font-medium transition-colors ${
+                                  currentDays.includes(day.key)
+                                    ? 'bg-primary text-white'
+                                    : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                                }`}
+                              >
+                                {day.label}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 

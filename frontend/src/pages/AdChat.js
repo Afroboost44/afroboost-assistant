@@ -233,11 +233,22 @@ const AdChat = () => {
           <>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    {getPlatformIcon(selectedChat.ad_platform)}
-                    {selectedChat.visitor_name || 'Visiteur anonyme'}
-                  </CardTitle>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    {/* Back button on mobile */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="md:hidden"
+                      onClick={() => setSelectedChat(null)}
+                    >
+                      ← Retour
+                    </Button>
+                    <CardTitle className="flex items-center gap-2">
+                      {getPlatformIcon(selectedChat.ad_platform)}
+                      {selectedChat.visitor_name || 'Visiteur anonyme'}
+                    </CardTitle>
+                  </div>
                   <CardDescription className="mt-1">
                     {selectedChat.visitor_email && (
                       <span className="block">{selectedChat.visitor_email}</span>

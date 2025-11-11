@@ -228,7 +228,7 @@ const AdChat = () => {
       </Card>
 
       {/* Chat Details */}
-      <Card className="glass border-primary/20 flex-1 flex flex-col">
+      <Card className={`glass border-primary/20 flex-1 flex flex-col ${selectedChat ? 'flex' : 'hidden md:flex'}`}>
         {selectedChat ? (
           <>
             <CardHeader>

@@ -62,6 +62,7 @@ const Contacts = () => {
   useEffect(() => {
     fetchContacts();
     fetchContactsStats();
+    fetchCustomGroups();
   }, []);
 
   useEffect(() => {

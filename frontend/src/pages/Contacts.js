@@ -453,6 +453,15 @@ const Contacts = () => {
             <Trash2 className="mr-2 h-4 w-4" />
             Supprimer tous
           </Button>
+          <Button
+            onClick={() => setShowGroupDialog(true)}
+            variant="outline"
+            className="border-primary/50"
+            data-testid="manage-groups-button"
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Gérer les groupes
+          </Button>
           <input
             ref={fileInputRef}
             type="file"

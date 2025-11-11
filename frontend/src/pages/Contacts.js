@@ -935,6 +935,110 @@ const Contacts = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Groups Management Dialog */}
+      <Dialog open={showGroupDialog} onOpenChange={setShowGroupDialog}>
+        <DialogContent className="glass max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Gérer les groupes de contacts</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Add New Group */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Nom du nouveau groupe..."
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && createCustomGroup()}
+                className="flex-1"
+              />
+              <Button onClick={createCustomGroup} disabled={!newGroupName.trim()}>
+                <Plus className="mr-2 h-4 w-4" />
+                Créer
+              </Button>
+            </div>
+
+            {/* Groups List */}
+            <div className="border border-primary/20 rounded-lg p-4 space-y-2 max-h-96 overflow-y-auto">
+              {/* Default Groups (non-editable) */}
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-400 mb-2">Groupes par défaut</h3>
+                {['general', 'imported', 'vip', 'members', 'prospects', 'inactive'].map(group => (
+                  <div key={group} className="flex items-center justify-between p-2 bg-gray-800/50 rounded mb-1">
+                    <span className="capitalize">{group === 'general' ? 'Général' : group === 'imported' ? 'Importé' : group === 'vip' ? 'VIP' : group === 'members' ? 'Membres' : group === 'prospects' ? 'Prospects' : 'Inactifs'}</span>
+                    <Badge variant="outline" className="text-xs">Par défaut</Badge>
+                  </div>
+                ))}
+              </div>
+
+              {/* Custom Groups (editable) */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-400 mb-2">Groupes personnalisés ({customGroups.length})</h3>
+                {customGroups.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">Aucun groupe personnalisé. Créez-en un ci-dessus.</p>
+                ) : (
+                  customGroups.map(group => (
+                    <div key={group.id} className="flex items-center justify-between p-2 bg-primary/10 rounded mb-1 border border-primary/30">
+                      {editingGroupId === group.id ? (
+                        <>
+                          <Input
+                            defaultValue={group.name}
+                            autoFocus
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                updateCustomGroup(group.id, e.target.value);
+                              }
+                            }}
+                            onBlur={(e) => {
+                              if (e.target.value.trim() !== group.name) {
+                                updateCustomGroup(group.id, e.target.value);
+                              } else {
+                                setEditingGroupId(null);
+                              }
+                            }}
+                            className="flex-1 mr-2"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingGroupId(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <span>{group.name}</span>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingGroupId(group.id)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-600"
+                              onClick={() => deleteCustomGroup(group.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowGroupDialog(false)}>Fermer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

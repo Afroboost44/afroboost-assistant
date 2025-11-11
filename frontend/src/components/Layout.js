@@ -42,6 +42,7 @@ const Layout = ({ children }) => {
     { name: '🤝 Parrainage', href: '/referrals', icon: UserPlus },
     { name: '💬 Chat Publicités', href: '/ad-chat', icon: MessageSquare },
     { name: 'Profil', href: '/profile', icon: User },
+    { name: '💳 Paiements', href: '/payment-settings', icon: CreditCard },
     { name: t('nav.admin'), href: '/admin', icon: Settings, adminOnly: true },
   ];
 

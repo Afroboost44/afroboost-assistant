@@ -92,6 +92,11 @@ function App() {
                 <Layout><Profile /></Layout>
               </ProtectedRoute>
             } />
+            <Route path="/payment-settings" element={
+              <ProtectedRoute>
+                <Layout><PaymentSettings /></Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/catalog" element={
               <ProtectedRoute>
                 <Layout><Catalog /></Layout>

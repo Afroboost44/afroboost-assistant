@@ -148,7 +148,13 @@ const Catalog = () => {
       max_attendees: item.max_attendees?.toString() || '',
       event_date: item.event_date ? new Date(item.event_date).toISOString().slice(0, 16) : '',
       event_duration: item.event_duration?.toString() || '',
-      location: item.location || ''
+      location: item.location || '',
+      is_recurring: item.is_recurring || false,
+      recurrence_type: item.recurrence_type || 'weekly',
+      recurrence_days: item.recurrence_days || [],
+      recurrence_time: item.recurrence_time || '',
+      is_published: item.is_published !== undefined ? item.is_published : false,
+      is_active: item.is_active !== undefined ? item.is_active : true
     });
     setShowDialog(true);
   };

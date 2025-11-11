@@ -578,7 +578,8 @@ const Contacts = () => {
                       type="checkbox"
                       checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300"
+                      className="w-5 h-5 rounded border-2 border-primary bg-background checked:bg-primary checked:border-primary cursor-pointer"
+                      title="Tout sélectionner"
                     />
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">{t('contacts.name')}</th>

@@ -650,8 +650,10 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "PAYMENT SYSTEM - Complete Payment Testing"
+  stuck_tasks:
+    - "PAYMENT SYSTEM - Complete Payment Testing"
   test_all: false
   test_priority: "high_first"
 

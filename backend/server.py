@@ -5825,11 +5825,11 @@ async def create_reservation_checkout(
     
     await db.payment_transactions.insert_one(trans_dict)
     
-    logger.info(f"Checkout session created: {session.session_id} for item {catalog_item_id}")
+    logger.info(f"Checkout session created: {session.id} for item {catalog_item_id}")
     
     return {
         "url": session.url,
-        "session_id": session.session_id
+        "session_id": session.id
     }
 
 

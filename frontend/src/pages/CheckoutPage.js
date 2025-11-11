@@ -290,10 +290,9 @@ const CheckoutPage = () => {
                   </Button>
                 </div>
 
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mt-4">
-                  <p className="text-xs text-yellow-400 text-center">
-                    ℹ️ Mode simulation - Aucun paiement réel ne sera effectué.
-                    L'intégration Stripe/Twint sera configurée ultérieurement.
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-4">
+                  <p className="text-xs text-blue-400 text-center">
+                    🔒 Paiement sécurisé via Stripe. Vos données sont protégées et cryptées.
                   </p>
                 </div>
               </form>

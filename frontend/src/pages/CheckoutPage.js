@@ -58,26 +58,30 @@ const CheckoutPage = () => {
     setSubmitting(true);
     
     try {
-      const response = await axios.post(`${API_URL}/api/checkout/create`, {
-        product_id: productId,
-        ...formData
+      // Call real Stripe checkout route
+      const response = await axios.post(`${API_URL}/api/reservations/checkout`, {
+        catalog_item_id: productId,
+        quantity: formData.quantity,
+        customer_name: formData.customer_name,
+        customer_email: formData.customer_email,
+        customer_phone: formData.customer_phone,
+        origin_url: window.location.origin
       });
       
-      setCheckoutComplete(true);
-      
-      toast({
-        title: '✅ Commande créée',
-        description: 'Mode simulation - Paiement Stripe/Twint à venir'
-      });
+      // Redirect to Stripe Checkout
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('URL de paiement manquante');
+      }
       
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast({
         title: '❌ Erreur',
-        description: error.response?.data?.detail || 'Erreur lors de la création de la commande',
+        description: error.response?.data?.detail || 'Erreur lors de la création de la session de paiement',
         variant: 'destructive'
       });
-    } finally {
       setSubmitting(false);
     }
   };

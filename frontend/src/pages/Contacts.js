@@ -42,6 +42,10 @@ const Contacts = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [currentContact, setCurrentContact] = useState(null);
+  const [customGroups, setCustomGroups] = useState([]); // Groupes personnalisés
+  const [showGroupDialog, setShowGroupDialog] = useState(false); // Dialog gestion des groupes
+  const [newGroupName, setNewGroupName] = useState(''); // Nom du nouveau groupe
+  const [editingGroupId, setEditingGroupId] = useState(null); // ID du groupe en cours d'édition
   const [formData, setFormData] = useState({
     name: '',
     email: '',

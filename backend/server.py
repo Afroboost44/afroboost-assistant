@@ -286,6 +286,32 @@ class AdminSettingsUpdate(BaseModel):
     sender_email: Optional[str] = None
     sender_name: Optional[str] = None
 
+
+# User Payment Settings Models
+class PaymentSettings(BaseModel):
+    """Model for user-specific payment configuration"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # Owner of these payment settings
+    
+    # Stripe configuration
+    stripe_publishable_key: Optional[str] = None
+    stripe_secret_key: Optional[str] = None
+    
+    # PayPal configuration
+    paypal_client_id: Optional[str] = None
+    paypal_secret: Optional[str] = None
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PaymentSettingsUpdate(BaseModel):
+    """Model for updating payment settings"""
+    stripe_publishable_key: Optional[str] = None
+    stripe_secret_key: Optional[str] = None
+    paypal_client_id: Optional[str] = None
+    paypal_secret: Optional[str] = None
+
 class Contact(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

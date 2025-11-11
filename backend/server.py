@@ -312,6 +312,30 @@ class PaymentSettingsUpdate(BaseModel):
     paypal_client_id: Optional[str] = None
     paypal_secret: Optional[str] = None
 
+# Contact Groups Models
+class ContactGroup(BaseModel):
+    """Model for user-defined contact groups"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # Owner of this group
+    name: str  # Group name (e.g., "VIP Clients", "Newsletter Subscribers")
+    description: Optional[str] = None
+    color: Optional[str] = "#8B5CF6"  # Default purple color
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ContactGroupCreate(BaseModel):
+    """Model for creating a contact group"""
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = "#8B5CF6"
+
+class ContactGroupUpdate(BaseModel):
+    """Model for updating a contact group"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+
 class Contact(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

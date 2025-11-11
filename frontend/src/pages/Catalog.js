@@ -866,6 +866,35 @@ const Catalog = () => {
               </>
             )}
 
+            {/* Publication Options */}
+            <div className="border-t border-primary/20 pt-4 space-y-3">
+              <div className="flex items-center space-x-3 p-3 bg-green-500/10 rounded-lg border border-green-500/30 hover:bg-green-500/20 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="is_published"
+                  checked={formData.is_published || false}
+                  onChange={(e) => setFormData({ ...formData, is_published: e.target.checked })}
+                  className="w-5 h-5 rounded border-2 border-primary bg-background checked:bg-primary checked:border-primary cursor-pointer accent-primary"
+                />
+                <Label htmlFor="is_published" className="cursor-pointer flex-1 font-medium text-white">
+                  ✅ Publier (visible dans le catalogue public)
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-blue-500/10 rounded-lg border border-blue-500/30 hover:bg-blue-500/20 transition-colors cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active !== false}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="w-5 h-5 rounded border-2 border-primary bg-background checked:bg-primary checked:border-primary cursor-pointer accent-primary"
+                />
+                <Label htmlFor="is_active" className="cursor-pointer flex-1 font-medium text-white">
+                  🔓 Activer (permet les réservations)
+                </Label>
+              </div>
+            </div>
+
             <DialogFooter>
               <Button
                 type="button"

@@ -747,12 +747,21 @@ const Contacts = () => {
                   className="w-full bg-background border border-gray-700 rounded-md px-3 py-2 text-white"
                   data-testid="add-group-select"
                 >
-                  <option value="general">Général</option>
-                  <option value="imported">Importé</option>
-                  <option value="vip">VIP</option>
-                  <option value="members">Membres</option>
-                  <option value="prospects">Prospects</option>
-                  <option value="inactive">Inactifs</option>
+                  <optgroup label="Groupes par défaut">
+                    <option value="general">Général</option>
+                    <option value="imported">Importé</option>
+                    <option value="vip">VIP</option>
+                    <option value="members">Membres</option>
+                    <option value="prospects">Prospects</option>
+                    <option value="inactive">Inactifs</option>
+                  </optgroup>
+                  {customGroups.length > 0 && (
+                    <optgroup label="Groupes personnalisés">
+                      {customGroups.map(group => (
+                        <option key={group.id} value={group.name}>{group.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
               <div>

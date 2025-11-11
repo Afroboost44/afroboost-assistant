@@ -605,9 +605,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "USER PAYMENT SETTINGS - Backend API (GET/POST /api/user/payment-config)"
-    - "USER PAYMENT SETTINGS - Frontend Page (/payment-settings)"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"

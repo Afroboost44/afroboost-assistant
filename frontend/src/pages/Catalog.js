@@ -496,7 +496,7 @@ const Catalog = () => {
                 {/* Date display - Recurring or one-time */}
                 {item.is_recurring ? (
                   <div className="text-sm text-gray-400 mb-4">
-                    🔄 Cours récurrent : {item.recurrence_days && item.recurrence_days.length > 0 ? (
+                    🔄 Cours récurrent : {Array.isArray(item.recurrence_days) && item.recurrence_days.length > 0 ? (
                       <>
                         {item.recurrence_days.map(day => {
                           const dayNames = {

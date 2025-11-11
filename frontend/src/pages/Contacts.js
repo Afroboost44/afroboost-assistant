@@ -212,15 +212,19 @@ const Contacts = () => {
   const handleEditContact = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       const payload = {
         ...formData,
         tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
       };
-      await axios.put(`${API}/contacts/${currentContact.id}`, payload);
+      await axios.put(`${API}/contacts/${currentContact.id}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Contact mis à jour avec succès');
       setShowEditDialog(false);
       resetForm();
       fetchContacts();
+      fetchContactsStats();
     } catch (error) {
       console.error('Error updating contact:', error);
       toast.error('Erreur lors de la mise à jour du contact');

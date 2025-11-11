@@ -681,33 +681,58 @@ const Catalog = () => {
               </p>
               
               {/* Preview */}
-              {formData.image_url && (
-                <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-700">
-                  <p className="text-xs text-gray-400 mb-2">Aperçu :</p>
-                  {formData.image_url.includes('youtube.com') || formData.image_url.includes('youtu.be') ? (
-                    <div className="aspect-video bg-black rounded flex items-center justify-center text-gray-500">
-                      🎥 Vidéo YouTube
-                    </div>
-                  ) : formData.image_url.includes('vimeo.com') ? (
-                    <div className="aspect-video bg-black rounded flex items-center justify-center text-gray-500">
-                      🎥 Vidéo Vimeo
-                    </div>
-                  ) : (
-                    <img 
-                      src={formData.image_url} 
-                      alt="Preview" 
-                      className="w-full h-32 object-cover rounded"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  )}
-                  <div className="hidden w-full h-32 bg-gray-900 rounded items-center justify-center text-gray-500 text-sm">
-                    ⚠️ Impossible de charger l'aperçu
+              {formData.image_url && (() => {
+                const url = formData.image_url;
+                const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/);
+                const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                
+                return (
+                  <div className="mt-2 p-3 bg-gray-800 rounded-lg border border-gray-700">
+                    <p className="text-xs text-gray-400 mb-2">Aperçu :</p>
+                    {youtubeMatch ? (
+                      <div className="relative w-full aspect-video group">
+                        <img 
+                          src={`https://img.youtube.com/vi/${youtubeMatch[1]}/maxresdefault.jpg`}
+                          alt="YouTube preview" 
+                          className="w-full h-full object-cover rounded"
+                          onError={(e) => {
+                            e.target.src = `https://img.youtube.com/vi/${youtubeMatch[1]}/hqdefault.jpg`;
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/60 transition-colors rounded">
+                          <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                            <div className="w-0 h-0 border-t-10 border-t-transparent border-l-14 border-l-white border-b-10 border-b-transparent ml-1"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : vimeoMatch ? (
+                      <div className="w-full aspect-video bg-black rounded flex items-center justify-center">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <div className="w-0 h-0 border-t-10 border-t-transparent border-l-14 border-l-white border-b-10 border-b-transparent ml-1"></div>
+                          </div>
+                          <p className="text-sm text-gray-300">Vidéo Vimeo</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <img 
+                          src={url} 
+                          alt="Preview" 
+                          className="w-full h-32 object-cover rounded"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div className="hidden w-full h-32 bg-gray-900 rounded items-center justify-center text-gray-500 text-sm">
+                          ⚠️ Impossible de charger l'aperçu
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
 
             {formData.category === 'product' && (

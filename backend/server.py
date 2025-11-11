@@ -5807,7 +5807,7 @@ async def create_reservation_checkout(
     
     # MANDATORY: Create payment transaction record
     payment_transaction = PaymentTransaction(
-        session_id=session.session_id,
+        session_id=session.id,
         user_id=item["user_id"],
         customer_email=customer_email,
         amount=amount,

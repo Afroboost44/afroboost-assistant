@@ -20,6 +20,7 @@ import Calendar from '@/pages/Calendar';
 import Admin from '@/pages/Admin';
 import Pricing from '@/pages/Pricing';
 import Profile from '@/pages/Profile';
+import PaymentSettings from '@/pages/PaymentSettings';
 import PricingManagement from '@/pages/PricingManagement';
 import Catalog from '@/pages/Catalog';
 import Reservations from '@/pages/Reservations';

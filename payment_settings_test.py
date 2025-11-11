@@ -24,6 +24,12 @@ REGULAR_USER = {
     "password": "user123"
 }
 
+# Alternative regular user for testing if the main one fails
+ALT_REGULAR_USER = {
+    "email": f"testuser{int(time.time())}@afroboost.com",
+    "password": "TestUser123!"
+}
+
 class PaymentSettingsTestSuite:
     def __init__(self):
         self.session = requests.Session()

@@ -641,24 +641,71 @@ const WhatsAppCampaignsAdvanced = () => {
                   id="media_url"
                   value={campaignForm.media_url}
                   onChange={(e) => setCampaignForm({...campaignForm, media_url: e.target.value})}
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="https://example.com/image.jpg ou https://youtube.com/watch?v=..."
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  📷 Ajoutez une image ou vidéo à votre message (optionnel)
+                  📷 Ajoutez une image, GIF ou lien vidéo YouTube/Vimeo (optionnel)
                 </p>
-                {campaignForm.media_url && (
-                  <div className="mt-2 p-2 bg-gray-800 rounded border border-gray-700">
-                    <p className="text-xs text-gray-400 mb-1">Aperçu média :</p>
-                    <img 
-                      src={campaignForm.media_url} 
-                      alt="Media preview" 
-                      className="w-32 h-32 object-cover rounded"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
+                {campaignForm.media_url && (() => {
+                  const url = campaignForm.media_url;
+                  // Extract YouTube video ID
+                  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/);
+                  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                  
+                  if (youtubeMatch) {
+                    const videoId = youtubeMatch[1];
+                    return (
+                      <div className="mt-2 p-2 bg-gray-800 rounded border border-gray-700">
+                        <p className="text-xs text-gray-400 mb-1">Aperçu YouTube :</p>
+                        <div className="relative w-48 h-36 group">
+                          <img 
+                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            alt="YouTube preview" 
+                            className="w-full h-full object-cover rounded"
+                            onError={(e) => {
+                              e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/60 transition-colors rounded">
+                            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+                              <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else if (vimeoMatch) {
+                    return (
+                      <div className="mt-2 p-2 bg-gray-800 rounded border border-gray-700">
+                        <p className="text-xs text-gray-400 mb-1">Aperçu Vimeo :</p>
+                        <div className="w-48 h-36 bg-black rounded flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                              <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
+                            </div>
+                            <p className="text-xs text-gray-300">Vidéo Vimeo</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    // Regular image
+                    return (
+                      <div className="mt-2 p-2 bg-gray-800 rounded border border-gray-700">
+                        <p className="text-xs text-gray-400 mb-1">Aperçu image :</p>
+                        <img 
+                          src={url} 
+                          alt="Media preview" 
+                          className="w-48 h-36 object-cover rounded"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<p class="text-xs text-red-400">❌ Impossible de charger l\'aperçu. Vérifiez l\'URL.</p>';
+                          }}
+                        />
+                      </div>
+                    );
+                  }
+                })()}
               </div>
 
               {/* WhatsApp Preview */}

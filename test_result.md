@@ -566,6 +566,32 @@ frontend:
 
 
 
+  - task: "USER PAYMENT SETTINGS - Backend API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "✅ IMPLEMENTED - User Payment Settings system backend complete: 1) PaymentSettings model with user_id, stripe_publishable_key, stripe_secret_key, paypal_client_id, paypal_secret, 2) Routes: GET /api/user/payment-config (retrieve user's payment settings), POST /api/user/payment-config (create/update settings with PaymentSettingsUpdate model), 3) Features: User-specific payment configuration isolated by user_id, automatic created_at/updated_at timestamps, secure storage of API keys. Backend restarted successfully. Ready for testing."
+
+frontend:
+  - task: "USER PAYMENT SETTINGS - Frontend Page"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/PaymentSettings.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "✅ IMPLEMENTED - Payment Settings page complete with comprehensive UI: 1) PaymentSettings.js page with forms for Stripe (publishable_key, secret_key) and PayPal (client_id, secret) configuration, 2) Features: Show/hide password fields for sensitive keys, instructions for obtaining API keys from providers, secure input fields with Eye/EyeOff icons, save button with loading state, security notice section, 3) Integration: Added route in App.js (/payment-settings) with ProtectedRoute, added navigation link '💳 Paiements' in Layout.js, 4) API calls: GET /api/user/payment-config on load, POST /api/user/payment-config on save with toast notifications. Frontend restarted successfully. Ready for E2E testing."
+
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

@@ -550,17 +550,55 @@ const Contacts = () => {
             </Select>
           </div>
           {selectedContacts.length > 0 && (
-            <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg">
-              <span className="text-sm">
-                {selectedContacts.length} contact(s) sélectionné(s)
+            <div className="flex items-center justify-between p-4 bg-primary/10 rounded-lg border border-primary/30">
+              <span className="text-sm font-medium">
+                ✓ {selectedContacts.length} contact(s) sélectionné(s)
               </span>
-              <Button
-                onClick={() => setShowBulkMessageDialog(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                Envoyer un message
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowBulkMessageDialog(true)}
+                  className="bg-primary hover:bg-primary/90"
+                  size="sm"
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Envoyer un message
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!window.confirm(`Voulez-vous vraiment supprimer ${selectedContacts.length} contact(s) ?`)) {
+                      return;
+                    }
+                    try {
+                      const token = localStorage.getItem('token');
+                      for (const contactId of selectedContacts) {
+                        await axios.delete(`${API}/contacts/${contactId}`, {
+                          headers: { Authorization: `Bearer ${token}` }
+                        });
+                      }
+                      toast.success(`${selectedContacts.length} contact(s) supprimé(s)`);
+                      setSelectedContacts([]);
+                      fetchContacts();
+                      fetchContactsStats();
+                    } catch (error) {
+                      toast.error('Erreur lors de la suppression');
+                    }
+                  }}
+                  variant="destructive"
+                  size="sm"
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Supprimer la sélection
+                </Button>
+                <Button
+                  onClick={() => setSelectedContacts([])}
+                  variant="outline"
+                  size="sm"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Désélectionner
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

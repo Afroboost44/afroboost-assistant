@@ -2137,9 +2137,9 @@ async def bulk_delete_contacts(current_user: Dict = Depends(get_current_user)):
     }
 
 @api_router.get("/contacts/export/csv")
-async def export_contacts_csv():
-    """Export contacts as CSV"""
-    contacts = await db.contacts.find({}, {"_id": 0}).to_list(10000)
+async def export_contacts_csv(current_user: Dict = Depends(get_current_user)):
+    """Export contacts as CSV (user's own contacts only)"""
+    contacts = await db.contacts.find({"user_id": current_user["id"]}, {"_id": 0}).to_list(10000)
     
     if not contacts:
         raise HTTPException(status_code=404, detail="No contacts to export")

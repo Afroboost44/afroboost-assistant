@@ -630,6 +630,18 @@ frontend:
         agent: "main"
         comment: "✅ IMPLEMENTED - AdChat mobile improvements: 1) Made chat list responsive (w-full md:w-1/3), 2) Added conditional visibility: chat list visible on mobile when no chat selected, chat details visible when chat selected, 3) Added 'Retour' button on mobile to go back from chat details to chat list, 4) Improved flex layout with flex-col md:flex-row for vertical stacking on mobile. Ready for testing."
 
+  - task: "PAYMENT SYSTEM - Complete Payment Testing"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL PAYMENT SYSTEM FAILURE - Comprehensive testing reveals complete payment system is non-functional: 1) PRODUCT CHECKOUT: POST /api/reservations/checkout fails with 500 Internal Server Error due to Stripe library compatibility issue (AttributeError: stripe.error.StripeError doesn't exist in current Stripe library version), 2) SUBSCRIPTION PAYMENT: POST /api/stripe/create-subscription fails with invalid test PaymentMethod 'pm_test_card', 3) CONFIGURATION MISMATCH: Admin has LIVE Stripe keys, user has TEST keys causing conflicts, 4) BACKEND ERRORS: Multiple Stripe API errors in logs. ROOT CAUSE: emergentintegrations library using outdated Stripe error handling + test data incompatibility. IMPACT: Users cannot buy products or subscribe to plans - complete payment functionality broken. REQUIRES: Stripe library update and proper test environment setup."
+
 
 metadata:
   created_by: "main_agent"

@@ -56,6 +56,7 @@ function App() {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/reservation-success" element={<ReservationSuccess />} />
             <Route path="/chat-public" element={<AdChatPublic />} />
+            <Route path="/chat-public/:userId" element={<AdChatPublicPage />} />
 
             {/* Protected routes */}
             <Route path="/dashboard" element={

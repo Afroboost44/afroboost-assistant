@@ -189,7 +189,8 @@ class PaymentSystemTestSuite:
         try:
             product = self.catalog_items[0]
             
-            checkout_data = {
+            # The API expects query parameters, not JSON body
+            params = {
                 "catalog_item_id": product["id"],
                 "quantity": 1,
                 "customer_name": "Test Client",
@@ -200,7 +201,7 @@ class PaymentSystemTestSuite:
             response = self.session.post(
                 f"{BASE_URL}/reservations/checkout",
                 headers=HEADERS,
-                json=checkout_data
+                params=params
             )
             
             if response.status_code == 200:

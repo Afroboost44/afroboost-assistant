@@ -384,6 +384,13 @@ class PaymentSystemTestSuite:
                         "No Stripe keys configured in admin settings",
                         {"stripe_secret_key": "empty", "stripe_publishable_key": "empty"}
                     )
+            elif response.status_code == 403:
+                self.log_test(
+                    "Admin Stripe Settings",
+                    False,
+                    "Access denied - user is not admin (cannot access admin settings)",
+                    {"status_code": response.status_code, "note": "Admin role required"}
+                )
             elif response.status_code == 404:
                 self.log_test(
                     "Admin Stripe Settings",

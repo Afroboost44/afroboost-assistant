@@ -600,15 +600,15 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OpenAI Integration for Ad Chat - Test with GPT-3.5-turbo"
-    - "Footer rebranding verification"
+    - "USER PAYMENT SETTINGS - Backend API (GET/POST /api/user/payment-config)"
+    - "USER PAYMENT SETTINGS - Frontend Page (/payment-settings)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "✅ OPENAI INTEGRATION & FOOTER FIX COMPLETE - Switched ad-chat AI system to OpenAI GPT-3.5-turbo: 1) Added user's OPENAI_API_KEY to backend/.env, 2) Modified chat_ai_service.py to use openai SDK directly (removed emergentintegrations), 3) Changed model from gpt-4o-mini to gpt-3.5-turbo, 4) Updated server.py to use OPENAI_API_KEY instead of EMERGENT_LLM_KEY, 5) Footer rebranding complete (removed '– propulsé par Afroboost Studio', now just '© 2025 BoostTribe' in server.py and index.html). Backend restarted successfully. Ready for testing ad-chat with OpenAI integration."
+    message: "✅ PHASE 1: USER PAYMENT SETTINGS IMPLEMENTATION COMPLETE - Created complete payment configuration system: 1) BACKEND: PaymentSettings model with Stripe/PayPal fields, GET /api/user/payment-config retrieves user settings (returns empty if none), POST /api/user/payment-config creates/updates settings with user_id isolation, 2) FRONTEND: PaymentSettings.js page with comprehensive UI (Stripe section: publishable/secret keys, PayPal section: client_id/secret, show/hide password fields, provider instructions, security notice), 3) INTEGRATION: Added route '/payment-settings' in App.js with ProtectedRoute, added navigation link '💳 Paiements' in Layout.js sidebar. Both services restarted successfully. Ready for comprehensive backend testing."
   - agent: "main"
     message: "Phase 1 backend auth implementation complete. Created User models, JWT utilities, and 3 auth endpoints (/register, /login, /me). First user will be admin, subsequent users will be regular users. Backend restarted successfully. Ready for backend testing before moving to Phase 2 (frontend)."
   - agent: "testing"

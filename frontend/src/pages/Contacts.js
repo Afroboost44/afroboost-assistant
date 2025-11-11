@@ -415,7 +415,14 @@ const Contacts = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2" data-testid="contacts-title">{t('contacts.title')}</h1>
-          <p className="text-gray-400">{contacts.length} contacts</p>
+          <p className="text-gray-400">
+            {contacts.length} contacts
+            {selectedContacts.length > 0 && (
+              <span className="ml-2 text-primary font-medium">
+                ({selectedContacts.length} sélectionné{selectedContacts.length > 1 ? 's' : ''})
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button

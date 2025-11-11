@@ -174,11 +174,36 @@ class PaymentSettingsTestSuite:
                         )
                         return True
                 
+                # Try with alternative user if main user fails
+                alt_register_data = {
+                    "name": "Test User",
+                    "email": ALT_REGULAR_USER["email"],
+                    "password": ALT_REGULAR_USER["password"]
+                }
+                
+                alt_register_response = self.session.post(
+                    f"{BASE_URL}/auth/register",
+                    headers=HEADERS,
+                    json=alt_register_data
+                )
+                
+                if alt_register_response.status_code == 200:
+                    data = alt_register_response.json()
+                    if "token" in data:
+                        self.user_token = data["token"]
+                        self.log_test(
+                            "Regular User Authentication",
+                            True,
+                            f"Successfully registered alternative user: {data['user']['email']}",
+                            {"user_id": data["user"]["id"], "role": data["user"]["role"]}
+                        )
+                        return True
+                
                 self.log_test(
                     "Regular User Authentication",
                     False,
-                    f"Regular user login failed: {response.status_code}, register failed: {register_response.status_code if 'register_response' in locals() else 'N/A'}",
-                    {"login_response": response.text, "register_response": register_response.text if 'register_response' in locals() else "N/A"}
+                    f"All user auth attempts failed - login: {response.status_code}, register: {register_response.status_code if 'register_response' in locals() else 'N/A'}, alt_register: {alt_register_response.status_code if 'alt_register_response' in locals() else 'N/A'}",
+                    {"login_response": response.text}
                 )
         except Exception as e:
             self.log_test(

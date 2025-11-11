@@ -5761,10 +5761,8 @@ async def create_reservation_checkout(
     if not origin_url:
         origin_url = str(request.base_url).rstrip('/')
     
-    # Initialize Stripe with OWNER's key
-    host_url = origin_url
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=stripe_key, webhook_url=webhook_url)
+    # Initialize Stripe DIRECTLY with OWNER's key
+    stripe.api_key = stripe_key
     
     # Create URLs
     success_url = f"{origin_url}/reservation-success?session_id={{CHECKOUT_SESSION_ID}}"
@@ -5782,16 +5780,30 @@ async def create_reservation_checkout(
         "notes": notes or ""
     }
     
-    # Create checkout session
-    checkout_request = CheckoutSessionRequest(
-        amount=amount,
-        currency=currency,
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata=metadata
-    )
-    
-    session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+    # Create checkout session with Stripe SDK directly
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': currency,
+                    'unit_amount': int(amount * 100),  # Stripe expects cents
+                    'product_data': {
+                        'name': item['title'],
+                        'description': item.get('description', '')[:500]
+                    }
+                },
+                'quantity': quantity
+            }],
+            mode='payment',
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+            customer_email=customer_email
+        )
+    except Exception as stripe_error:
+        logger.error(f"Stripe error: {str(stripe_error)}")
+        raise HTTPException(status_code=500, detail=f"Erreur Stripe: {str(stripe_error)}")
     
     # MANDATORY: Create payment transaction record
     payment_transaction = PaymentTransaction(

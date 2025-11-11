@@ -1619,6 +1619,91 @@ async def reset_password(request: ResetPasswordRequest):
     return {"message": "Password reset successful"}
 
 
+
+# ========================
+# ROUTES - USER PAYMENT SETTINGS
+# ========================
+
+@api_router.get("/user/payment-config")
+async def get_user_payment_config(current_user: Dict = Depends(get_current_user)):
+    """Get current user's payment configuration"""
+    try:
+        config = await db.payment_settings.find_one(
+            {"user_id": current_user["id"]},
+            {"_id": 0}
+        )
+        
+        if not config:
+            # Return empty config if none exists
+            return {
+                "stripe_secret_key": "",
+                "stripe_publishable_key": "",
+                "paypal_client_id": "",
+                "paypal_secret": ""
+            }
+        
+        # Return only the keys (without sensitive internal fields)
+        return {
+            "stripe_secret_key": config.get("stripe_secret_key", ""),
+            "stripe_publishable_key": config.get("stripe_publishable_key", ""),
+            "paypal_client_id": config.get("paypal_client_id", ""),
+            "paypal_secret": config.get("paypal_secret", "")
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching payment config: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/user/payment-config")
+async def save_user_payment_config(
+    settings: PaymentSettingsUpdate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Save or update user's payment configuration"""
+    try:
+        # Check if config already exists
+        existing_config = await db.payment_settings.find_one(
+            {"user_id": current_user["id"]}
+        )
+        
+        if existing_config:
+            # Update existing config
+            update_data = settings.model_dump(exclude_unset=True)
+            update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+            
+            await db.payment_settings.update_one(
+                {"user_id": current_user["id"]},
+                {"$set": update_data}
+            )
+            logger.info(f"Updated payment config for user {current_user['id']}")
+        else:
+            # Create new config
+            new_config = PaymentSettings(
+                user_id=current_user["id"],
+                stripe_secret_key=settings.stripe_secret_key,
+                stripe_publishable_key=settings.stripe_publishable_key,
+                paypal_client_id=settings.paypal_client_id,
+                paypal_secret=settings.paypal_secret
+            )
+            
+            config_dict = new_config.model_dump()
+            config_dict["created_at"] = config_dict["created_at"].isoformat()
+            config_dict["updated_at"] = config_dict["updated_at"].isoformat()
+            
+            await db.payment_settings.insert_one(config_dict)
+            logger.info(f"Created payment config for user {current_user['id']}")
+        
+        return {
+            "message": "Configuration de paiement enregistrée avec succès",
+            "success": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Error saving payment config: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ========================
 # ROUTES - WHATSAPP
 # ========================

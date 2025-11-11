@@ -1729,6 +1729,127 @@ async def save_user_payment_config(
 
 
 # ========================
+# ROUTES - CONTACT GROUPS
+# ========================
+
+@api_router.get("/contact-groups")
+async def get_contact_groups(current_user: Dict = Depends(get_current_user)):
+    """Get all contact groups for current user"""
+    try:
+        groups = await db.contact_groups.find(
+            {"user_id": current_user["id"]},
+            {"_id": 0}
+        ).to_list(length=None)
+        
+        logger.info(f"Retrieved {len(groups)} contact groups for user {current_user['id']}")
+        return groups
+        
+    except Exception as e:
+        logger.error(f"Error fetching contact groups: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/contact-groups")
+async def create_contact_group(
+    group: ContactGroupCreate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Create a new contact group"""
+    try:
+        # Check if group name already exists for this user
+        existing = await db.contact_groups.find_one({
+            "user_id": current_user["id"],
+            "name": group.name
+        })
+        
+        if existing:
+            raise HTTPException(status_code=400, detail="Un groupe avec ce nom existe déjà")
+        
+        new_group = ContactGroup(
+            user_id=current_user["id"],
+            name=group.name,
+            description=group.description,
+            color=group.color
+        )
+        
+        group_dict = new_group.model_dump()
+        group_dict["created_at"] = group_dict["created_at"].isoformat()
+        group_dict["updated_at"] = group_dict["updated_at"].isoformat()
+        
+        await db.contact_groups.insert_one(group_dict)
+        logger.info(f"Created contact group '{group.name}' for user {current_user['id']}")
+        
+        return {"message": "Groupe créé avec succès", "id": new_group.id, "group": group_dict}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating contact group: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.put("/contact-groups/{group_id}")
+async def update_contact_group(
+    group_id: str,
+    update: ContactGroupUpdate,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Update a contact group"""
+    try:
+        # Check if group exists and belongs to user
+        existing = await db.contact_groups.find_one({
+            "id": group_id,
+            "user_id": current_user["id"]
+        })
+        
+        if not existing:
+            raise HTTPException(status_code=404, detail="Groupe non trouvé")
+        
+        update_data = update.model_dump(exclude_unset=True)
+        if update_data:
+            update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+            
+            await db.contact_groups.update_one(
+                {"id": group_id, "user_id": current_user["id"]},
+                {"$set": update_data}
+            )
+            logger.info(f"Updated contact group {group_id} for user {current_user['id']}")
+        
+        return {"message": "Groupe mis à jour avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating contact group: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/contact-groups/{group_id}")
+async def delete_contact_group(
+    group_id: str,
+    current_user: Dict = Depends(get_current_user)
+):
+    """Delete a contact group"""
+    try:
+        result = await db.contact_groups.delete_one({
+            "id": group_id,
+            "user_id": current_user["id"]
+        })
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Groupe non trouvé")
+        
+        logger.info(f"Deleted contact group {group_id} for user {current_user['id']}")
+        return {"message": "Groupe supprimé avec succès"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting contact group: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ========================
 # ROUTES - WHATSAPP
 # ========================
 

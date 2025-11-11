@@ -713,14 +713,52 @@ const WhatsAppCampaignsAdvanced = () => {
                 <div className="p-4 bg-gradient-to-br from-teal-900/20 to-green-900/20 rounded-lg border border-green-500/30">
                   <Label className="text-xs text-gray-400 mb-2 block">📱 Aperçu WhatsApp</Label>
                   <div className="bg-white/10 rounded-lg p-3 backdrop-blur">
-                    {campaignForm.media_url && (
-                      <img 
-                        src={campaignForm.media_url} 
-                        alt="Media" 
-                        className="w-full rounded mb-2"
-                        onError={(e) => e.target.style.display = 'none'}
-                      />
-                    )}
+                    {campaignForm.media_url && (() => {
+                      const url = campaignForm.media_url;
+                      const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/);
+                      const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+                      
+                      if (youtubeMatch) {
+                        const videoId = youtubeMatch[1];
+                        return (
+                          <div className="relative w-full h-48 mb-2 group">
+                            <img 
+                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                              alt="YouTube" 
+                              className="w-full h-full object-cover rounded"
+                              onError={(e) => {
+                                e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded">
+                              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                                <div className="w-0 h-0 border-t-10 border-t-transparent border-l-14 border-l-white border-b-10 border-b-transparent ml-1"></div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      } else if (vimeoMatch) {
+                        return (
+                          <div className="w-full h-48 bg-black rounded mb-2 flex items-center justify-center">
+                            <div className="text-center">
+                              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <div className="w-0 h-0 border-t-10 border-t-transparent border-l-14 border-l-white border-b-10 border-b-transparent ml-1"></div>
+                              </div>
+                              <p className="text-sm text-gray-300">Vidéo Vimeo</p>
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        return (
+                          <img 
+                            src={url} 
+                            alt="Media" 
+                            className="w-full rounded mb-2 max-h-64 object-cover"
+                            onError={(e) => e.target.style.display = 'none'}
+                          />
+                        );
+                      }
+                    })()}
                     <div className="text-sm whitespace-pre-wrap">{campaignForm.message_content}</div>
                     {campaignForm.buttons.length > 0 && (
                       <div className="mt-3 space-y-2">

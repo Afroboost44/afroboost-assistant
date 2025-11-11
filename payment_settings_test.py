@@ -668,7 +668,7 @@ class PaymentSettingsTestSuite:
         total = len(self.test_results)
         
         summary = {
-            "total_tests": total,
+            "total": total,
             "passed": passed,
             "failed": total - passed,
             "success_rate": (passed / total * 100) if total > 0 else 0,

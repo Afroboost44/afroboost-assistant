@@ -588,14 +588,47 @@ frontend:
     file: "/app/frontend/src/pages/PaymentSettings.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "✅ IMPLEMENTED - Payment Settings page complete with comprehensive UI: 1) PaymentSettings.js page with forms for Stripe (publishable_key, secret_key) and PayPal (client_id, secret) configuration, 2) Features: Show/hide password fields for sensitive keys, instructions for obtaining API keys from providers, secure input fields with Eye/EyeOff icons, save button with loading state, security notice section, 3) Integration: Added route in App.js (/payment-settings) with ProtectedRoute, added navigation link '💳 Paiements' in Layout.js, 4) API calls: GET /api/user/payment-config on load, POST /api/user/payment-config on save with toast notifications. Frontend restarted successfully. Ready for E2E testing."
+        comment: "✅ IMPLEMENTED - Payment Settings page complete with comprehensive UI: 1) PaymentSettings.js page with forms for Stripe (publishable_key, secret_key) and PayPal (client_id, secret) configuration, 2) Features: Show/hide password fields for sensitive keys, instructions for obtaining API keys from providers, secure input fields with Eye/EyeOff icons, save button with loading state, security notice section, 3) Integration: Added route in App.js (/payment-settings) with ProtectedRoute, added navigation link '💳 Paiements' in Layout.js sidebar, 4) API calls: GET /api/user/payment-config on load, POST /api/user/payment-config on save with toast notifications. Frontend restarted successfully. Ready for E2E testing."
+
+  - task: "CATALOGUE - Image/Video Thumbnails & Recurring Courses"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Catalog.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: "NA"
-        agent: "testing"
-        comment: "Frontend testing not performed - backend API testing completed successfully. All backend endpoints (GET/POST /api/user/payment-config) working correctly with proper authentication, user isolation, and data persistence. Frontend integration should work correctly as backend APIs are fully functional."
+        agent: "main"
+        comment: "✅ IMPLEMENTED - Catalog improvements: 1) Added YouTube video thumbnails with play button overlay instead of simple icons, 2) Improved Vimeo video display with play button, 3) Recurring courses functionality verified and working (is_recurring, recurrence_days, recurrence_time fields), 4) Data isolation by user_id verified in all catalog routes (GET/POST/PUT/DELETE). Ready for testing."
+
+  - task: "CONTACT GROUPS - Custom Groups Management"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py, /app/frontend/src/pages/Contacts.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "✅ IMPLEMENTED - Custom contact groups system: 1) BACKEND: ContactGroup model with user_id, name, description, color fields, 2) Routes: GET /api/contact-groups (list), POST /api/contact-groups (create), PUT /api/contact-groups/{id} (rename), DELETE /api/contact-groups/{id} (delete), 3) FRONTEND: Added states and functions in Contacts.js for managing custom groups (fetchCustomGroups, createCustomGroup, updateCustomGroup, deleteCustomGroup), 4) Integration ready for UI implementation. Backend restarted successfully. Ready for frontend UI completion and testing."
+
+  - task: "ADCHAT - Mobile Responsive Layout"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/AdChat.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "✅ IMPLEMENTED - AdChat mobile improvements: 1) Made chat list responsive (w-full md:w-1/3), 2) Added conditional visibility: chat list visible on mobile when no chat selected, chat details visible when chat selected, 3) Added 'Retour' button on mobile to go back from chat details to chat list, 4) Improved flex layout with flex-col md:flex-row for vertical stacking on mobile. Ready for testing."
 
 
 metadata:

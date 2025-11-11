@@ -603,7 +603,7 @@ const Contacts = () => {
                         type="checkbox"
                         checked={selectedContacts.includes(contact.id)}
                         onChange={() => handleSelectContact(contact.id)}
-                        className="rounded border-gray-300"
+                        className="w-5 h-5 rounded border-2 border-primary bg-background checked:bg-primary checked:border-primary cursor-pointer"
                       />
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-white">{contact.name}</td>

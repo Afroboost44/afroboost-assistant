@@ -149,9 +149,9 @@ const AdChat = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex gap-4">
+    <div className="h-[calc(100vh-8rem)] flex flex-col md:flex-row gap-4">
       {/* Chat List */}
-      <Card className="glass border-primary/20 w-1/3 flex flex-col">
+      <Card className={`glass border-primary/20 w-full md:w-1/3 flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" />

@@ -1,97 +1,134 @@
 <analysis>
-The AI engineer successfully completed the initial MVP to multi-channel platform development, implementing core modules like Contacts, Catalogue & Reservations, Advanced WhatsApp Campaigns, AI Assistant, and Reminders & Automations. The project underwent a major rebranding to BoostTribe, including logo and asset updates, and a comprehensive search-and-replace of Afroboost across the frontend. New backend models and API routes for Gift Cards, Discounts, Referrals, and AdChat were created, along with corresponding frontend pages and navigation links. PWA enhancements and Admin free access features were also integrated.
+The AI engineer's work in this trajectory began with enhancing the BoostTribe application following a major rebranding. Initial tasks included integrating an OpenAI API key, fixing footer text inconsistencies, and finalizing public-facing routes for an intelligent advertising chat. A critical architectural decision was made to switch from  for LLM calls to direct OpenAI SDK usage with the user's provided key.
 
-Following a critical bug report from the user, the AI engineer addressed password reset issues, chat functionality, and catalog management, including setting up an admin account and fixing a missing  import. The current focus is on implementing a comprehensive Intelligent Public Advertising Chat with new backend models, public routes for products and checkout, and initial AI service integration. The engineer is now working on public chat backend models and routes, including user presence.
+Significant efforts were then dedicated to addressing a comprehensive bug report and new feature requests from the user. Key areas of focus included resolving critical data isolation issues (ensuring each user sees only their own catalog and contacts), implementing a contact import/clear functionality, adding recurring course options, and enhancing media (image/video) handling in the catalog and WhatsApp campaigns. The AI also tackled PWA improvements, mobile responsiveness for the public chat, and automated email notifications (welcome, thank you for reservation).
+
+Challenges included persistent browser caching for footer updates, conflicts in backend API routing, and repeated compilation errors in  due to code duplication during refactoring. The trajectory concluded with the user providing a new, exhaustive list of bugs and features, prompting the AI to formulate a revised, phased development plan, with the immediate task being the implementation of a user-configurable payment settings page.
 </analysis>
 
 <product_requirements>
-The BoostTribe application is an intelligent, trilingual (FR/EN/DE) multichannel marketing platform for coaches, sellers, and creators. Its primary goal is to manage contacts, execute targeted email/WhatsApp campaigns, sell products/events, handle payments (in simulation), and automate communication via AI. Key features include robust authentication, role-based access, email campaign management, advanced contact management, analytics, AI content generation, integrated calendar, pricing plans, PWA, and multilingual support.
-Existing modules cover a Catalogue & Reservations system, advanced WhatsApp campaigns, an AI Assistant, and Reminders/Automation. The BoostTribe update introduced Gift Cards, Client Discounts, a Referral System, Direct Chat from Ads, PWA enhancements, and a new favicon.
-Recent priorities include:
-1.  **Catalogue Visibility & Sharing**: Products/catalogue must be easily shareable via direct links, WhatsApp, and email, with automatic link insertion in campaigns for direct purchase.
-2.  **Integrated Payments**: Buy Now buttons for direct purchases from WhatsApp/Email (Stripe/Twint simulation).
-3.  **Intelligent Advertising Chat**: An interactive AI-powered chat capable of selling, advising, remembering conversations, recognizing returning clients, and escalating to human coaches when necessary. This includes linking to products/gift cards, user memory (email/WhatsApp ID), and WhatsApp Business API synchronization.
-4.  **Referral System**: Users can define their own referral gains (money, free course, discount).
-5.  **API-less Mode**: Core functionalities must work even without external API keys (LLM, payment, WhatsApp).
-6.  **Automated Notifications**: Reminders for courses, confirmed bookings, payments, and scheduled campaigns.
-7.  **PWA Enhancements**: Improve offline capabilities and installation prompts.
+The BoostTribe application is an intelligent, trilingual marketing platform for coaches, sellers, and creators, designed to manage contacts, execute targeted campaigns, sell products/events, handle payments (Stripe/Twint simulation), and automate communication via AI.
+Current focus, based on the latest user prompt (Chat 700), is on achieving a 100% functional, responsive, and secure platform. Key areas for correction and finalization:
+1.  **Catalogue**: Fix Stripe payments, display image/video thumbnails, enable recurring courses, allow custom contact groups, ensure data isolation (each user sees only their own data, admin sees all).
+2.  **Chat/Publicities**: Improve mobile display for contacts/conversations, sort contacts by groups, make chat page publicly shareable.
+3.  **Payments**: Enable individual users to configure their own Stripe/PayPal API keys.
+4.  **WhatsApp Campaigns**: Make New campaign button visible, fix Select product button, ensure message sending functions correctly with media and links.
+5.  **Referral Program**: Make Copy referral link button visible and functional, add confirmation message.
+Stripe and IBAN keys are already provided and must not be removed. WhatsApp Business API integration is to be done later, but email campaigns (Resend API key provided) should be functional.
 </product_requirements>
 
 <key_technical_concepts>
--   **Full-stack**: React (Frontend), FastAPI (Backend), MongoDB (Database).
--   **UI/UX**: TailwindCSS, Shadcn/UI, .
--   **APIs**: Resend (Email), OpenAI (AI), WhatsApp Business API, Stripe/Twint (simulation), Emergent LLM Key, .
--   **Auth**: JWT (Email/Password), .
--   **Data**: Pydantic models, MongoDB (UUIDs),  (UTC).
+-   **Full-stack**: React, FastAPI, MongoDB.
+-   **AI/LLM**: OpenAI SDK (gpt-3.5-turbo), emergentintegrations (previously), AI conversational memory.
+-   **Payments**: Stripe (via ), Twint (simulation).
+-   **Communication**: Resend (email), WhatsApp Business API.
 -   **PWA**: Service Workers, Install Prompts.
+-   **Data Management**: User-ID based data isolation, CSV import/export.
 </key_technical_concepts>
 
 <code_architecture>
 
+**Key File Changes:**
+-   ****: Major modifications.
+    -   Removed Afroboost Studio from email templates.
+    -   Switched AI integration from  to direct OpenAI SDK.
+    -   Fixed conflict in public catalog routes ( renamed to ).
+    -   Modified  model to include , , .
+    -   Modified  model to include .
+    -   Implemented  filtering for all  and  related API routes (get, create, update, delete).
+    -   Added  model and Stripe payment routes (, , ).
+    -   Added API routes for automated notifications (), welcome emails ( post-hook), and thank-you emails ().
+    -   Fixed syntax errors during backend restarts.
+-   ****: Added  and .
+-   ****: Modified to use usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
 
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
 
--   ****: Substantially modified to include new Pydantic models and CRUD API routes for Gift Cards, Client Discounts, Referral System, and AdChat. Includes a new  field in  and routes for public catalog viewing, checkout, and AI integration into  functionality. The email template for password reset was corrected. A missing  import was added.
--   ****: Updated with , , , .
--   ****: **NEW** file, created to house the logic for the intelligent advertising chat's AI capabilities, including product knowledge and conversational memory.
--   ****: Updated to include new routes for , , , , , , , , , , , , and .
--   ****: Modified to add navigation links for the new modules, integrate the , and integrate the  component. Also updated for rebranding.
--   ****: **NEW** file, implementing the floating AI chat widget. Updated for rebranding.
--   ****: **NEW** file, a React component to handle PWA installation prompts.
--   ****: **NEW** file, a custom React hook to manage and display feature access based on user's subscription plan.
--   ****: Enhanced for sharing capabilities, including Share on WhatsApp, Share by Email, and Copy Product Link buttons on each product card.
--   ****: Created and integrated as part of MODULE 3.
--   ****: **NEW** file for MODULE 2, containing the advanced WhatsApp campaign editor. Updated for rebranding.
--   ****: **NEW** file for MODULE 4, for managing reminders and automations.
--   ****: **NEW** file, for managing gift cards.
--   ****: **NEW** file, for managing client discounts.
--   ****: **NEW** file, for managing referral system.
--   ****: **NEW** file for the advertising chat. Updated for rebranding.
--   ****: **NEW** file, a public-facing page to test the ad chat functionality from a public link.
--   ****: **NEW** file, to display a single public product with its details.
--   ****: **NEW** file, to display a public gallery of all catalog items.
--   ****: **NEW** file, for the public checkout process.
--   ****: Modified to integrate  and display feature limits.
--   **, , , , , , , , , **: All updated to replace Afroboost with BoostTribe and reflect rebranding.
--   ****: Modified for rebranding, to register the new , and to remove the Emergent.sh badge.
--   ****: Updated for BoostTribe branding.
--   ****: **NEW** file, implementing the Progressive Web App (PWA) service worker for offline capabilities and caching.
--   ****: **NEW** file, providing a detailed technical overview of the project.
--   ****: **NEW** file, intended for a comprehensive project documentation.
--   ****: **NEW** file, a quick start guide.
--   ****: **NEW** file, documenting versions and changes.
-
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit SDK directly with  and  model.
+-   ****: **NEW** file, created for periodic notification checks.
+-   ****: Updated with routes for  and . Changed public catalog route from  to .
+-   ****: Removed propulsé par Afroboost Studio, registered , added script for cache invalidation.
+-   ****: Added version  for cache invalidation.
+-   ****: Modified to force cache clearing on version update.
+-   ****: **Major refactor** for mobile responsiveness and UI improvements; fixed compilation errors from previous refactor.
+-   ****:
+    -   Enhanced for sharing capabilities.
+    -   Added UI for recurring course creation/editing.
+    -   Updated display for recurring courses.
+    -   Improved image/video URL input field with preview.
+    -   Added Réserver button and a  modal for booking.
+-   ****:
+    -   Implemented  filtering for contacts.
+    -   Improved CSV import to correctly parse user's CSV format and assign .
+    -   Added a Supprimer tous button for user's contacts.
+    -   Enhanced contact edit/add dialogs to use  components for groups and subscription status.
+-   ****: Modified to allow user-defined referral gain types and values, updated dynamic reward text.
+-   ****: Added a new Notifications Auto tab with UI for notification statistics and manual reminder triggering.
+-   ****: **NEW** file, a confirmation page for successful reservations.
+-   ****:
+    -   Integrated  component for inserting product links into campaign messages.
+    -   Added UI input for  to allow including images/videos in campaigns.
+    -   Fixed  filtering for campaign contact selection.
+-   ****: **NEW** file, a React component for selecting and inserting product links.
+-   ****: **NEW** file, intended for users to configure their payment API keys.
 </code_architecture>
 
 <pending_tasks>
--   **PWA Enhancements**: Fully implement offline capabilities and ensure  works across devices.
--   **Admin Free Access**: Implement the logic to bypass limits for admin users.
--   **Catalog Management**: Re-verify the ability to create, modify, and delete products/gift cards from the admin interface.
--   **Campaigns**: Integrate product/payment links and emoji support into email/WhatsApp campaign editors.
--   **Referral System**: Implement user-defined referral gain amounts and types.
--   **API-less Mode**: Ensure all functionalities provide clear messages and work gracefully when API keys are not configured.
--   **Notifications**: Implement automated notifications for course reminders, reservations, payments, and campaigns.
+-   **Catalogue**: Fully implement payments for all users, ensure recurring course functionality, enable creation/renaming of custom contact groups.
+-   **Chat/Publicities**: Implement contact classification by groups in left column, display conversations in right column, make the chat page shareable via a public link.
+-   **Payments**: Enable individual users to connect their own Stripe/PayPal keys through the new  page.
+-   **WhatsApp Campaigns**: Make New campaign button visible on all screen sizes, fix Select product button, verify full campaign system functionality.
+-   **Referral Program**: Ensure Copy referral link button is visible and functional, with a confirmation message.
+-   **Shop & Events**: Activate creation/publishing of products, allow event creation with full details and booking/payment links, ensure Open Graph meta tags for sharing.
 </pending_tasks>
 
 <current_work>
-Immediately before this summary request, the AI engineer was deep into implementing the comprehensive **Intelligent Public Advertising Chat** feature, as per the detailed user requirements. This work is primarily focused on the backend.
+Immediately before this summary request, the AI engineer was working on **Priority 1: Stripe + Reservations** from the user's latest detailed prompt (Chat 700).
 
-**Backend progress:**
-1.  **Catalog Item Enhancements**: The  Pydantic model in  was modified to include a  field, and a helper function () was added to automatically generate unique, URL-friendly slugs for catalog items.
-2.  **New Service**: A new file, , was created. This service is designed to manage the AI's conversational memory and integrate product/gift card knowledge for the public chat.
-3.  **Public Catalog & Checkout Routes**: New public API routes were added to  to allow unauthenticated access to single product pages (), a public catalog gallery (), and a checkout page ().
-4.  **AI Integration in Ad Chat**: The existing  API routes in  were significantly modified. The  was initialized and integrated into the  and  functions to enable automatic AI responses based on product knowledge and conversational memory.
-5.  **Dependency Installation**: The  library was installed, and  was updated.
-6.  **Service Restart**: The backend service was restarted and confirmed to be running without errors after these changes.
+The work flow was:
+1.  **Stripe Key Verification**: Initial check showed Stripe keys were not in  but user clarified they were added in the admin account. AI then called  for Stripe, which confirmed  should be used and keys should be taken from the system environment.
+2.  ****: The  library was installed and its version confirmed.
+3.  ****: The  was added to .
+4.  **Backend Models & Routes**: A new  Pydantic model was created in . Stripe-related imports were added to . New API routes for Stripe checkout session creation (), webhook handling (), and payment intent creation () were added to  to enable reservation payments. The backend service was restarted successfully after these changes.
+5.  **Frontend Reservation Flow**: A new React page, , was created and its route added to .
+6.  **Réserver Button & Modal**: The  file was significantly updated to include state variables for a reservation modal,  and  functions, and a prominent Réserver button on each product card. A  modal component was also added to the  page to handle the booking process. The frontend was restarted successfully.
 
-**Frontend progress for public chat (initial setup):**
-1.  **New Pages Created**: Placeholder React components for , , and  were created.
-2.  **Routes Added**: New public routes for these pages were integrated into .
-3.  **Catalog Page Enhancement**:  was enhanced to include Share on WhatsApp, Share by Email, and Copy Product Link buttons on each product card, along with the necessary helper functions.
-4.  **Service Restart**: The frontend service was restarted.
-
-**Current specific task**: The AI engineer is currently adding new models for the personalized public chat and presence system, specifically , , and . These models are being added to  just before the helper functions.
+The AI then provided a summary of the completed Priority 1 and was asked to continue. The very last action taken by the AI was to add the  route to  as part of CORRECTION 2/5: INTERFACE PAIEMENTS PERSONNALISÉS, in response to the user's new comprehensive prompt.
 </current_work>
 
 <optional_next_step>
-The next step is to add API routes for the new public chat and attendance models in .
+The next step is to implement the UI and backend integration for allowing each user to configure their own Stripe/PayPal API keys within the newly created  page.
 </optional_next_step>

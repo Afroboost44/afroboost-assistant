@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 
 # Configuration
-BASE_URL = "https://boosttribe-app.preview.emergentagent.com/api"
+BASE_URL = "https://boosttribe-app-1.preview.emergentagent.com/api"
 HEADERS = {"Content-Type": "application/json"}
 
 # Admin credentials from review request

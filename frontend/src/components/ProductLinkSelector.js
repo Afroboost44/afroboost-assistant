@@ -32,7 +32,10 @@ const ProductLinkSelector = ({ onSelectProduct, onClose }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/catalog`);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/api/catalog`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const published = response.data.filter(p => p.is_published && p.is_active);
       setProducts(published);
       setFilteredProducts(published);

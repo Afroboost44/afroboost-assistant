@@ -190,15 +190,19 @@ const Contacts = () => {
   const handleAddContact = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       const payload = {
         ...formData,
         tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : []
       };
-      await axios.post(`${API}/contacts`, payload);
+      await axios.post(`${API}/contacts`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Contact ajouté avec succès');
       setShowAddDialog(false);
       resetForm();
       fetchContacts();
+      fetchContactsStats();
     } catch (error) {
       console.error('Error adding contact:', error);
       toast.error(error.response?.data?.detail || 'Erreur lors de l\'ajout du contact');

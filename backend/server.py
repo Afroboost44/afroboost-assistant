@@ -2188,13 +2188,15 @@ async def update_contact_subscription(
 
 @api_router.get("/contacts/stats/summary")
 async def get_contacts_summary(current_user: Dict = Depends(get_current_user)):
-    """Get summary statistics of contacts"""
-    total_contacts = await db.contacts.count_documents({})
+    """Get summary statistics of contacts (user's own contacts only)"""
+    # CRITICAL: Only count user's own contacts
+    user_filter = {"user_id": current_user["id"]}
+    total_contacts = await db.contacts.count_documents(user_filter)
     
-    subscribers = await db.contacts.count_documents({"subscription_status": "active"})
-    non_subscribers = await db.contacts.count_documents({"subscription_status": "non-subscriber"})
-    trial_members = await db.contacts.count_documents({"subscription_status": "trial"})
-    expired = await db.contacts.count_documents({"subscription_status": "expired"})
+    subscribers = await db.contacts.count_documents({**user_filter, "subscription_status": "active"})
+    non_subscribers = await db.contacts.count_documents({**user_filter, "subscription_status": "non-subscriber"})
+    trial_members = await db.contacts.count_documents({**user_filter, "subscription_status": "trial"})
+    expired = await db.contacts.count_documents({**user_filter, "subscription_status": "expired"})
     
     return {
         "total": total_contacts,

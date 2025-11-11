@@ -300,8 +300,10 @@ const Contacts = () => {
 
   const handleExport = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API}/contacts/export/csv`, {
-        responseType: 'blob'
+        responseType: 'blob',
+        headers: { Authorization: `Bearer ${token}` }
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');

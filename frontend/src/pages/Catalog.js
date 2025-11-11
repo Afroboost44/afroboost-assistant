@@ -843,7 +843,7 @@ const Catalog = () => {
                             { key: 'saturday', label: 'Sam' },
                             { key: 'sunday', label: 'Dim' }
                           ].map(day => {
-                            const currentDays = formData.recurrence_days || [];
+                            const currentDays = Array.isArray(formData.recurrence_days) ? formData.recurrence_days : [];
                             return (
                               <button
                                 key={day.key}

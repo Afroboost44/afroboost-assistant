@@ -235,9 +235,13 @@ const Contacts = () => {
     if (!window.confirm('Voulez-vous vraiment supprimer ce contact ?')) return;
     
     try {
-      await axios.delete(`${API}/contacts/${contactId}`);
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API}/contacts/${contactId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Contact supprimé avec succès');
       fetchContacts();
+      fetchContactsStats();
     } catch (error) {
       console.error('Error deleting contact:', error);
       toast.error('Erreur lors de la suppression du contact');
